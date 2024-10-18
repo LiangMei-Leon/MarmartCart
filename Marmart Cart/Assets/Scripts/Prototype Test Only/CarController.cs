@@ -5,6 +5,7 @@ public class CarController : MonoBehaviour
 {
     public float moveSpeed = 50f;
     public float maxSpeed = 15f;
+
     public float drag = 0.98f;
     public float steerAngle = 20f;
     public float traction = 1f;
