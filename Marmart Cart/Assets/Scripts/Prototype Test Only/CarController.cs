@@ -21,7 +21,7 @@ public class CarController : MonoBehaviour
     {
         moveForce += transform.forward * moveSpeed * Input.GetAxis("Vertical") * Time.deltaTime;
         transform.position += moveForce * Time.deltaTime;
-
+        //I am now working on Linux
         float steerInput = Input.GetAxis("Horizontal");
         transform.Rotate(Vector3.up * steerInput * moveForce.magnitude * steerAngle * Time.deltaTime);
         moveForce *= drag;
