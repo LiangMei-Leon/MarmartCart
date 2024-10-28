@@ -10,18 +10,27 @@ public class PTWheelRotation : MonoBehaviour
 
     private float currentRotationAngle = 0f; // Tracks the current rotation angle
 
-    // Update is called once per frame
     void Update()
     {
         // Get input from user (A and D keys)
-        float input = Input.GetAxis("Horizontal"); // A = -1, D = 1
-        
-        // Calculate the desired rotation change based on input and speed
-        float rotationChange = input * rotationSpeed * Time.deltaTime;
-        
-        // Adjust current rotation angle but clamp it to maxRotationAngle
-        currentRotationAngle = Mathf.Clamp(currentRotationAngle + rotationChange, -maxRotationAngle, maxRotationAngle);
+        float input = Input.GetAxisRaw("Horizontal"); // A = -1, D = 1
 
+        // Determine if the input should be applied or reset
+        if (input != 0)
+        {
+            // Calculate the desired rotation change based on input and speed
+            float rotationChange = input * rotationSpeed * Time.deltaTime;
+
+            // Adjust current rotation angle but clamp it to maxRotationAngle
+            currentRotationAngle = Mathf.Clamp(currentRotationAngle + rotationChange, -maxRotationAngle, maxRotationAngle);
+        }
+        else
+        {
+            // If no input, smoothly snap back to 0 (going straight)
+            currentRotationAngle = Mathf.MoveTowards(currentRotationAngle, 0f, rotationSpeed * Time.deltaTime);
+        }
+
+        // Apply the rotation to each object in the list
         foreach (GameObject obj in objectsToRotate)
         {
             if (obj != null) // Make sure the object reference is not null

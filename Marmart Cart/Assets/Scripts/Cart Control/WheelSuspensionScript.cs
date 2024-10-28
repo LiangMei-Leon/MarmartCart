@@ -1,15 +1,11 @@
 using System.ComponentModel.Design.Serialization;
 using System.Runtime.InteropServices;
+using TMPro;
 using UnityEditor.Timeline.Actions;
 using UnityEngine;
-using UnityEngine.Video;
 
 public class WheelSuspensionScript : MonoBehaviour
 {
-    private Ray ray;
-    [SerializeField] private float xAxisOffset;
-    [SerializeField] private float yAxisOffset;
-    [SerializeField] private float zAxisOffset;
     [SerializeField] private LayerMask layerMask;
     [SerializeField] private Rigidbody cartBody;
     private Vector3 rayStartPosition;
@@ -18,17 +14,24 @@ public class WheelSuspensionScript : MonoBehaviour
     [SerializeField] float springStrength = 100f;
     [SerializeField] float springDamping = 10f;
     private Vector3 springDirection;
+
     private Vector3 steeringDirection;
     private Vector3 wheelVelocity;
-    [SerializeField] float wheelGripFactor = 1f;
+    [SerializeField] AnimationCurve wheelGripCurve;
+    [SerializeField] float maxLateralVelocity = 6f;
     [SerializeField] float wheelMass = 1.5f;
 
-    [SerializeField] float torque = 100f;
-    [SerializeField] float breakFactor = 1f;
+
+    [SerializeField] AnimationCurve engineTorqueCurve;
+    [SerializeField] float maxEngineTorque = 100f;
+    [SerializeField] float maxSpeed = 10f; // cart's maximum speed measured by units per second
+    private float torque;
+    [SerializeField] float brakeFactor = 1f;
+    [SerializeField] float maxBrakeForce = 1f;
+    [SerializeField] float reverseSpeedCap = 5f;
     private Vector3 finalSuspensionForce;
     private Vector3 finalSteeringForce;
-    private Vector3 finalBreakingForce;
-
+    private Vector3 finalBrakeForce;
     void Awake()
     {
         // Warn the user if the Rigidbody is not assigned
@@ -44,7 +47,7 @@ public class WheelSuspensionScript : MonoBehaviour
     }
     void Update()
     {
-        rayStartPosition = transform.TransformPoint(new Vector3(xAxisOffset, yAxisOffset, zAxisOffset));
+
     }
     void FixedUpdate()
     {
@@ -83,10 +86,16 @@ public class WheelSuspensionScript : MonoBehaviour
             steeringDirection = transform.right;
 
             // Calculate the velocity of the wheel along the steering direction (sideways).
-            float sterringVel = Vector3.Dot(steeringDirection, wheelVelocity);
+            float lateralVel = Vector3.Dot(steeringDirection, wheelVelocity);
+            Debug.Log(lateralVel);
+            // Normalize lateral velocity by max steering velocity
+            float normalizedLateralVelocity = Mathf.Clamp01(Mathf.Abs(lateralVel) / maxLateralVelocity);
+
+            // Evaluate grip factor from curve (0 = no grip, 1 = full grip)
+            float gripFactor = wheelGripCurve.Evaluate(normalizedLateralVelocity);
 
             // Calculate the desired velocity change to stop sliding.
-            float desiredVelChange = -1 * sterringVel * wheelGripFactor;
+            float desiredVelChange = -1 * lateralVel * gripFactor;
 
             // Calculate the acceleration needed to stop sliding within the fixed time step.
             float desiredAccelration = desiredVelChange / Time.fixedDeltaTime;
@@ -99,25 +108,58 @@ public class WheelSuspensionScript : MonoBehaviour
 
             #endregion
 
-            #region Acceleration System
+            #region Acceleration and Brake System
 
             Vector3 accelDirection = transform.forward;
             float input = Input.GetAxis("Vertical");
-            if(input > 0.0f)
-            {
-                float cartSpeed = Vector3.Dot(cartBody.gameObject.transform.forward, cartBody.linearVelocity);
-                // TODO: implement a lookup graph to dynamically change the torque based on cart's current velocity
+            float thresholdSpeed = 0.1f;  // Small threshold to treat near-zero speeds as zero
 
-                cartBody.AddForceAtPosition(accelDirection * torque, transform.position);
+            if (input > 0.0f)
+            {
+                // Forward Acceleration Logic
+                float cartSpeed = Vector3.Dot(cartBody.gameObject.transform.forward, cartBody.linearVelocity);
+                float normalizedCartSpeed = Mathf.Clamp01(Mathf.Abs(cartSpeed) / maxSpeed);
+                float availableTorque = engineTorqueCurve.Evaluate(normalizedCartSpeed) * input;
+
+                // Only apply force if current speed is below maxSpeed
+                if (Mathf.Abs(cartSpeed) < maxSpeed)
+                {
+                    cartBody.AddForceAtPosition(accelDirection * availableTorque * maxEngineTorque, transform.position);
+                }
             }
             else
             {
-                float accelVel = Vector3.Dot(accelDirection, wheelVelocity);
-                float desiredBreakVelChange = -1 * accelVel * breakFactor;
-                float desiredBreakAccelration = desiredBreakVelChange / Time.fixedDeltaTime;
+                // Braking or Reverse Logic
+                float cartSpeed = Vector3.Dot(cartBody.gameObject.transform.forward, cartBody.linearVelocity);
 
-                finalBreakingForce = accelDirection * wheelMass * desiredBreakAccelration;
-                cartBody.AddForceAtPosition(finalBreakingForce, transform.position);
+                // Apply threshold to treat near-zero speeds as zero
+                if (Mathf.Abs(cartSpeed) < thresholdSpeed)
+                {
+                    cartSpeed = 0f;
+                }
+
+                if (cartSpeed > 0)
+                {
+                    // Apply braking force if moving forward
+                    float desiredBrakeVelChange = -cartSpeed * brakeFactor;
+                    float desiredBrakeAcceleration = desiredBrakeVelChange / Time.fixedDeltaTime;
+                    float brakeForceMagnitude = Mathf.Min(Mathf.Abs(desiredBrakeAcceleration * wheelMass), maxBrakeForce);
+
+                    finalBrakeForce = -accelDirection * brakeForceMagnitude;
+                    cartBody.AddForceAtPosition(finalBrakeForce, transform.position);
+                }
+                else if (input < 0.0f && cartSpeed <= 0)
+                {
+                    // Apply reverse force if S is pressed and within reverse speed cap
+                    float reverseForce = maxEngineTorque * 0.25f;  // Adjusted for smoother reversing
+                    float reverseSpeedCap = 5f;
+
+                    // Ensure we cap reverse speed
+                    if (Mathf.Abs(cartSpeed) < reverseSpeedCap)
+                    {
+                        cartBody.AddForceAtPosition(-accelDirection * reverseForce, transform.position);
+                    }
+                }
             }
 
             #endregion
@@ -148,7 +190,7 @@ public class WheelSuspensionScript : MonoBehaviour
             Gizmos.color = Color.yellow;
             Gizmos.DrawRay(transform.position, finalSteeringForce);
             Gizmos.color = Color.black;
-            Gizmos.DrawRay(transform.position, finalBreakingForce);
+            Gizmos.DrawRay(transform.position, finalBrakeForce);
         }
     }
 }
