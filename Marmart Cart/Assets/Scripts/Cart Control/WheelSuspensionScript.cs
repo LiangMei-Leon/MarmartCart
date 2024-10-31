@@ -24,11 +24,12 @@ public class WheelSuspensionScript : MonoBehaviour
 
     [SerializeField] AnimationCurve engineTorqueCurve;
     [SerializeField] float maxEngineTorque = 100f;
-    [SerializeField] float maxSpeed = 10f; // cart's maximum speed measured by units per second
+    public float maxSpeed = 10f; // cart's maximum speed measured by units per second
     private float torque;
     [SerializeField] float brakeFactor = 1f;
     [SerializeField] float maxBrakeForce = 1f;
     [SerializeField] float reverseSpeedCap = 5f;
+    [SerializeField] float rollingFrictionFactor = 0.1f;
     private Vector3 finalSuspensionForce;
     private Vector3 finalSteeringForce;
     private Vector3 finalBrakeForce;
@@ -127,7 +128,7 @@ public class WheelSuspensionScript : MonoBehaviour
                     cartBody.AddForceAtPosition(accelDirection * availableTorque * maxEngineTorque, transform.position);
                 }
             }
-            else
+            else if (input <= 0.0f)
             {
                 // Braking or Reverse Logic
                 float cartSpeed = Vector3.Dot(cartBody.gameObject.transform.forward, cartBody.linearVelocity);
@@ -137,28 +138,39 @@ public class WheelSuspensionScript : MonoBehaviour
                 {
                     cartSpeed = 0f;
                 }
-
-                if (cartSpeed > 0)
+                if(input < 0.0f)
                 {
-                    // Apply braking force if moving forward
-                    float desiredBrakeVelChange = -cartSpeed * brakeFactor;
-                    float desiredBrakeAcceleration = desiredBrakeVelChange / Time.fixedDeltaTime;
-                    float brakeForceMagnitude = Mathf.Min(Mathf.Abs(desiredBrakeAcceleration * wheelMass), maxBrakeForce);
-
-                    finalBrakeForce = -accelDirection * brakeForceMagnitude;
-                    cartBody.AddForceAtPosition(finalBrakeForce, transform.position);
-                }
-                else if (input < 0.0f && cartSpeed <= 0)
-                {
-                    // Apply reverse force if S is pressed and within reverse speed cap
-                    float reverseForce = maxEngineTorque * 0.25f;  // Adjusted for smoother reversing
-                    float reverseSpeedCap = 5f;
-
-                    // Ensure we cap reverse speed
-                    if (Mathf.Abs(cartSpeed) < reverseSpeedCap)
+                    if (cartSpeed > 0)
                     {
-                        cartBody.AddForceAtPosition(-accelDirection * reverseForce, transform.position);
+                        // Apply braking force if moving forward
+                        float desiredBrakeVelChange = -cartSpeed * brakeFactor;
+                        float desiredBrakeAcceleration = desiredBrakeVelChange / Time.fixedDeltaTime;
+                        float brakeForceMagnitude = Mathf.Min(Mathf.Abs(desiredBrakeAcceleration * wheelMass), maxBrakeForce);
+
+                        finalBrakeForce = -accelDirection * brakeForceMagnitude;
+                        cartBody.AddForceAtPosition(finalBrakeForce, transform.position);
                     }
+                    else
+                    {
+                        // Apply reverse force if S is pressed and within reverse speed cap
+                        float reverseForce = maxEngineTorque * 0.25f;  // Adjusted for smoother reversing
+                        float reverseSpeedCap = 5f;
+
+                        // Ensure we cap reverse speed
+                        if (Mathf.Abs(cartSpeed) < reverseSpeedCap)
+                        {
+                            cartBody.AddForceAtPosition(-accelDirection * reverseForce, transform.position);
+                        }
+                    }
+                }
+                if(input == 0.0f && cartSpeed > 0)
+                {
+                    // Apply rolling friction to the cart 
+                    float desiredFrictionVelChange = cartSpeed * rollingFrictionFactor;
+                    float desiredFrictionAcceleration = desiredFrictionVelChange / Time.fixedDeltaTime;
+
+                    Vector3 rollingFrictionForce = -accelDirection * desiredFrictionAcceleration;
+                    cartBody.AddForceAtPosition(rollingFrictionForce, transform.position);
                 }
             }
 
