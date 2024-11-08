@@ -30,7 +30,6 @@ public class LeadingCartBehaviour : MonoBehaviour
     private float torque;
     [SerializeField] float brakeFactor = 1f;
     [SerializeField] float maxBrakeForce = 1f;
-    [SerializeField] float reverseSpeedCap = 5f;
     private Vector3 finalSuspensionForce;
     private Vector3 finalSteeringForce;
     private Vector3 finalBrakeForce;
@@ -113,10 +112,9 @@ public class LeadingCartBehaviour : MonoBehaviour
             #region Acceleration and Brake System
 
             Vector3 accelDirection = transform.forward;
-            float input = Input.GetAxis("Vertical");
             // Ensure cart always has base speed
             float cartSpeed = Vector3.Dot(cartBody.gameObject.transform.forward, cartBody.linearVelocity);
-            if (cartSpeed < baseSpeed && input == 0.0f)
+            if (cartSpeed < baseSpeed)
             {
                 float normalizedCartSpeed = Mathf.Clamp01(Mathf.Abs(cartSpeed) / baseSpeed);
                 float availableTorque = engineTorqueCurve.Evaluate(normalizedCartSpeed);
@@ -124,10 +122,10 @@ public class LeadingCartBehaviour : MonoBehaviour
             }
 
             // Acceleration Logic: pressing W to go faster
-            if (input > 0.0f)
+            if (Input.GetKeyDown(KeyCode.P))
             {
                 float normalizedCartSpeed = Mathf.Clamp01(Mathf.Abs(cartSpeed) / maxSpeed);
-                float availableTorque = engineTorqueCurve.Evaluate(normalizedCartSpeed) * input;
+                float availableTorque = engineTorqueCurve.Evaluate(normalizedCartSpeed);
 
                 // Only apply force if current speed is below maxSpeed
                 if (Mathf.Abs(cartSpeed) < maxSpeed)
@@ -136,7 +134,7 @@ public class LeadingCartBehaviour : MonoBehaviour
                 }
             }
             // Deceleration Logic: pressing S to slow down but not below base speed
-            else if (input < 0.0f && cartSpeed > minSpeed)
+            else if ((Input.GetKeyDown(KeyCode.O) && cartSpeed > minSpeed))
             {
                 float desiredBrakeVelChange = -cartSpeed * brakeFactor;
                 float desiredBrakeAcceleration = desiredBrakeVelChange / Time.fixedDeltaTime;
