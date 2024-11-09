@@ -1,3 +1,4 @@
+using System.Collections;
 using System.ComponentModel.Design.Serialization;
 using System.Runtime.InteropServices;
 using TMPro;
@@ -6,8 +7,15 @@ using UnityEngine;
 
 public class LeadingCartBehaviour : MonoBehaviour
 {
-    [SerializeField] private LayerMask layerMask;
+    [Tooltip("Refer to the script that read/gather the new input system")]
+    [SerializeField] CartControlScript cartControlInput;
     [SerializeField] private Rigidbody cartBody;
+
+    [Header("Raycast Settings")]
+    [SerializeField] private LayerMask layerMask;
+    private bool isGrounded = false;
+
+    [Header("Suspension Settings")]
     private Vector3 rayStartPosition;
     [SerializeField] float springRestLength = 1f;
     [SerializeField] float springRaycastExtraLength = 0.1f;
@@ -15,24 +23,31 @@ public class LeadingCartBehaviour : MonoBehaviour
     [SerializeField] float springDamping = 10f;
     private Vector3 springDirection;
 
+    [Header("Steering Settings")]
     private Vector3 steeringDirection;
     private Vector3 wheelVelocity;
     [SerializeField] AnimationCurve wheelGripCurve;
     [SerializeField] float maxLateralVelocity = 6f;
     [SerializeField] float wheelMass = 1.5f;
 
+    [Header("Acceleration and Brake Settings")]
     [SerializeField] AnimationCurve engineTorqueCurve;
     [SerializeField] float maxEngineTorque = 100f;
     [SerializeField] float thresholdSpeed = 0.1f;  // Small threshold to treat near-zero speeds as zero
-    [SerializeField] float baseSpeed = 10f;         // Minimum forward speed when no input is applied
-    [SerializeField] float maxSpeed = 20f;         // Maximum speed cap
-    [SerializeField] float minSpeed = 5f;         // minimum speed cap
-    private float torque;
+    [SerializeField] float regularMaxSpeed = 10f;        // Regular forward speed
+    [SerializeField] float minSpeed = 5f;          // minimum speed cap
     [SerializeField] float brakeFactor = 1f;
     [SerializeField] float maxBrakeForce = 1f;
+
     private Vector3 finalSuspensionForce;
     private Vector3 finalSteeringForce;
     private Vector3 finalBrakeForce;
+
+    [Header("Boost Settings")]
+    [SerializeField] private float boostSpeed = 30f;       // Target speed during boost
+    [SerializeField] private float boostDuration = 2f;     // Duration to hold the boosted speed
+    [SerializeField] private float decelerationRate = 10f; // Rate at which the cart returns to normal speed
+    private bool isBoosting = false;                       // Flag to track if boost is active
     void Awake()
     {
         // Warn the user if the Rigidbody is not assigned
@@ -57,6 +72,7 @@ public class LeadingCartBehaviour : MonoBehaviour
         {
             // Initial Debug on if the raycast is correctly hitting something
             // Debug.Log(gameObject.name + "hit" + hit.collider.gameObject.name);
+            isGrounded = true;
 
             #region Suspension System Code
 
@@ -112,45 +128,95 @@ public class LeadingCartBehaviour : MonoBehaviour
             #region Acceleration and Brake System
 
             Vector3 accelDirection = transform.forward;
-            // Ensure cart always has base speed
             float cartSpeed = Vector3.Dot(cartBody.gameObject.transform.forward, cartBody.linearVelocity);
-            if (cartSpeed < baseSpeed)
+            Vector3 desiredDirection = cartControlInput.desiredDirection;
+            if (desiredDirection.sqrMagnitude > 0.001f)
             {
-                float normalizedCartSpeed = Mathf.Clamp01(Mathf.Abs(cartSpeed) / baseSpeed);
-                float availableTorque = engineTorqueCurve.Evaluate(normalizedCartSpeed);
-                cartBody.AddForceAtPosition(accelDirection * availableTorque * maxEngineTorque, transform.position);
-            }
-
-            // Acceleration Logic: pressing W to go faster
-            if (Input.GetKeyDown(KeyCode.P))
-            {
-                float normalizedCartSpeed = Mathf.Clamp01(Mathf.Abs(cartSpeed) / maxSpeed);
-                float availableTorque = engineTorqueCurve.Evaluate(normalizedCartSpeed);
-
-                // Only apply force if current speed is below maxSpeed
-                if (Mathf.Abs(cartSpeed) < maxSpeed)
+                if (cartSpeed < regularMaxSpeed)
                 {
+                    float normalizedCartSpeed = Mathf.Clamp01(Mathf.Abs(cartSpeed) / regularMaxSpeed);
+                    float availableTorque = engineTorqueCurve.Evaluate(normalizedCartSpeed);
                     cartBody.AddForceAtPosition(accelDirection * availableTorque * maxEngineTorque, transform.position);
                 }
             }
-            // Deceleration Logic: pressing S to slow down but not below base speed
-            else if ((Input.GetKeyDown(KeyCode.O) && cartSpeed > minSpeed))
+            else
             {
-                float desiredBrakeVelChange = -cartSpeed * brakeFactor;
-                float desiredBrakeAcceleration = desiredBrakeVelChange / Time.fixedDeltaTime;
-                float brakeForceMagnitude = Mathf.Min(Mathf.Abs(desiredBrakeAcceleration * wheelMass), maxBrakeForce);
-
-                Vector3 finalBrakeForce = -accelDirection * brakeForceMagnitude;
-                cartBody.AddForceAtPosition(finalBrakeForce, transform.position);
+                Brake();
             }
 
             #endregion
         }
+        else
+        {
+            isGrounded = false;
+        }
     }
+    public void StartBoost()
+    {
+        // Ensure that the boost is only triggered if not already active
+        if (!isBoosting)
+        {
+            StartCoroutine(BoostCoroutine());
+        }
+    }
+
+    private IEnumerator BoostCoroutine()
+    {
+        isBoosting = true;
+
+        // Initial acceleration to reach boost speed
+        Vector3 accelDirection = transform.forward;
+        float initialSpeed = Vector3.Dot(cartBody.gameObject.transform.forward, cartBody.linearVelocity);
+        float targetSpeed = boostSpeed;
+
+        // Step 1: Accelerate to boost speed
+        while (initialSpeed < targetSpeed)
+        {
+            float normalizedSpeed = Mathf.Clamp01(Mathf.Abs(initialSpeed) / targetSpeed);
+            float availableTorque = engineTorqueCurve.Evaluate(normalizedSpeed);
+            cartBody.AddForceAtPosition(accelDirection * availableTorque * maxEngineTorque, transform.position);
+
+            initialSpeed = Vector3.Dot(cartBody.gameObject.transform.forward, cartBody.linearVelocity);
+            yield return null;
+        }
+
+        // Step 2: Hold boost speed for the duration
+        yield return new WaitForSeconds(boostDuration);
+
+        // Step 3: Decelerate gradually back to normal
+        while (initialSpeed > regularMaxSpeed)
+        {
+            Vector3 decelerationForce = -cartBody.linearVelocity.normalized * decelerationRate * Time.deltaTime * cartBody.mass;
+            cartBody.AddForce(decelerationForce, ForceMode.Acceleration);
+
+            initialSpeed = Vector3.Dot(cartBody.gameObject.transform.forward, cartBody.linearVelocity);
+            yield return null;
+        }
+
+        isBoosting = false; // Reset the boosting flag
+    }
+
+    public void Brake()
+    {
+        if (isGrounded)
+        {
+            Vector3 accelDirection = transform.forward;
+            float cartSpeed = Vector3.Dot(cartBody.gameObject.transform.forward, cartBody.linearVelocity);
+
+            if (cartSpeed > minSpeed)
+            {
+                float desiredBrakeVelChange = -cartSpeed * brakeFactor;
+                float desiredBrakeAcceleration = desiredBrakeVelChange / Time.fixedDeltaTime;
+                float brakeForceMagnitude = Mathf.Min(Mathf.Abs(desiredBrakeAcceleration * cartBody.mass), maxBrakeForce);
+
+                Vector3 finalBrakeForce = -accelDirection * brakeForceMagnitude;
+                cartBody.AddForceAtPosition(finalBrakeForce, transform.position);
+            }
+        }
+    }
+
     void OnDrawGizmos()
     {
-
-
         // Calculate the RayStartPosition in OnDrawGizmos so it updates in the editor
         // rayStartPosition = transform.TransformPoint(new Vector3(xAxisOffset, yAxisOffset, zAxisOffset));
 
