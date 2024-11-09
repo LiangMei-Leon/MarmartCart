@@ -23,7 +23,7 @@ public class CartSteering : MonoBehaviour
     {
         Vector3 desiredDirection = cartControlInput.desiredDirection;
 
-        if (desiredDirection.sqrMagnitude > 0.01f)
+        if (desiredDirection.sqrMagnitude > 0.001f)
         {
             // Calculate the angle difference between current forward and desired direction
             float angleDifference = Vector3.SignedAngle(transform.forward, desiredDirection, Vector3.up);

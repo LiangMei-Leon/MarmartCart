@@ -21,7 +21,6 @@ public class WheelSuspensionScript : MonoBehaviour
     [SerializeField] float maxLateralVelocity = 6f;
     [SerializeField] float wheelMass = 1.5f;
 
-
     [SerializeField] AnimationCurve engineTorqueCurve;
     [SerializeField] float maxEngineTorque = 100f;
     public float maxSpeed = 10f; // cart's maximum speed measured by units per second
