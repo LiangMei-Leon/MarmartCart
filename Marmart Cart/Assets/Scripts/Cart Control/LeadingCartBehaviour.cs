@@ -168,15 +168,18 @@ public class LeadingCartBehaviour : MonoBehaviour
         Vector3 accelDirection = transform.forward;
         float initialSpeed = Vector3.Dot(cartBody.gameObject.transform.forward, cartBody.linearVelocity);
         float targetSpeed = boostSpeed;
-
+        float timeElapsed = 0f;
+        
         // Step 1: Accelerate to boost speed
-        while (initialSpeed < targetSpeed)
+        while (initialSpeed < targetSpeed && timeElapsed < boostDuration)
         {
             float normalizedSpeed = Mathf.Clamp01(Mathf.Abs(initialSpeed) / targetSpeed);
             float availableTorque = engineTorqueCurve.Evaluate(normalizedSpeed);
             cartBody.AddForceAtPosition(accelDirection * availableTorque * maxEngineTorque, transform.position);
 
             initialSpeed = Vector3.Dot(cartBody.gameObject.transform.forward, cartBody.linearVelocity);
+            timeElapsed += Time.deltaTime;
+
             yield return null;
         }
 
@@ -184,7 +187,7 @@ public class LeadingCartBehaviour : MonoBehaviour
         yield return new WaitForSeconds(boostDuration);
 
         // Step 3: Decelerate gradually back to normal
-        while (initialSpeed > regularMaxSpeed)
+        while (cartBody.linearVelocity.magnitude > regularMaxSpeed)
         {
             Vector3 decelerationForce = -cartBody.linearVelocity.normalized * decelerationRate * Time.deltaTime * cartBody.mass;
             cartBody.AddForce(decelerationForce, ForceMode.Acceleration);
