@@ -104,7 +104,7 @@ public class LeadingCartBehaviour : MonoBehaviour
 
             // Calculate the velocity of the wheel along the steering direction (sideways).
             float lateralVel = Vector3.Dot(steeringDirection, wheelVelocity);
-            Debug.Log(lateralVel);
+            // Debug.Log(lateralVel);
             // Normalize lateral velocity by max steering velocity
             float normalizedLateralVelocity = Mathf.Clamp01(Mathf.Abs(lateralVel) / maxLateralVelocity);
 
