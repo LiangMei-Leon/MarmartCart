@@ -9,6 +9,9 @@ public class SnakeCartManager : MonoBehaviour
     [SerializeField] List<GameObject> bodyParts = new List<GameObject>();
     List<GameObject> snakeBody = new List<GameObject>();
 
+    [Header("Related Events")]
+    [SerializeField] GameEvent setupCamera;
+
     float countUp = 0;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -51,6 +54,7 @@ public class SnakeCartManager : MonoBehaviour
                 temp1.AddComponent<MarkerManager>();
             }
             snakeBody.Add(temp1);
+            setupCamera.Raise();
             bodyParts.RemoveAt(0);
         }
         MarkerManager markM = snakeBody[snakeBody.Count - 1].GetComponent<MarkerManager>();
