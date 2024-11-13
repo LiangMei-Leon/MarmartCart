@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class SnakeCartManager : MonoBehaviour
 {
-    [SerializeField] float distanceBetween = 0.2f;
+    [SerializeField] float distanceBetween = 0.2f; // The spawn rate time difference that creates an illusion of distance in between snake bodies
     [SerializeField] List<GameObject> bodyParts = new List<GameObject>();
     List<GameObject> snakeBody = new List<GameObject>();
 

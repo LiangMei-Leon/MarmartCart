@@ -18,17 +18,26 @@ public class MarkerManager : MonoBehaviour
     }
 
     public List<Marker> markerList = new List<Marker>();
-    private float offsetValue = 0.3f;
+    [SerializeField] AnimationCurveVariable offsetValueCurve;
+    [SerializeField] float cartMaxSpeed = 30f;
+    [SerializeField] float offsetValue = 0.0f;
+
+    private Rigidbody cartRigidbody;
 
     void Start()
     {
-        
+        cartRigidbody = this.gameObject.transform.parent.GetChild(0).GetComponent<Rigidbody>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if(cartRigidbody != null)
+        {
+            //float cartSpeed = Vector3.Dot(cartRigidbody.gameObject.transform.forward, cartRigidbody.linearVelocity);
+            //offsetValue = offsetValueCurve.curve.Evaluate(Mathf.Abs(cartSpeed) / cartMaxSpeed);
+            offsetValue = 0.5f;
+        }
     }
 
     void FixedUpdate()
