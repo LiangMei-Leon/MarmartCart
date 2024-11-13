@@ -26,6 +26,7 @@ public class MarkerManager : MonoBehaviour
 
     void Start()
     {
+        offsetValueCurve = Resources.Load<AnimationCurveVariable>("SO_Variables/Offset Value Curve");
         cartRigidbody = this.gameObject.transform.parent.GetChild(0).GetComponent<Rigidbody>();
     }
 
@@ -34,9 +35,9 @@ public class MarkerManager : MonoBehaviour
     {
         if(cartRigidbody != null)
         {
-            //float cartSpeed = Vector3.Dot(cartRigidbody.gameObject.transform.forward, cartRigidbody.linearVelocity);
-            //offsetValue = offsetValueCurve.curve.Evaluate(Mathf.Abs(cartSpeed) / cartMaxSpeed);
-            offsetValue = 0.5f;
+            float cartSpeed = Vector3.Dot(cartRigidbody.gameObject.transform.forward, cartRigidbody.linearVelocity);
+            offsetValue = offsetValueCurve.curve.Evaluate(Mathf.Abs(cartSpeed) / cartMaxSpeed);
+            // offsetValue = 0.5f;
         }
     }
 

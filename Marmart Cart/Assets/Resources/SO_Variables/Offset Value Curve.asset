@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d28b9fdf7822eb14e939605d8b6bb8c6, type: 3}
   m_Name: Offset Value Curve
   m_EditorClassIdentifier: 
-  DeveloperDescription: 
+  DeveloperDescription: Curve for the offset
   curve:
     serializedVersion: 2
     m_Curve:
