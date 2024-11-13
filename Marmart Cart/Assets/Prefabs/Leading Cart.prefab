@@ -493,11 +493,11 @@ MonoBehaviour:
     m_RotationOrder: 4
   maxEngineTorque: 100
   thresholdSpeed: 0.1
-  regularMaxSpeed: 15
+  regularMaxSpeed: 25
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  boostSpeed: 30
+  boostSpeed: 50
   boostDuration: 2
   decelerationRate: 10
 --- !u!1 &4656564825517800351
@@ -614,11 +614,11 @@ MonoBehaviour:
     m_RotationOrder: 4
   maxEngineTorque: 100
   thresholdSpeed: 0.1
-  regularMaxSpeed: 15
+  regularMaxSpeed: 25
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  boostSpeed: 30
+  boostSpeed: 50
   boostDuration: 2
   decelerationRate: 10
 --- !u!1 &6061795394319341633
@@ -1150,6 +1150,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eeecd1f966599954fb81aa99cae17cb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  offsetValueCurve: {fileID: 0}
+  cartMaxSpeed: 30
+  offsetValue: 0
 --- !u!1 &6739513257674474393
 GameObject:
   m_ObjectHideFlags: 0
@@ -1264,11 +1267,11 @@ MonoBehaviour:
     m_RotationOrder: 4
   maxEngineTorque: 100
   thresholdSpeed: 0.1
-  regularMaxSpeed: 15
+  regularMaxSpeed: 25
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  boostSpeed: 30
+  boostSpeed: 50
   boostDuration: 2
   decelerationRate: 10
 --- !u!1 &7077051624068430394
@@ -1385,11 +1388,11 @@ MonoBehaviour:
     m_RotationOrder: 4
   maxEngineTorque: 100
   thresholdSpeed: 0.1
-  regularMaxSpeed: 15
+  regularMaxSpeed: 25
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  boostSpeed: 30
+  boostSpeed: 50
   boostDuration: 2
   decelerationRate: 10
 --- !u!1 &7898887286195177743

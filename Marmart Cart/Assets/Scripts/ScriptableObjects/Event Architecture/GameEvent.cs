@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "GameEvent", menuName = "ScriptableObjects/GameEvent", order = 0)]
+[CreateAssetMenu(fileName = "GameEvent", menuName = "Scriptable Objects/GameEvent", order = 0)]
 public class GameEvent : ScriptableObject
 {
 #if UNITY_EDITOR
