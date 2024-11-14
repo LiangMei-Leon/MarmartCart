@@ -12,9 +12,12 @@ public class PTItems : MonoBehaviour
 
     private float elapsedTime;
     private TextMeshPro timerText;
+
+    [SerializeField] PTTimer scoresystem;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        scoresystem = GameObject.FindGameObjectWithTag("PTscore").GetComponent<PTTimer>();
         timerText = this.transform.GetChild(0).gameObject.GetComponent<TextMeshPro>();
     }
 
@@ -48,13 +51,14 @@ public class PTItems : MonoBehaviour
         {
             if(isRareItem)
             {
-
-                Debug.Log("collect" + rareScore);
+                scoresystem.AddScore(rareScore);
+                // Debug.Log("collect" + rareScore);
                 Destroy(gameObject);
             }
             else
             {
-                Debug.Log("collect" + normalScore);
+                scoresystem.AddScore(normalScore);
+                // Debug.Log("collect" + normalScore);
                 Destroy(gameObject);
             }
         }

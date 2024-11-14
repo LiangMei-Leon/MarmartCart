@@ -633,6 +633,7 @@ GameObject:
   - component: {fileID: 8217884270544574180}
   - component: {fileID: 3901328475939746546}
   - component: {fileID: 357763201747243696}
+  - component: {fileID: 5373437564598737662}
   m_Layer: 7
   m_Name: Cart Control Script
   m_TagString: Untagged
@@ -668,7 +669,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   controllable: 1
-  accelerationEvent: {fileID: 11400000, guid: 3aeaccc6664a25346b77bae38223b5d0, type: 2}
+  boostEvent: {fileID: 11400000, guid: 3aeaccc6664a25346b77bae38223b5d0, type: 2}
+  resetCartEvent: {fileID: 11400000, guid: ec6acc4ad101416458a8963117372088, type: 2}
 --- !u!114 &3901328475939746546
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -688,8 +690,8 @@ MonoBehaviour:
   - {fileID: 6739513257674474393}
   - {fileID: 56782952564412908}
   - {fileID: 2937625834076403769}
-  maxRotationAngle: 30
-  rotationSpeed: 80
+  maxRotationAngle: 90
+  rotationSpeed: 120
 --- !u!114 &357763201747243696
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -754,6 +756,34 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &5373437564598737662
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6061795394319341633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: {fileID: 11400000, guid: ec6acc4ad101416458a8963117372088, type: 2}
+  Response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 5138140821979185519}
+        m_TargetAssemblyTypeName: LeadingCartBehaviour, Assembly-CSharp
+        m_MethodName: Reset
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &6597024514049572970
 GameObject:
   m_ObjectHideFlags: 0
@@ -786,7 +816,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6597024514049572970}
   serializedVersion: 2
-  m_LocalRotation: {x: 1.1102231e-17, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -38.4, y: 2.65, z: -487.1}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 1
@@ -1041,7 +1071,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 3704
+  m_VersionIndex: 3794
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []

@@ -24,7 +24,7 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Accelerate",
+                    "name": "Boost",
                     "type": "Button",
                     "id": "1f4c30ff-9322-43de-9332-12b45131fcee",
                     "expectedControlType": "",
@@ -33,7 +33,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Brake",
+                    "name": "Reset",
                     "type": "Button",
                     "id": "7bf6def0-a510-48b2-8dec-9d8b3702f042",
                     "expectedControlType": "",
@@ -215,7 +215,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Accelerate",
+                    "action": "Boost",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -226,7 +226,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Brake",
+                    "action": "Reset",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
