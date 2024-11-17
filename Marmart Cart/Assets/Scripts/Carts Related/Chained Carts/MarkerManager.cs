@@ -27,7 +27,7 @@ public class MarkerManager : MonoBehaviour
     void Start()
     {
         offsetValueCurve = Resources.Load<AnimationCurveVariable>("SO_Variables/Offset Value Curve");
-        cartRigidbody = this.gameObject.transform.parent.GetChild(0).GetComponent<Rigidbody>();
+        cartRigidbody = this.gameObject.transform.parent.GetChild(0).GetComponent<Rigidbody>(); //refer to the leading cart's rigidbody
     }
 
     // Update is called once per frame

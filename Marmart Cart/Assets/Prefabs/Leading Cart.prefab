@@ -456,22 +456,22 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  maxLateralVelocity: 16
-  wheelMass: 1.5
+  maxLateralVelocity: 20
+  wheelMass: 1
   engineTorqueCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: -0.00021485984
       value: 0.80191845
-      inSlope: 0.011647012
-      outSlope: 0.011647012
+      inSlope: 0.14535676
+      outSlope: 0.14535676
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.16214861
+      outWeight: 0.117277294
     - serializedVersion: 3
-      time: 0.7013571
+      time: 0.49744955
       value: 1
       inSlope: 0.084307455
       outSlope: 0
@@ -577,22 +577,22 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  maxLateralVelocity: 16
-  wheelMass: 1.5
+  maxLateralVelocity: 20
+  wheelMass: 1
   engineTorqueCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: -0.00021485984
       value: 0.80191845
-      inSlope: 0.011647012
-      outSlope: 0.011647012
+      inSlope: 0.14535676
+      outSlope: 0.14535676
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.16214861
+      outWeight: 0.117277294
     - serializedVersion: 3
-      time: 0.7013571
+      time: 0.49744955
       value: 1
       inSlope: 0.084307455
       outSlope: 0
@@ -801,6 +801,7 @@ GameObject:
   - component: {fileID: 5660527806307602487}
   - component: {fileID: 8281348779868106150}
   - component: {fileID: -8261418375152386010}
+  - component: {fileID: 8990966824022932014}
   m_Layer: 7
   m_Name: Leading Cart
   m_TagString: Player
@@ -1202,6 +1203,22 @@ MonoBehaviour:
   itemPrefab1: {fileID: 3552621251301266115, guid: 5ee80b203a7d7d644beb7b6c41d1d854, type: 3}
   itemPrefab2: {fileID: 1092306272857205635, guid: 62b968b59fb2e604fa86b75357a69bef, type: 3}
   item1Probability: 84
+--- !u!114 &8990966824022932014
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6597024514049572970}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdd59d196d2365e4d9d5d0702702f713, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  distance: 2
 --- !u!1 &6739513257674474393
 GameObject:
   m_ObjectHideFlags: 0
@@ -1279,22 +1296,22 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  maxLateralVelocity: 16
-  wheelMass: 1.5
+  maxLateralVelocity: 20
+  wheelMass: 1
   engineTorqueCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: -0.00021485984
       value: 0.80191845
-      inSlope: 0.011647012
-      outSlope: 0.011647012
+      inSlope: 0.14535676
+      outSlope: 0.14535676
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.16214861
+      outWeight: 0.117277294
     - serializedVersion: 3
-      time: 0.7013571
+      time: 0.49744955
       value: 1
       inSlope: 0.084307455
       outSlope: 0
@@ -1400,22 +1417,22 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  maxLateralVelocity: 16
-  wheelMass: 1.5
+  maxLateralVelocity: 20
+  wheelMass: 1
   engineTorqueCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: -0.00021485984
       value: 0.80191845
-      inSlope: 0.011647012
-      outSlope: 0.011647012
+      inSlope: 0.14535676
+      outSlope: 0.14535676
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.16214861
+      outWeight: 0.117277294
     - serializedVersion: 3
-      time: 0.7013571
+      time: 0.49744955
       value: 1
       inSlope: 0.084307455
       outSlope: 0
