@@ -27,7 +27,7 @@ public class Debuggers : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F2))
         {
             testingCart = snakeCartManager.gameObject.transform.GetChild(1).gameObject;
-            testingCart.GetComponent<ChainedCartManager>().OnDetach();
+            //testingCart.GetComponent<ChainedCartManager>().OnDetach();
         }
             
 

@@ -9,6 +9,8 @@ public class SnakeCartManager : MonoBehaviour
     [SerializeField] List<GameObject> bodyParts = new List<GameObject>();
     [SerializeField] List<GameObject> snakeBody = new List<GameObject>();
 
+    LeadingCartRaycaster LeadingCartRaycaster;
+
     [Header("Related Events")]
     [SerializeField] GameEvent setupCamera;
 
@@ -51,6 +53,7 @@ public class SnakeCartManager : MonoBehaviour
                 temp1.AddComponent<MarkerManager>();
             }
             snakeBody.Add(temp1);
+            LeadingCartRaycaster = temp1.GetComponent<LeadingCartRaycaster>();
             setupCamera.Raise();
             bodyParts.RemoveAt(0);
         }
@@ -117,5 +120,10 @@ public class SnakeCartManager : MonoBehaviour
     public void AddBodyParts(GameObject addedObj)
     {
         bodyParts.Add(addedObj);
+    }
+
+    public void TemporarilyDisableDetaching()
+    {
+        LeadingCartRaycaster.TemporarilyDisableDetaching();
     }
 }

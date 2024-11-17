@@ -2,6 +2,7 @@ using System.Collections;
 using System.ComponentModel.Design.Serialization;
 using System.Runtime.InteropServices;
 using TMPro;
+using UnityEditor.Rendering;
 using UnityEditor.Timeline.Actions;
 using UnityEngine;
 
@@ -44,10 +45,13 @@ public class LeadingCartBehaviour : MonoBehaviour
     private Vector3 finalBrakeForce;
 
     [Header("Boost Settings")]
-    [SerializeField] private float boostSpeed = 30f;       // Target speed during boost
-    [SerializeField] private float boostDuration = 2f;     // Duration to hold the boosted speed
+    [SerializeField] private float boostForce = 80f;       // Force applied to the cart to boost
+    [SerializeField] private float boostTime = 1f;     // Duration to hold the boosted speed
     [SerializeField] private float decelerationRate = 10f; // Rate at which the cart returns to normal speed
     private bool isBoosting = false;                       // Flag to track if boost is active
+
+    [Header("Events")]
+    [SerializeField] GameEvent disableDetachEvent;
     void Awake()
     {
         // Warn the user if the Rigidbody is not assigned
@@ -59,7 +63,6 @@ public class LeadingCartBehaviour : MonoBehaviour
 
     void Start()
     {
-
     }
     void Update()
     {
@@ -165,9 +168,7 @@ public class LeadingCartBehaviour : MonoBehaviour
 
         // Initial setup for boost direction and force
         Vector3 accelDirection = transform.forward;
-        float boostForce = maxEngineTorque; // Set this to a fixed value to provide a constant acceleration
-        float boostTime = 0.5f;               // Duration to apply the boost force
-        float holdTime = boostDuration;     // Duration to maintain the boosted speed
+        float holdTime = boostTime;     // Duration to maintain the boosted speed
 
         // Step 1: Apply consistent boost force for boostTime duration
         float timeElapsed = 0f;
@@ -217,6 +218,7 @@ public class LeadingCartBehaviour : MonoBehaviour
     public void Reset()
     {
         // Debug.Log("attempt to flip the cart");
+        disableDetachEvent.Raise();
         Vector3 desiredFacingDirection = -1 * cartBody.gameObject.transform.forward;
         cartBody.gameObject.transform.rotation = Quaternion.LookRotation(desiredFacingDirection);
     }
