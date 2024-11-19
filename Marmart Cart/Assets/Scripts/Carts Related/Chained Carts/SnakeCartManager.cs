@@ -7,7 +7,9 @@ public class SnakeCartManager : MonoBehaviour
 {
     [SerializeField] float distanceBetween = 0.2f; // The spawn rate time difference that creates an illusion of distance in between snake bodies
     [SerializeField] List<GameObject> bodyParts = new List<GameObject>();
-    List<GameObject> snakeBody = new List<GameObject>();
+    [SerializeField] List<GameObject> snakeBody = new List<GameObject>();
+
+    LeadingCartRaycaster LeadingCartRaycaster;
 
     [Header("Related Events")]
     [SerializeField] GameEvent setupCamera;
@@ -22,10 +24,7 @@ public class SnakeCartManager : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        if(bodyParts.Count > 0)
-        {
-            CreateBodyParts();
-        }
+        ManageSnakeBody();
         SnakeMovement();
     }
 
@@ -54,6 +53,7 @@ public class SnakeCartManager : MonoBehaviour
                 temp1.AddComponent<MarkerManager>();
             }
             snakeBody.Add(temp1);
+            LeadingCartRaycaster = temp1.GetComponent<LeadingCartRaycaster>();
             setupCamera.Raise();
             bodyParts.RemoveAt(0);
         }
@@ -75,5 +75,55 @@ public class SnakeCartManager : MonoBehaviour
             temp.GetComponent<MarkerManager>().ClearMarkerList();
             countUp = 0;
         }
+    }
+
+    void ManageSnakeBody()
+    {
+        if (bodyParts.Count > 0)
+        {
+            CreateBodyParts();
+        }
+        for (int i = 1; i < snakeBody.Count; i++)
+        {
+            var cartManager = snakeBody[i].GetComponent<ChainedCartManager>();
+
+            if (cartManager == null)
+            {
+                Debug.LogError("No Chained Cart Manager Component on " + snakeBody[i].name);
+                continue;
+            }
+
+            // If this cart is no longer collected by the player
+            if (!cartManager.isCollectedByPlayer)
+            {
+                // Detach this cart and all subsequent carts
+                for (int j = i; j < snakeBody.Count; j++)
+                {
+                    snakeBody[j].transform.SetParent(null); // Detach from parent
+                    snakeBody[j].GetComponent<ChainedCartManager>().OnDetach();
+                }
+
+                // Remove all subsequent carts from the list
+                snakeBody.RemoveRange(i, snakeBody.Count - i);
+
+                break; // Exit the loop as we've detached all necessary carts
+            }
+        }
+
+        // If no carts are left, destroy this script
+        if (snakeBody.Count == 0)
+        {
+            Destroy(this);
+        }
+    }
+
+    public void AddBodyParts(GameObject addedObj)
+    {
+        bodyParts.Add(addedObj);
+    }
+
+    public void TemporarilyDisableDetaching()
+    {
+        LeadingCartRaycaster.TemporarilyDisableDetaching();
     }
 }

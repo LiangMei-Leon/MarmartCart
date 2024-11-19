@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e01023b4e10a033458893eb9e3d4f8e8, type: 3}
-  m_Name: Player Accelerate
+  m_Name: Player Reset
   m_EditorClassIdentifier: 
-  DeveloperDescription: 'This event happens when the player press
+  DeveloperDescription: 'This event happens when the player is
 
-    the accelerate
-    key to speed up the cart.'
+    stuck and trying
+    to reset its facing direction'

@@ -154,8 +154,9 @@ GameObject:
   - component: {fileID: 6462393588677666236}
   - component: {fileID: 9015741267437931995}
   - component: {fileID: 7313304215288234692}
+  - component: {fileID: 2000287698014995687}
   m_Layer: 7
-  m_Name: Following Cart Prefab
+  m_Name: Following Cart
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -498,7 +499,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 80
   m_CollisionDetection: 0
 --- !u!65 &9015741267437931995
 BoxCollider:
@@ -519,8 +520,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.32, y: 0.038563874, z: 0.44017336}
-  m_Center: {x: 0, y: -0.1169524, z: 0.00017089843}
+  m_Size: {x: 0.32, y: 0.19643794, z: 0.50670165}
+  m_Center: {x: 0, y: -0.038015362, z: 0.033435058}
 --- !u!114 &7313304215288234692
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -533,6 +534,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eeecd1f966599954fb81aa99cae17cb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  offsetValueCurve: {fileID: 0}
+  cartMaxSpeed: 30
+  offsetValue: 0
+--- !u!114 &2000287698014995687
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1910840381751055445}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63c356503b84e9042858f7ab04289a7b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <isCollectedByPlayer>k__BackingField: 1
+  <isCollectedByAI>k__BackingField: 0
 --- !u!1 &2199208156901824423
 GameObject:
   m_ObjectHideFlags: 0

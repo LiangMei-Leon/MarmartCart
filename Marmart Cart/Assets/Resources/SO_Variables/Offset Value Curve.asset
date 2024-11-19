@@ -12,27 +12,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d28b9fdf7822eb14e939605d8b6bb8c6, type: 3}
   m_Name: Offset Value Curve
   m_EditorClassIdentifier: 
-  DeveloperDescription: 
+  DeveloperDescription: Curve for the offset
   curve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.3
-      inSlope: -1.3696779
-      outSlope: -1.3696779
+      value: 0.30000004
+      inSlope: -0.5746139
+      outSlope: -0.5746139
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.06606505
+      outWeight: 0.08149638
     - serializedVersion: 3
       time: 1
-      value: 0.49572742
-      inSlope: 1.7070456
-      outSlope: 1.7070456
+      value: 0.10618439
+      inSlope: -0.024722984
+      outSlope: -0.024722984
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.04857099
+      inWeight: 0.26333147
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2

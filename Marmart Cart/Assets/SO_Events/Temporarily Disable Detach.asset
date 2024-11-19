@@ -10,9 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e01023b4e10a033458893eb9e3d4f8e8, type: 3}
-  m_Name: Player Brake
+  m_Name: Temporarily Disable Detach
   m_EditorClassIdentifier: 
-  DeveloperDescription: 'This event happens when the player press
+  DeveloperDescription: 'Raise this event when it needs to temporarily
 
-    the brake
-    key to slow down the cart.'
+    disable
+    detach to protect the chjain of carts from
+
+    being cut'

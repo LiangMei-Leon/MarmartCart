@@ -2,6 +2,7 @@ using System.Collections;
 using System.ComponentModel.Design.Serialization;
 using System.Runtime.InteropServices;
 using TMPro;
+using UnityEditor.Rendering;
 using UnityEditor.Timeline.Actions;
 using UnityEngine;
 
@@ -44,10 +45,13 @@ public class LeadingCartBehaviour : MonoBehaviour
     private Vector3 finalBrakeForce;
 
     [Header("Boost Settings")]
-    [SerializeField] private float boostSpeed = 30f;       // Target speed during boost
-    [SerializeField] private float boostDuration = 2f;     // Duration to hold the boosted speed
+    [SerializeField] private float boostForce = 80f;       // Force applied to the cart to boost
+    [SerializeField] private float boostTime = 1f;     // Duration to hold the boosted speed
     [SerializeField] private float decelerationRate = 10f; // Rate at which the cart returns to normal speed
     private bool isBoosting = false;                       // Flag to track if boost is active
+
+    [Header("Events")]
+    [SerializeField] GameEvent disableDetachEvent;
     void Awake()
     {
         // Warn the user if the Rigidbody is not assigned
@@ -59,7 +63,6 @@ public class LeadingCartBehaviour : MonoBehaviour
 
     void Start()
     {
-
     }
     void Update()
     {
@@ -143,7 +146,6 @@ public class LeadingCartBehaviour : MonoBehaviour
             {
                 Brake();
             }
-
             #endregion
         }
         else
@@ -164,35 +166,30 @@ public class LeadingCartBehaviour : MonoBehaviour
     {
         isBoosting = true;
 
-        // Initial acceleration to reach boost speed
+        // Initial setup for boost direction and force
         Vector3 accelDirection = transform.forward;
-        float initialSpeed = Vector3.Dot(cartBody.gameObject.transform.forward, cartBody.linearVelocity);
-        float targetSpeed = boostSpeed;
+        float holdTime = boostTime;     // Duration to maintain the boosted speed
+
+        // Step 1: Apply consistent boost force for boostTime duration
         float timeElapsed = 0f;
-        
-        // Step 1: Accelerate to boost speed
-        while (initialSpeed < targetSpeed && timeElapsed < boostDuration)
+        while (timeElapsed < boostTime)
         {
-            float normalizedSpeed = Mathf.Clamp01(Mathf.Abs(initialSpeed) / targetSpeed);
-            float availableTorque = engineTorqueCurve.Evaluate(normalizedSpeed);
-            cartBody.AddForceAtPosition(accelDirection * availableTorque * maxEngineTorque, transform.position);
+            // Apply a constant boost force to achieve a consistent acceleration
+            cartBody.AddForceAtPosition(accelDirection * boostForce, transform.position);
 
-            initialSpeed = Vector3.Dot(cartBody.gameObject.transform.forward, cartBody.linearVelocity);
             timeElapsed += Time.deltaTime;
-
             yield return null;
         }
 
-        // Step 2: Hold boost speed for the duration
-        yield return new WaitForSeconds(boostDuration);
+        // Step 2: Hold the boosted speed for holdTime duration
+        yield return new WaitForSeconds(holdTime);
 
-        // Step 3: Decelerate gradually back to normal
+        // Step 3: Decelerate gradually back to normal speed
         while (cartBody.linearVelocity.magnitude > regularMaxSpeed)
         {
             Vector3 decelerationForce = -cartBody.linearVelocity.normalized * decelerationRate * Time.deltaTime * cartBody.mass;
             cartBody.AddForce(decelerationForce, ForceMode.Acceleration);
 
-            initialSpeed = Vector3.Dot(cartBody.gameObject.transform.forward, cartBody.linearVelocity);
             yield return null;
         }
 
@@ -218,6 +215,13 @@ public class LeadingCartBehaviour : MonoBehaviour
         }
     }
 
+    public void Reset()
+    {
+        // Debug.Log("attempt to flip the cart");
+        disableDetachEvent.Raise();
+        Vector3 desiredFacingDirection = -1 * cartBody.gameObject.transform.forward;
+        cartBody.gameObject.transform.rotation = Quaternion.LookRotation(desiredFacingDirection);
+    }
     void OnDrawGizmos()
     {
         // Calculate the RayStartPosition in OnDrawGizmos so it updates in the editor

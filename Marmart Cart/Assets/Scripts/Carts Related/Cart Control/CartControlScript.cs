@@ -10,7 +10,8 @@ public class CartControlScript : MonoBehaviour
     public Vector3 desiredDirection { get; private set; } // Public property to provide desired direction
 
     [SerializeField] private bool controllable = true; // variable that controls if the system gonna read input
-    [SerializeField] private GameEvent accelerationEvent; // raise this event as the player accelerates
+    [SerializeField] private GameEvent boostEvent; // raise this event when the player accelerates (boost)
+    [SerializeField] private GameEvent resetCartEvent; // raise this event when the player wants to reset the cart (to solve stuck issues)
     void Awake()
     {
         _inputActions = new InputSystem_Actions(); // reference to the new input system class
@@ -19,7 +20,8 @@ public class CartControlScript : MonoBehaviour
         _inputActions.Player.Move.performed += ctx => _inputVector = ctx.ReadValue<Vector2>();
         _inputActions.Player.Move.canceled += ctx => _inputVector = Vector2.zero;
 
-        _inputActions.Player.Accelerate.performed += ctx => accelerationEvent.Raise();
+        _inputActions.Player.Boost.performed += ctx => boostEvent.Raise();
+        _inputActions.Player.Reset.performed += ctx => resetCartEvent.Raise();
     }
     private void OnEnable()
     {
