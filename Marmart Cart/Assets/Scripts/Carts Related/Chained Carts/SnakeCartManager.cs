@@ -56,6 +56,7 @@ public class SnakeCartManager : MonoBehaviour
             LeadingCartRaycaster = temp1.GetComponent<LeadingCartRaycaster>();
             setupCamera.Raise();
             bodyParts.RemoveAt(0);
+            return;
         }
         MarkerManager markM = snakeBody[snakeBody.Count - 1].GetComponent<MarkerManager>();
         if(countUp == 0)
@@ -119,6 +120,7 @@ public class SnakeCartManager : MonoBehaviour
 
     public void AddBodyParts(GameObject addedObj)
     {
+        addedObj.GetComponent<ChainedCartManager>().isCollectedByPlayer = true;
         bodyParts.Add(addedObj);
     }
 

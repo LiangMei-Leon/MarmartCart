@@ -2,14 +2,22 @@ using UnityEngine;
 
 public class ChainedCartManager : MonoBehaviour
 {
-    [field: SerializeField]
-    public bool isCollectedByPlayer { get; private set; }
+    [Header("Cart Info")]
+    [SerializeField] bool isBonusCart = false;
 
-    [field: SerializeField]
-    public bool isCollectedByAI { get; private set; }
+    private ParticleSystem collectVFX;
+    private SnakeCartManager snakeCartManager;
+
+    public bool isCollectedByPlayer = false;
+
+    public bool isCollectedByAI = false;
 
     private Rigidbody rb;
     private LeadingCartRaycaster hitInfo;
+
+    [Header("Related Events")]
+    [SerializeField] GameEvent collectNormalCartEvent;
+    [SerializeField] GameEvent collectBonusCartEvent;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -21,10 +29,12 @@ public class ChainedCartManager : MonoBehaviour
             Debug.LogError("Rigidbody not found on the GameObject. Please attach one.");
         }
 
-        hitInfo = this.transform.parent.GetChild(0).GetComponent<LeadingCartRaycaster>();
-        if (rb == null)
+
+        collectVFX = this.transform.GetChild(0).GetComponent<ParticleSystem>();
+        snakeCartManager = GameObject.FindWithTag("SnakeCartManager").GetComponent<SnakeCartManager>();
+        if(snakeCartManager != null)
         {
-            Debug.LogError("Fail to retrieve the hit info script source");
+            hitInfo = snakeCartManager.gameObject.transform.GetChild(0).GetComponent<LeadingCartRaycaster>();
         }
     }
 
@@ -63,5 +73,31 @@ public class ChainedCartManager : MonoBehaviour
         // Optionally, add some torque for rotational randomness
         Vector3 randomTorque = Random.insideUnitSphere * Random.Range(20f, 30f); // Adjust range as needed
         rb.AddTorque(randomTorque, ForceMode.Impulse);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player") && !isCollectedByPlayer)
+        {
+            isCollectedByPlayer = true;
+            if(isBonusCart)
+            {
+                collectBonusCartEvent.Raise();
+            }
+            else
+            {
+                collectNormalCartEvent.Raise();
+            }
+            // Destroy(this.gameObject);
+        }
+    }
+
+    public void OnCollectedByPlayer()
+    {
+        if(snakeCartManager != null)
+        {
+            snakeCartManager.AddBodyParts(this.gameObject);
+        }
+        collectVFX.Play();
     }
 }

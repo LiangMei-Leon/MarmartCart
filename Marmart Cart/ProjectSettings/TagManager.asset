@@ -6,6 +6,7 @@ TagManager:
   tags:
   - PTscore
   - Obstacles
+  - SnakeCartManager
   layers:
   - Default
   - TransparentFX
