@@ -5,7 +5,7 @@ public class ChainedCartManager : MonoBehaviour
     [Header("Cart Info")]
     [SerializeField] bool isBonusCart = false;
 
-    private ParticleSystem collectVFX;
+    [SerializeField] private ParticleSystem collectVFX;
     private SnakeCartManager snakeCartManager;
 
     public bool isCollectedByPlayer = false;
@@ -19,6 +19,9 @@ public class ChainedCartManager : MonoBehaviour
     [SerializeField] GameEvent collectNormalCartEvent;
     [SerializeField] GameEvent collectBonusCartEvent;
 
+    void Awake()
+    { 
+    }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -30,9 +33,13 @@ public class ChainedCartManager : MonoBehaviour
         }
 
 
-        collectVFX = this.transform.GetChild(0).GetComponent<ParticleSystem>();
+        collectVFX = this.transform.GetChild(0).gameObject.GetComponent<ParticleSystem>();
+        if(collectVFX == null)
+        {
+            Debug.Log("Fail to find the particle system");
+        }
         snakeCartManager = GameObject.FindWithTag("SnakeCartManager").GetComponent<SnakeCartManager>();
-        if(snakeCartManager != null)
+        if (snakeCartManager != null)
         {
             hitInfo = snakeCartManager.gameObject.transform.GetChild(0).GetComponent<LeadingCartRaycaster>();
         }
@@ -92,12 +99,8 @@ public class ChainedCartManager : MonoBehaviour
         }
     }
 
-    public void OnCollectedByPlayer()
+    public void PlayVFX()
     {
-        if(snakeCartManager != null)
-        {
-            snakeCartManager.AddBodyParts(this.gameObject);
-        }
         collectVFX.Play();
     }
 }

@@ -426,7 +426,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 3743
+  m_VersionIndex: 3758
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -552,7 +552,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isBonusCart: 0
-  isCollectedByPlayer: 1
+  collectVFX: {fileID: 1785869081212728380}
+  isCollectedByPlayer: 0
   isCollectedByAI: 0
   collectNormalCartEvent: {fileID: 11400000, guid: e276d5233b388ba49a963275c3ade278, type: 2}
   collectBonusCartEvent: {fileID: 11400000, guid: 86cf779dca08a0a4497fc14537f5b9c9, type: 2}
@@ -1181,7 +1182,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4142590970830686, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.01
+      value: 0.066
       objectReference: {fileID: 0}
     - target: {fileID: 4142590970830686, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1217,15 +1218,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 198053569035148562, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
       propertyPath: playOnAwake
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 198271129106982246, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
       propertyPath: playOnAwake
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 198397288327040522, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
       propertyPath: playOnAwake
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 198619150366067880, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
       propertyPath: looping
@@ -1233,25 +1234,30 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 198619150366067880, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
       propertyPath: playOnAwake
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 198864614990467484, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
       propertyPath: playOnAwake
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 198864852430823816, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
       propertyPath: playOnAwake
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 198924517106518970, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
       propertyPath: playOnAwake
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
+--- !u!198 &1785869081212728380 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 198619150366067880, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
+  m_PrefabInstance: {fileID: 1876045456717478036}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1875673160148674506 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4142590970830686, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}

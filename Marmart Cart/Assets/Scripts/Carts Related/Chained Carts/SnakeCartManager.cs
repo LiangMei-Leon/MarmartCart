@@ -122,6 +122,25 @@ public class SnakeCartManager : MonoBehaviour
     {
         addedObj.GetComponent<ChainedCartManager>().isCollectedByPlayer = true;
         bodyParts.Add(addedObj);
+
+        var cartManager = addedObj.GetComponent<ChainedCartManager>();
+        if (cartManager != null)
+        {
+            cartManager.PlayVFX();
+        }
+    }
+
+    private IEnumerator DelayedPlayVFX(GameObject addedObj)
+    {
+        // Wait for 0.1 seconds
+        yield return new WaitForSeconds(0.1f);
+
+        // Call PlayVFX on the ChainedCartManager component
+        var cartManager = addedObj.GetComponent<ChainedCartManager>();
+        if (cartManager != null)
+        {
+            cartManager.PlayVFX();
+        }
     }
 
     public void TemporarilyDisableDetaching()
