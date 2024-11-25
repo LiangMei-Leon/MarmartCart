@@ -158,7 +158,7 @@ GameObject:
   - component: {fileID: 6513897065993306053}
   m_Layer: 7
   m_Name: Following Cart
-  m_TagString: Player
+  m_TagString: Item
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -426,7 +426,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 3758
+  m_VersionIndex: 3818
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -553,8 +553,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isBonusCart: 0
   collectVFX: {fileID: 1785869081212728380}
-  isCollectedByPlayer: 0
-  isCollectedByAI: 0
+  <isCollectedByPlayer>k__BackingField: 0
+  <isCollectedByAI>k__BackingField: 0
   collectNormalCartEvent: {fileID: 11400000, guid: e276d5233b388ba49a963275c3ade278, type: 2}
   collectBonusCartEvent: {fileID: 11400000, guid: 86cf779dca08a0a4497fc14537f5b9c9, type: 2}
 --- !u!65 &6513897065993306053
@@ -576,8 +576,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.5380699, y: 0.70425445, z: 0.6570925}
-  m_Center: {x: 0.006704712, y: 0.0060875895, z: 0.012823391}
+  m_Size: {x: 0.6844517, y: 0.70425445, z: 0.87625736}
+  m_Center: {x: -0.00018863678, y: 0.0060875895, z: -0.0050781253}
 --- !u!1 &2199208156901824423
 GameObject:
   m_ObjectHideFlags: 0
@@ -1178,11 +1178,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4142590970830686, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.328
+      value: 0.33
       objectReference: {fileID: 0}
     - target: {fileID: 4142590970830686, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.066
+      value: 0.28
       objectReference: {fileID: 0}
     - target: {fileID: 4142590970830686, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
       propertyPath: m_LocalRotation.w

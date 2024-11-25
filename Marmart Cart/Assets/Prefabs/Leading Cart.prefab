@@ -497,8 +497,8 @@ MonoBehaviour:
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  boostSpeed: 40
-  boostDuration: 2
+  boostForce: 80
+  boostTime: 1
   decelerationRate: 10
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
 --- !u!1 &4656564825517800351
@@ -619,8 +619,8 @@ MonoBehaviour:
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  boostSpeed: 40
-  boostDuration: 2
+  boostForce: 80
+  boostTime: 1
   decelerationRate: 10
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
 --- !u!1 &6061795394319341633
@@ -1194,7 +1194,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6597024514049572970}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c1cc20c007b36514b9639fcf88f99dd6, type: 3}
   m_Name: 
@@ -1202,8 +1202,8 @@ MonoBehaviour:
   radius: 50
   spawnFrequency: 5
   minDistanceFromCenter: 10
-  itemPrefab1: {fileID: 3552621251301266115, guid: 5ee80b203a7d7d644beb7b6c41d1d854, type: 3}
-  itemPrefab2: {fileID: 1092306272857205635, guid: 62b968b59fb2e604fa86b75357a69bef, type: 3}
+  itemPrefab1: {fileID: 1910840381751055445, guid: 6a8d459e0825e1748bf0e7525c22e11d, type: 3}
+  itemPrefab2: {fileID: 1910840381751055445, guid: 6a8d459e0825e1748bf0e7525c22e11d, type: 3}
   item1Probability: 84
 --- !u!114 &8990966824022932014
 MonoBehaviour:
@@ -1223,6 +1223,7 @@ MonoBehaviour:
   distance: 2
   <hitDirection>k__BackingField: {x: 0, y: 0, z: 0}
   detachCooldown: 5
+  cooldownTimer: 0
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
 --- !u!1 &6739513257674474393
 GameObject:
@@ -1342,8 +1343,8 @@ MonoBehaviour:
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  boostSpeed: 40
-  boostDuration: 2
+  boostForce: 80
+  boostTime: 1
   decelerationRate: 10
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
 --- !u!1 &7077051624068430394
@@ -1464,8 +1465,8 @@ MonoBehaviour:
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  boostSpeed: 40
-  boostDuration: 2
+  boostForce: 80
+  boostTime: 1
   decelerationRate: 10
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
 --- !u!1 &7898887286195177743
