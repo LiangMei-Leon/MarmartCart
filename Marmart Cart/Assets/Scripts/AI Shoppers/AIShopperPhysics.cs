@@ -20,11 +20,11 @@ public class AIShopperPhysics : MonoBehaviour
         }
     }
 
-    private void OnCollisionEnter(Collision collision)
+    private void OnTriggerEnter(Collider other)
     {
         if (isKnockedOut) return; // Prevent multiple knockouts
 
-        if (collision.gameObject.CompareTag("Player"))
+        if (other.gameObject.CompareTag("Player"))
         {
             rb.isKinematic = false;
             KnockOut();

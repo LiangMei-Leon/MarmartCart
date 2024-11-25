@@ -14,12 +14,17 @@ public class AIShopperBehaviour : MonoBehaviour
     private Transform targetItem;
     private Transform targetExit;
 
+    private GameObject runningVFX;
+
     private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
         agent.speed = baseSpeed;
 
         FindRandomTargetItem();
+
+        runningVFX = this.transform.GetChild(0).gameObject;
+        runningVFX.SetActive(false);
     }
 
     private void Update()
@@ -94,6 +99,7 @@ public class AIShopperBehaviour : MonoBehaviour
     {
         if (targetExit != null)
         {
+            runningVFX.SetActive(true);
             agent.SetDestination(targetExit.position);
 
             if (Vector3.Distance(transform.position, targetExit.position) <= collectRange)
@@ -104,6 +110,7 @@ public class AIShopperBehaviour : MonoBehaviour
         }
         else
         {
+            runningVFX.SetActive(false);
             currentState = AIState.Wandering;
         }
     }
