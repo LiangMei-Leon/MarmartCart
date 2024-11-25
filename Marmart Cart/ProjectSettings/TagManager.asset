@@ -6,6 +6,9 @@ TagManager:
   tags:
   - PTscore
   - Obstacles
+  - SnakeCartManager
+  - Exit
+  - Item
   layers:
   - Default
   - TransparentFX
@@ -16,7 +19,7 @@ TagManager:
   - Ground
   - Cart
   - Collectibles
-  - 
+  - Obstacles
   - 
   - 
   - 

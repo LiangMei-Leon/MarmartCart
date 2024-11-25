@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class MarkerManager : MonoBehaviour
@@ -23,11 +24,16 @@ public class MarkerManager : MonoBehaviour
     [SerializeField] float offsetValue = 0.0f;
 
     private Rigidbody cartRigidbody;
+    private SnakeCartManager snakeCartManager;
 
     void Start()
     {
         offsetValueCurve = Resources.Load<AnimationCurveVariable>("SO_Variables/Offset Value Curve");
-        cartRigidbody = this.gameObject.transform.parent.GetChild(0).GetComponent<Rigidbody>(); //refer to the leading cart's rigidbody
+        snakeCartManager = GameObject.FindWithTag("SnakeCartManager").GetComponent<SnakeCartManager>();
+        if (snakeCartManager != null)
+        {
+            cartRigidbody = snakeCartManager.gameObject.transform.GetChild(0).GetComponent<Rigidbody>(); //refer to the leading cart's rigidbody
+        }
     }
 
     // Update is called once per frame

@@ -5,7 +5,7 @@ MonoImporter:
   serializedVersion: 2
   defaultReferences:
   - offsetValueCurve: {fileID: 11400000, guid: 4862697c9799a7a4eb7e064920ce8739, type: 2}
-  executionOrder: 0
+  executionOrder: 400
   icon: {instanceID: 0}
   userData: 
   assetBundleName: 

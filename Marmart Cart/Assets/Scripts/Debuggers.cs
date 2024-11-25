@@ -22,7 +22,7 @@ public class Debuggers : MonoBehaviour
 
     void ChainOfCartsDebug()
     {
-        if(Input.GetKeyDown(KeyCode.F1))
+        if (Input.GetKeyDown(KeyCode.F1))
             snakeCartManager.AddBodyParts(attachedCart);
         if (Input.GetKeyDown(KeyCode.F2))
         {

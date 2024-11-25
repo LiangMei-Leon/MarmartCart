@@ -38,7 +38,6 @@ public class SnakeCartManager : MonoBehaviour
                 snakeBody[i].transform.position = markM.markerList[0].position;
                 snakeBody[i].transform.rotation = markM.markerList[0].rotation;
                 markM.markerList.RemoveAt(0);
-
             }
         }
     }
@@ -56,6 +55,7 @@ public class SnakeCartManager : MonoBehaviour
             LeadingCartRaycaster = temp1.GetComponent<LeadingCartRaycaster>();
             setupCamera.Raise();
             bodyParts.RemoveAt(0);
+            return;
         }
         MarkerManager markM = snakeBody[snakeBody.Count - 1].GetComponent<MarkerManager>();
         if(countUp == 0)
@@ -119,7 +119,49 @@ public class SnakeCartManager : MonoBehaviour
 
     public void AddBodyParts(GameObject addedObj)
     {
-        bodyParts.Add(addedObj);
+        // Set the object as collected
+        var cartManager = addedObj.GetComponent<ChainedCartManager>();
+        if (cartManager != null)
+        {
+            cartManager.CollectByPlayer();
+            // Add the object to the bodyParts list
+            bodyParts.Add(addedObj);
+
+            // Start the coroutine to delay the VFX
+            StartCoroutine(DelayedPlayVFX());
+        }
+        else
+        {
+            Debug.LogError("ChainedCartManager missing on instantiated object: " + addedObj.name);
+        }
+    }
+
+    private IEnumerator DelayedPlayVFX()
+    {
+        // Wait for 0.1 seconds
+        yield return new WaitForSeconds(0.12f);
+
+        // Ensure the snakeBody list has elements
+        if (snakeBody.Count > 0)
+        {
+            // Reference the last object in the snakeBody list
+            var lastCart = snakeBody[snakeBody.Count - 1];
+            var cartManager = lastCart.GetComponent<ChainedCartManager>();
+
+            if (cartManager != null)
+            {
+                Debug.Log("Playing VFX on: " + lastCart.name);
+                cartManager.PlayVFX();
+            }
+            else
+            {
+                Debug.LogError("ChainedCartManager missing on: " + lastCart.name);
+            }
+        }
+        else
+        {
+            Debug.LogError("SnakeBody list is empty. No VFX to play.");
+        }
     }
 
     public void TemporarilyDisableDetaching()
