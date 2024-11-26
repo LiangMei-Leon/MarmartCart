@@ -5,7 +5,8 @@ using UnityEngine;
 public class ChainedCartManager : MonoBehaviour
 {
     [Header("Cart Info")]
-    [SerializeField] bool isBonusCart = false;
+    [field: SerializeField]
+    public bool isBonusCart { get; private set; } = false;
 
     [SerializeField] private ParticleSystem collectVFX;
     private SnakeCartManager snakeCartManager;

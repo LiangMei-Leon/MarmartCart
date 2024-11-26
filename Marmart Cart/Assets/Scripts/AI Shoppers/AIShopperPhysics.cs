@@ -11,12 +11,20 @@ public class AIShopperPhysics : MonoBehaviour
     private Rigidbody rb;
     private bool isKnockedOut = false;
 
+    private AIShopperBehaviour shopperBehaviour;
+
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         if (rb == null)
         {
             Debug.LogError("Rigidbody is missing on this AI. Please attach a Rigidbody component.");
+        }
+
+        shopperBehaviour = GetComponent<AIShopperBehaviour>();
+        if (shopperBehaviour == null)
+        {
+            Debug.LogError("AIShopperBehaviour is missing.");
         }
     }
 
@@ -28,6 +36,7 @@ public class AIShopperPhysics : MonoBehaviour
         {
             rb.isKinematic = false;
             KnockOut();
+            shopperBehaviour.OnKnockOut();
         }
     }
 
@@ -78,5 +87,10 @@ public class AIShopperPhysics : MonoBehaviour
         {
             AInavScript.enabled = false;
         }
+    }
+
+    public bool IsKnockedOut()
+    {
+        return isKnockedOut;
     }
 }

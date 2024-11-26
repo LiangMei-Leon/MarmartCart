@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class ItemGenerationManager : MonoBehaviour
 {
-
     [Header("Spawn Settings")]
     [SerializeField] private Transform spawnCenter;
 
