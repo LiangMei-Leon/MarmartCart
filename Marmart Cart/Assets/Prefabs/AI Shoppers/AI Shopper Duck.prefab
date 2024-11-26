@@ -213,6 +213,7 @@ MonoBehaviour:
   upwardForce: 50
   spinTorque: 10
   destructionDelay: 1
+  targetPool: {fileID: 11400000, guid: 0d8e17767b483314990dca3aeb27508e, type: 2}
 --- !u!136 &4849775801070429720
 CapsuleCollider:
   m_ObjectHideFlags: 0

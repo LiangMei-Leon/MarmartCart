@@ -763,6 +763,7 @@ MonoBehaviour:
   collectVFX: {fileID: 1699286690143245377}
   <isCollectedByPlayer>k__BackingField: 0
   <isCollectedByAI>k__BackingField: 0
+  targetPool: {fileID: 11400000, guid: 7320204f617b704439b5f6fef0ec8fe3, type: 2}
   collectNormalCartEvent: {fileID: 11400000, guid: e276d5233b388ba49a963275c3ade278, type: 2}
   collectBonusCartEvent: {fileID: 11400000, guid: 86cf779dca08a0a4497fc14537f5b9c9, type: 2}
 --- !u!65 &3350688561437279822

@@ -25,17 +25,23 @@ public class AIGenerationScript : MonoBehaviour
     [SerializeField] private int phase3AIsPerWave = 6;
 
     [Header("AI Prefabs")]
-    [SerializeField] private GameObject[] aiPrefabs; // Array of AI shopper prefabs
+    [SerializeField] private GameObjectPool[] aiPools; // Array of pools of AI shopper prefabs
 
     private int currentPhase = 0;
     private float elapsedGameTime = 0f;
     private float spawnInterval;
     private int aiPerWave;
+    private bool isSpawning = false;
 
     private float nextSpawnTime;
 
     private void Start()
     {
+        // Initialize pools for all AI prefabs
+        foreach (var pool in aiPools)
+        {
+            pool.SpawnPool();
+        }
         // Find the spawn center (typically the player)
         spawnCenter = GameObject.FindGameObjectWithTag("Player").transform;
         if (spawnCenter == null)
@@ -90,21 +96,27 @@ public class AIGenerationScript : MonoBehaviour
 
     private void SpawnAIWave()
     {
+        if (isSpawning) return; // Prevent overlapping calls
+        isSpawning = true;
+
+        Debug.Log("SpawnAIWave called");
         for (int i = 0; i < aiPerWave; i++)
         {
-            // Keep trying to find a valid spawn position
             Vector3 spawnPosition = GetValidSpawnPosition();
             if (spawnPosition != Vector3.zero)
             {
-                // Randomly select an AI prefab to spawn
-                GameObject aiToSpawn = aiPrefabs[Random.Range(0, aiPrefabs.Length)];
-                Instantiate(aiToSpawn, spawnPosition + new Vector3(0, 0.5f, 0), Quaternion.identity);
-            }
-            else
-            {
-                Debug.LogWarning("Failed to find a valid spawn position after multiple attempts.");
+                var randomPool = aiPools[Random.Range(0, aiPools.Length)];
+                GameObject ai = randomPool.GetGameObject(spawnPosition + Vector3.up * 0.5f, Quaternion.identity);
+                Debug.Log("AI generated");
+                var aiBehaviour = ai.GetComponent<AIShopperBehaviour>();
+                if (aiBehaviour != null)
+                {
+                    aiBehaviour.ResetState();
+                }
             }
         }
+
+        isSpawning = false; // Reset spawning state
     }
 
     private Vector3 GetValidSpawnPosition()

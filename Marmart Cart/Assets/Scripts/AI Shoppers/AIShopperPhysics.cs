@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 
 public class AIShopperPhysics : MonoBehaviour
 {
@@ -12,6 +14,8 @@ public class AIShopperPhysics : MonoBehaviour
     private bool isKnockedOut = false;
 
     private AIShopperBehaviour shopperBehaviour;
+
+    [SerializeField] GameObjectPool targetPool;
 
     private void Start()
     {
@@ -68,8 +72,8 @@ public class AIShopperPhysics : MonoBehaviour
         // Disable AI functionality (e.g., NavMeshAgent)
         DisableAI();
 
-        // Destroy the AI after a delay
-        Destroy(gameObject, destructionDelay);
+        // Return the AI to the pool after a delay
+        StartCoroutine(ReturnToPool());
     }
 
     private void DisableAI()
@@ -87,6 +91,26 @@ public class AIShopperPhysics : MonoBehaviour
         {
             AInavScript.enabled = false;
         }
+    }
+
+    private IEnumerator ReturnToPool()
+    {
+
+        yield return new WaitForSeconds(destructionDelay);
+
+        // Reset Rigidbody state
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+        rb.isKinematic = true;
+        // Reset AI state
+        var aiBehaviour = GetComponent<AIShopperBehaviour>();
+        if (aiBehaviour != null)
+        {
+            aiBehaviour.ResetState();
+        }
+
+        // Return to pool
+        targetPool.ReturnObject(gameObject);
     }
 
     public bool IsKnockedOut()

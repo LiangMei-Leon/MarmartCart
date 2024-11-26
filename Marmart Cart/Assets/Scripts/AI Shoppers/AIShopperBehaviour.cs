@@ -22,11 +22,13 @@ public class AIShopperBehaviour : MonoBehaviour
     private GameObject runningVFX;
     private GameObject hittingVFX;
 
-    private void Start()
+    private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
         agent.speed = baseSpeed;
-
+    }
+    private void Start()
+    {
         FindRandomTargetItem();
 
         runningVFX = this.transform.GetChild(0).GetChild(0).gameObject;
@@ -43,7 +45,6 @@ public class AIShopperBehaviour : MonoBehaviour
 
     private void Update()
     {
-
         switch (currentState)
         {
             case AIState.Seeking:
@@ -198,6 +199,7 @@ public class AIShopperBehaviour : MonoBehaviour
         hittingVFX.SetActive(true);
         normalItemVisual.SetActive(false);
         bonusItemVisual.SetActive(false);
+        runningVFX.SetActive(false);
         if (currentState == AIState.Escaping)
         {
 
@@ -211,7 +213,14 @@ public class AIShopperBehaviour : MonoBehaviour
             }
         }
     }
-
+    public void ResetState()
+    {
+        currentState = AIState.Wandering;
+        agent.enabled = true;
+        agent.speed = baseSpeed;
+        targetItem = null;
+        targetExit = null;
+    }
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;
