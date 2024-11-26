@@ -198,13 +198,17 @@ public class AIShopperBehaviour : MonoBehaviour
         hittingVFX.SetActive(true);
         normalItemVisual.SetActive(false);
         bonusItemVisual.SetActive(false);
-        if (!itemIsBonus)
+        if (currentState == AIState.Escaping)
         {
-            collectNormalItemEvent.Raise();
-        }
-        else
-        {
-            collectBonusItemEvent.Raise();
+
+            if (!itemIsBonus)
+            {
+                collectNormalItemEvent.Raise();
+            }
+            else
+            {
+                collectBonusItemEvent.Raise();
+            }
         }
     }
 
