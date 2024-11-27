@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: AI Shopper RedPanada Pool
   m_EditorClassIdentifier: 
   prefab: {fileID: 8325083969841473486, guid: abdb575c89406004ba307f047bc0e974, type: 3}
-  amount: 30
+  amount: 60

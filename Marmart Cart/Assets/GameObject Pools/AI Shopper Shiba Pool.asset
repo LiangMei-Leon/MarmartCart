@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: AI Shopper Shiba Pool
   m_EditorClassIdentifier: 
   prefab: {fileID: 130051554894364960, guid: 80288163535bc384282abbfae1937de7, type: 3}
-  amount: 30
+  amount: 60

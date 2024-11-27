@@ -108,8 +108,18 @@ public class AIShopperPhysics : MonoBehaviour
         {
             aiBehaviour.ResetState();
         }
-
+        var navAgent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+        if (navAgent != null)
+        {
+            navAgent.enabled = true;
+        }
+        var AInavScript = GetComponent<AIShopperBehaviour>();
+        if (AInavScript != null)
+        {
+            AInavScript.enabled = true;
+        }
         // Return to pool
+        isKnockedOut = false;
         targetPool.ReturnObject(gameObject);
     }
 

@@ -22,6 +22,8 @@ public class AIShopperBehaviour : MonoBehaviour
     private GameObject runningVFX;
     private GameObject hittingVFX;
 
+    [SerializeField] GameObjectPool targetPool;
+
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -131,7 +133,8 @@ public class AIShopperBehaviour : MonoBehaviour
             if (Vector3.Distance(transform.position, targetExit.position) <= collectRange)
             {
                 // Exit reached, destroy AI or mark as "exited"
-                Destroy(gameObject);
+                ResetState();
+                targetPool.ReturnObject(gameObject);
             }
         }
         else

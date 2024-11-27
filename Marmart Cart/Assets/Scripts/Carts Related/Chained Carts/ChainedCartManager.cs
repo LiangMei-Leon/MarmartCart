@@ -62,7 +62,7 @@ public class ChainedCartManager : MonoBehaviour
     public void OnDetach()
     {
         if (rb == null) return;
-        //this.gameObject.tag = "Item";
+        this.gameObject.tag = "Item";
         Vector3 forceDirection = hitInfo.hitDirection;
 
         isCollectedByPlayer = false;

@@ -191,12 +191,13 @@ MonoBehaviour:
   currentState: 3
   collectRange: 5
   wanderRange: 20
-  baseSpeed: 3.5
+  baseSpeed: 5
   escapeSpeedMultiplier: 2
   normalItemVisual: {fileID: 0}
   bonusItemVisual: {fileID: 0}
   collectNormalItemEvent: {fileID: 11400000, guid: e276d5233b388ba49a963275c3ade278, type: 2}
   collectBonusItemEvent: {fileID: 11400000, guid: 86cf779dca08a0a4497fc14537f5b9c9, type: 2}
+  targetPool: {fileID: 11400000, guid: 0d8e17767b483314990dca3aeb27508e, type: 2}
 --- !u!114 &6583466558974393557
 MonoBehaviour:
   m_ObjectHideFlags: 0

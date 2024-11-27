@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 2341348791109399534}
   - component: {fileID: 634833443146828174}
   - component: {fileID: 9170424649071323748}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: wheel_BL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -96,7 +96,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8342745133309343954}
   - component: {fileID: 3310616505628045997}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: VirtualWheel_BR
   m_TagString: Untagged
   m_Icon: {fileID: 3443629218296621865, guid: 0000000000000000d000000000000000, type: 0}
@@ -147,7 +147,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1943704799157498015}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Wheel Models
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -184,7 +184,7 @@ GameObject:
   - component: {fileID: 1428332794616490550}
   - component: {fileID: 3497597101653907026}
   - component: {fileID: 7781811776750510663}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: wheel_FL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -270,7 +270,7 @@ GameObject:
   - component: {fileID: 8004790171649955264}
   - component: {fileID: 2639138786265506709}
   - component: {fileID: 1608400113575919038}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: wheel_FR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -363,7 +363,7 @@ GameObject:
   - component: {fileID: 7232113520369105610}
   - component: {fileID: 5338754579923443633}
   - component: {fileID: 3350688561437279822}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Following Cart Value
   m_TagString: Item
   m_Icon: {fileID: 0}
@@ -763,7 +763,6 @@ MonoBehaviour:
   collectVFX: {fileID: 1699286690143245377}
   <isCollectedByPlayer>k__BackingField: 0
   <isCollectedByAI>k__BackingField: 0
-  targetPool: {fileID: 11400000, guid: 7320204f617b704439b5f6fef0ec8fe3, type: 2}
   collectNormalCartEvent: {fileID: 11400000, guid: e276d5233b388ba49a963275c3ade278, type: 2}
   collectBonusCartEvent: {fileID: 11400000, guid: 86cf779dca08a0a4497fc14537f5b9c9, type: 2}
 --- !u!65 &3350688561437279822
@@ -796,7 +795,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 639073024307761552}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Virtual Wheels
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -832,7 +831,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1512079491627181154}
   - component: {fileID: 3289355214652673802}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: VirtualWheel_BL
   m_TagString: Untagged
   m_Icon: {fileID: 3443629218296621865, guid: 0000000000000000d000000000000000, type: 0}
@@ -884,7 +883,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4902568113348020281}
   - component: {fileID: 5937027230348900335}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: VirtualWheel_FL
   m_TagString: Untagged
   m_Icon: {fileID: 3443629218296621865, guid: 0000000000000000d000000000000000, type: 0}
@@ -936,7 +935,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6106217561350462194}
   - component: {fileID: 351362183859689612}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: VirtualWheel_FR
   m_TagString: Untagged
   m_Icon: {fileID: 3443629218296621865, guid: 0000000000000000d000000000000000, type: 0}
@@ -989,7 +988,7 @@ GameObject:
   - component: {fileID: 5947733414838303480}
   - component: {fileID: 3279855391952475758}
   - component: {fileID: 8734418350425811282}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: wheel_BR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1075,7 +1074,7 @@ GameObject:
   - component: {fileID: 1719749953793978088}
   - component: {fileID: 582643326387497820}
   - component: {fileID: 5587802348679855830}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cart Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1159,9 +1158,37 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2413974099969063298}
     m_Modifications:
+    - target: {fileID: 1059233134690796, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1275563126550766, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 1397205833975230, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
       propertyPath: m_Name
       value: MMC_composing
+      objectReference: {fileID: 0}
+    - target: {fileID: 1397205833975230, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1668137430424308, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1763806429246998, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1842622805192216, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1917617823278258, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 4142590970830686, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
       propertyPath: m_LocalScale.x
@@ -1317,6 +1344,26 @@ PrefabInstance:
     - target: {fileID: 2211979764575613626, guid: e47ce92250de143f1b2065f625f28c02, type: 3}
       propertyPath: m_Name
       value: products_valued
+      objectReference: {fileID: 0}
+    - target: {fileID: 2211979764575613626, guid: e47ce92250de143f1b2065f625f28c02, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 4234506328837226196, guid: e47ce92250de143f1b2065f625f28c02, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 4526335762067132980, guid: e47ce92250de143f1b2065f625f28c02, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7397684224325032588, guid: e47ce92250de143f1b2065f625f28c02, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 8000223872758121408, guid: e47ce92250de143f1b2065f625f28c02, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

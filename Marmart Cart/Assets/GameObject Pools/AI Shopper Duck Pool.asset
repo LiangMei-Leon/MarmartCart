@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: AI Shopper Duck Pool
   m_EditorClassIdentifier: 
   prefab: {fileID: 3730009224366722023, guid: 3f16ecb16fb36e04a825b7579f2768cd, type: 3}
-  amount: 30
+  amount: 60

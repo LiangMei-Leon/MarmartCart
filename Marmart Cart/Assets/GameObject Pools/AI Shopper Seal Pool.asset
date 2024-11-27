@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: AI Shopper Seal Pool
   m_EditorClassIdentifier: 
   prefab: {fileID: 2691334312517173378, guid: d5d1c41c249b928469a3f35b282ca984, type: 3}
-  amount: 30
+  amount: 60
