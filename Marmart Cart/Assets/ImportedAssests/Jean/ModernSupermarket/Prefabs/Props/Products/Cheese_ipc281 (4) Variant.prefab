@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &5482806904404704093
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 367530198234023660, guid: 34e33a767ff4c3e41aad6a700b3aba11, type: 3}
+      propertyPath: m_RootOrder
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 367530198234023660, guid: 34e33a767ff4c3e41aad6a700b3aba11, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -26.623
+      objectReference: {fileID: 0}
+    - target: {fileID: 367530198234023660, guid: 34e33a767ff4c3e41aad6a700b3aba11, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.0700002
+      objectReference: {fileID: 0}
+    - target: {fileID: 367530198234023660, guid: 34e33a767ff4c3e41aad6a700b3aba11, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 3.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 367530198234023660, guid: 34e33a767ff4c3e41aad6a700b3aba11, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.60223305
+      objectReference: {fileID: 0}
+    - target: {fileID: 367530198234023660, guid: 34e33a767ff4c3e41aad6a700b3aba11, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 367530198234023660, guid: 34e33a767ff4c3e41aad6a700b3aba11, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.79832035
+      objectReference: {fileID: 0}
+    - target: {fileID: 367530198234023660, guid: 34e33a767ff4c3e41aad6a700b3aba11, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 367530198234023660, guid: 34e33a767ff4c3e41aad6a700b3aba11, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 367530198234023660, guid: 34e33a767ff4c3e41aad6a700b3aba11, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 105.94
+      objectReference: {fileID: 0}
+    - target: {fileID: 367530198234023660, guid: 34e33a767ff4c3e41aad6a700b3aba11, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1032004259652541526, guid: 34e33a767ff4c3e41aad6a700b3aba11, type: 3}
+      propertyPath: m_Name
+      value: Cheese_ipc281 (4) Variant
+      objectReference: {fileID: 0}
+    - target: {fileID: 1032004259652541526, guid: 34e33a767ff4c3e41aad6a700b3aba11, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 4
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 34e33a767ff4c3e41aad6a700b3aba11, type: 3}
