@@ -498,9 +498,10 @@ MonoBehaviour:
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  boostForce: 80
+  boostForce: 50
   boostTime: 1
   decelerationRate: 10
+  isBoosting: 0
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
 --- !u!1 &4656564825517800351
 GameObject:
@@ -620,9 +621,10 @@ MonoBehaviour:
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  boostForce: 80
+  boostForce: 50
   boostTime: 1
   decelerationRate: 10
+  isBoosting: 0
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
 --- !u!1 &6061795394319341633
 GameObject:
@@ -803,7 +805,6 @@ GameObject:
   - component: {fileID: 4657918851737140441}
   - component: {fileID: 5660527806307602487}
   - component: {fileID: 8281348779868106150}
-  - component: {fileID: -8261418375152386010}
   - component: {fileID: 8990966824022932014}
   m_Layer: 7
   m_Name: Leading Cart
@@ -1188,24 +1189,6 @@ MonoBehaviour:
   offsetValueCurve: {fileID: 0}
   cartMaxSpeed: 30
   offsetValue: 0
---- !u!114 &-8261418375152386010
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6597024514049572970}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c1cc20c007b36514b9639fcf88f99dd6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  radius: 50
-  spawnFrequency: 5
-  minDistanceFromCenter: 10
-  itemPrefab1: {fileID: 1910840381751055445, guid: 6a8d459e0825e1748bf0e7525c22e11d, type: 3}
-  itemPrefab2: {fileID: 1910840381751055445, guid: 6a8d459e0825e1748bf0e7525c22e11d, type: 3}
-  item1Probability: 84
 --- !u!114 &8990966824022932014
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1221,11 +1204,13 @@ MonoBehaviour:
   layerMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  distance: 2
+  distance: 1
+  raycastOffset: 1.3
   <hitDirection>k__BackingField: {x: 0, y: 0, z: 0}
-  detachCooldown: 5
+  detachCooldown: 3
   cooldownTimer: 0
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
+  sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
 --- !u!1 &6739513257674474393
 GameObject:
   m_ObjectHideFlags: 0
@@ -1344,9 +1329,10 @@ MonoBehaviour:
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  boostForce: 80
+  boostForce: 50
   boostTime: 1
   decelerationRate: 10
+  isBoosting: 0
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
 --- !u!1 &7077051624068430394
 GameObject:
@@ -1466,9 +1452,10 @@ MonoBehaviour:
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  boostForce: 80
+  boostForce: 50
   boostTime: 1
   decelerationRate: 10
+  isBoosting: 0
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
 --- !u!1 &7898887286195177743
 GameObject:

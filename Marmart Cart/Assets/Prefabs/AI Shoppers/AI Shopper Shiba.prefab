@@ -21,7 +21,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &7838430328445250087
 Transform:
   m_ObjectHideFlags: 0
@@ -125,8 +125,8 @@ MonoBehaviour:
   currentState: 3
   collectRange: 5
   wanderRange: 20
-  baseSpeed: 5
-  escapeSpeedMultiplier: 2
+  baseSpeed: 8
+  escapeSpeedMultiplier: 3
   normalItemVisual: {fileID: 0}
   bonusItemVisual: {fileID: 0}
   collectNormalItemEvent: {fileID: 11400000, guid: e276d5233b388ba49a963275c3ade278, type: 2}
@@ -149,6 +149,8 @@ MonoBehaviour:
   spinTorque: 10
   destructionDelay: 1
   targetPool: {fileID: 11400000, guid: d3a113ee6ab4f4f4297c8f6fa6c9f262, type: 2}
+  gameManager: {fileID: 0}
+  sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
 --- !u!136 &9073591218000877779
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -434,15 +436,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4514730505716394, guid: b5228327566dd7b42950677605733d7f, type: 3}
       propertyPath: m_LocalScale.x
-      value: 2
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 4514730505716394, guid: b5228327566dd7b42950677605733d7f, type: 3}
       propertyPath: m_LocalScale.y
-      value: 2
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 4514730505716394, guid: b5228327566dd7b42950677605733d7f, type: 3}
       propertyPath: m_LocalScale.z
-      value: 2
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 4514730505716394, guid: b5228327566dd7b42950677605733d7f, type: 3}
       propertyPath: m_LocalPosition.x

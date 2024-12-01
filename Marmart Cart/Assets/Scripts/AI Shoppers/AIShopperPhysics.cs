@@ -16,7 +16,8 @@ public class AIShopperPhysics : MonoBehaviour
     private AIShopperBehaviour shopperBehaviour;
 
     [SerializeField] GameObjectPool targetPool;
-
+    [SerializeField] GameTimeManager gameManager;
+    [SerializeField] SfxManager sfxManager;
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -30,6 +31,12 @@ public class AIShopperPhysics : MonoBehaviour
         {
             Debug.LogError("AIShopperBehaviour is missing.");
         }
+
+        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameTimeManager>();
+        if (gameManager == null)
+        {
+            Debug.LogError("gameManager is missing.");
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -38,6 +45,15 @@ public class AIShopperPhysics : MonoBehaviour
 
         if (other.gameObject.CompareTag("Player"))
         {
+            // Play one of the two sound effects randomly
+            if (Random.value < 0.5f) // Random.value gives a float between 0 and 1
+            {
+                sfxManager.PlaySFX("HitCharacter1");
+            }
+            else
+            {
+                sfxManager.PlaySFX("HitCharacter2");
+            }
             rb.isKinematic = false;
             KnockOut();
             shopperBehaviour.OnKnockOut();
@@ -49,7 +65,7 @@ public class AIShopperPhysics : MonoBehaviour
         if (rb == null) return;
 
         isKnockedOut = true;
-
+        gameManager.IncreaseHitCount();
         // Generate a random direction for knockback
         Vector3 randomDirection = new Vector3(
             Random.Range(-1f, 1f),

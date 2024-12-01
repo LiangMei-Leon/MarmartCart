@@ -2,8 +2,6 @@ using System.Collections;
 using System.ComponentModel.Design.Serialization;
 using System.Runtime.InteropServices;
 using TMPro;
-using UnityEditor.Rendering;
-using UnityEditor.Timeline.Actions;
 using UnityEngine;
 
 public class LeadingCartBehaviour : MonoBehaviour
@@ -48,7 +46,7 @@ public class LeadingCartBehaviour : MonoBehaviour
     [SerializeField] private float boostForce = 80f;       // Force applied to the cart to boost
     [SerializeField] private float boostTime = 1f;     // Duration to hold the boosted speed
     [SerializeField] private float decelerationRate = 10f; // Rate at which the cart returns to normal speed
-    private bool isBoosting = false;                       // Flag to track if boost is active
+    public bool isBoosting = false;                       // Flag to track if boost is active
 
     [Header("Events")]
     [SerializeField] GameEvent disableDetachEvent;
@@ -101,31 +99,31 @@ public class LeadingCartBehaviour : MonoBehaviour
             #endregion
 
             #region Steering System Code
+            
+                // Set right as the steering direction (lateral sliding axis).
+                steeringDirection = transform.right;
 
-            // Set right as the steering direction (lateral sliding axis).
-            steeringDirection = transform.right;
+                // Calculate the velocity of the wheel along the steering direction (sideways).
+                float lateralVel = Vector3.Dot(steeringDirection, wheelVelocity);
+                // Debug.Log(lateralVel);
+                // Normalize lateral velocity by max steering velocity
+                float normalizedLateralVelocity = Mathf.Clamp01(Mathf.Abs(lateralVel) / maxLateralVelocity);
 
-            // Calculate the velocity of the wheel along the steering direction (sideways).
-            float lateralVel = Vector3.Dot(steeringDirection, wheelVelocity);
-            // Debug.Log(lateralVel);
-            // Normalize lateral velocity by max steering velocity
-            float normalizedLateralVelocity = Mathf.Clamp01(Mathf.Abs(lateralVel) / maxLateralVelocity);
+                // Evaluate grip factor from curve (0 = no grip, 1 = full grip)
+                float gripFactor = wheelGripCurve.Evaluate(normalizedLateralVelocity);
 
-            // Evaluate grip factor from curve (0 = no grip, 1 = full grip)
-            float gripFactor = wheelGripCurve.Evaluate(normalizedLateralVelocity);
+                // Calculate the desired velocity change to stop sliding.
+                float desiredVelChange = -1 * lateralVel * gripFactor;
 
-            // Calculate the desired velocity change to stop sliding.
-            float desiredVelChange = -1 * lateralVel * gripFactor;
+                // Calculate the acceleration needed to stop sliding within the fixed time step.
+                float desiredAccelration = desiredVelChange / Time.fixedDeltaTime;
 
-            // Calculate the acceleration needed to stop sliding within the fixed time step.
-            float desiredAccelration = desiredVelChange / Time.fixedDeltaTime;
+                // Apply the force to cancel sliding (F = m * a), in the direction opposite to sliding.
+                finalSteeringForce = steeringDirection * wheelMass * desiredAccelration;
 
-            // Apply the force to cancel sliding (F = m * a), in the direction opposite to sliding.
-            finalSteeringForce = steeringDirection * wheelMass * desiredAccelration;
-
-            // Apply the force at the wheel's position to counteract the lateral sliding.
-            cartBody.AddForceAtPosition(finalSteeringForce, transform.position);
-
+                // Apply the force at the wheel's position to counteract the lateral sliding.
+                cartBody.AddForceAtPosition(finalSteeringForce, transform.position);
+            
             #endregion
 
             #region Acceleration and Brake System

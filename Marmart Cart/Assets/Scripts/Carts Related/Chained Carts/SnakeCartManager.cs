@@ -178,4 +178,13 @@ public class SnakeCartManager : MonoBehaviour
     {
         LeadingCartRaycaster.TemporarilyDisableDetaching();
     }
+
+    public int GetSnakeBodyLength()
+    {
+        return snakeBody.Count;
+    }
+    public List<GameObject> GetSnakeBody()
+    {
+        return snakeBody;
+    }
 }

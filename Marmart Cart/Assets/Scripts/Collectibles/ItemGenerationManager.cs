@@ -113,7 +113,7 @@ public class ItemGenerationManager : MonoBehaviour
 
     private Vector3 GetValidSpawnPosition()
     {
-        int maxRetries = 20; // Limit the number of retries to prevent infinite loops
+        int maxRetries = 50; // Limit the number of retries to prevent infinite loops
         int attempts = 0;
 
         while (attempts < maxRetries)
@@ -122,7 +122,7 @@ public class ItemGenerationManager : MonoBehaviour
             Vector2 randomPoint = Random.insideUnitCircle * radius;
             if (randomPoint.magnitude >= minDistanceFromCenter)
             {
-                Vector3 spawnPosition = new Vector3(randomPoint.x, 0, randomPoint.y) + spawnCenter.position;
+                Vector3 spawnPosition = new Vector3(randomPoint.x, 20, randomPoint.y) + spawnCenter.position;
 
                 // Raycast to detect any surface
                 if (Physics.Raycast(spawnPosition, Vector3.down, out RaycastHit hit, Mathf.Infinity))
