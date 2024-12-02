@@ -3,7 +3,12 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - PTscore
+  - Obstacles
+  - SnakeCartManager
+  - Exit
+  - Item
   layers:
   - Default
   - TransparentFX
@@ -12,9 +17,9 @@ TagManager:
   - Water
   - UI
   - Ground
-  - 
-  - 
-  - 
+  - Cart
+  - Collectibles
+  - Obstacles
   - 
   - 
   - 
