@@ -5,7 +5,8 @@ using UnityEngine;
 public class ChainedCartManager : MonoBehaviour
 {
     [Header("Cart Info")]
-    [SerializeField] bool isBonusCart = false;
+    [field: SerializeField]
+    public bool isBonusCart { get; private set; } = false;
 
     [SerializeField] private ParticleSystem collectVFX;
     private SnakeCartManager snakeCartManager;
@@ -26,7 +27,6 @@ public class ChainedCartManager : MonoBehaviour
 
     void Awake()
     {
-
         collectVFX = this.transform.GetChild(0).gameObject.GetComponent<ParticleSystem>();
         if (collectVFX == null)
         {
@@ -62,7 +62,7 @@ public class ChainedCartManager : MonoBehaviour
     public void OnDetach()
     {
         if (rb == null) return;
-
+        this.gameObject.tag = "Item";
         Vector3 forceDirection = hitInfo.hitDirection;
 
         isCollectedByPlayer = false;

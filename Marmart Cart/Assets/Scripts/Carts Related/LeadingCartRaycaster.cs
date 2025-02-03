@@ -5,6 +5,7 @@ public class LeadingCartRaycaster : MonoBehaviour
     [Header("Raycast Settings")]
     [SerializeField] LayerMask layerMask;
     [SerializeField] float distance;
+    [SerializeField] private float raycastOffset = 0.5f;
     [field: SerializeField]
     public Vector3 hitDirection { get; private set; }
 
@@ -14,6 +15,8 @@ public class LeadingCartRaycaster : MonoBehaviour
 
     [Header("Events")]
     [SerializeField] GameEvent disableDetachEvent;
+
+    [SerializeField] SfxManager sfxManager;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -31,9 +34,9 @@ public class LeadingCartRaycaster : MonoBehaviour
         // Update the cooldown timer
         
         cooldownTimer -= Time.deltaTime;
-        
+        Vector3 rayStartPosition = transform.position + transform.forward * raycastOffset;
         RaycastHit hit;
-        if (Physics.Raycast(transform.position, transform.forward, out hit, distance, layerMask))
+        if (Physics.Raycast(rayStartPosition, transform.forward, out hit, distance, layerMask))
         {
             // Debug.Log(hit.transform.gameObject.name);
             if(hit.transform.gameObject.GetComponent<ChainedCartManager>() != null)
@@ -43,12 +46,13 @@ public class LeadingCartRaycaster : MonoBehaviour
                 {
                     hitDirection = -1 * hit.normal;
                     cartInfo.OnDetach();
+                    sfxManager.PlaySFX("Detach");
                 }
             }
 
             if(hit.transform.gameObject.CompareTag("Obstacles"))
             {
-                Debug.Log("Raised");
+                //Debug.Log("Raised");
                 disableDetachEvent.Raise();
             }
         }
@@ -64,6 +68,15 @@ public class LeadingCartRaycaster : MonoBehaviour
     {
         // Draw our friend ray
         Gizmos.color = Color.red;
-        Gizmos.DrawRay(transform.position, transform.forward * distance);
+        Vector3 rayStartPosition = transform.position + transform.forward * raycastOffset;
+        Gizmos.DrawRay(rayStartPosition, transform.forward * distance);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if(collision.gameObject.CompareTag("Obstacles"))
+        {
+            sfxManager.PlaySFX("CrashWalls");
+        }
     }
 }

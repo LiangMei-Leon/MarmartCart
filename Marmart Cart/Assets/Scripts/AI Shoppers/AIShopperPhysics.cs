@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 
 public class AIShopperPhysics : MonoBehaviour
 {
@@ -11,6 +13,11 @@ public class AIShopperPhysics : MonoBehaviour
     private Rigidbody rb;
     private bool isKnockedOut = false;
 
+    private AIShopperBehaviour shopperBehaviour;
+
+    [SerializeField] GameObjectPool targetPool;
+    [SerializeField] GameTimeManager gameManager;
+    [SerializeField] SfxManager sfxManager;
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -18,16 +25,38 @@ public class AIShopperPhysics : MonoBehaviour
         {
             Debug.LogError("Rigidbody is missing on this AI. Please attach a Rigidbody component.");
         }
+
+        shopperBehaviour = GetComponent<AIShopperBehaviour>();
+        if (shopperBehaviour == null)
+        {
+            Debug.LogError("AIShopperBehaviour is missing.");
+        }
+
+        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameTimeManager>();
+        if (gameManager == null)
+        {
+            Debug.LogError("gameManager is missing.");
+        }
     }
 
-    private void OnCollisionEnter(Collision collision)
+    private void OnTriggerEnter(Collider other)
     {
         if (isKnockedOut) return; // Prevent multiple knockouts
 
-        if (collision.gameObject.CompareTag("Player"))
+        if (other.gameObject.CompareTag("Player"))
         {
+            // Play one of the two sound effects randomly
+            if (Random.value < 0.5f) // Random.value gives a float between 0 and 1
+            {
+                sfxManager.PlaySFX("HitCharacter1");
+            }
+            else
+            {
+                sfxManager.PlaySFX("HitCharacter2");
+            }
             rb.isKinematic = false;
             KnockOut();
+            shopperBehaviour.OnKnockOut();
         }
     }
 
@@ -36,7 +65,7 @@ public class AIShopperPhysics : MonoBehaviour
         if (rb == null) return;
 
         isKnockedOut = true;
-
+        gameManager.IncreaseHitCount();
         // Generate a random direction for knockback
         Vector3 randomDirection = new Vector3(
             Random.Range(-1f, 1f),
@@ -59,8 +88,8 @@ public class AIShopperPhysics : MonoBehaviour
         // Disable AI functionality (e.g., NavMeshAgent)
         DisableAI();
 
-        // Destroy the AI after a delay
-        Destroy(gameObject, destructionDelay);
+        // Return the AI to the pool after a delay
+        StartCoroutine(ReturnToPool());
     }
 
     private void DisableAI()
@@ -78,5 +107,40 @@ public class AIShopperPhysics : MonoBehaviour
         {
             AInavScript.enabled = false;
         }
+    }
+
+    private IEnumerator ReturnToPool()
+    {
+
+        yield return new WaitForSeconds(destructionDelay);
+
+        // Reset Rigidbody state
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+        rb.isKinematic = true;
+        // Reset AI state
+        var aiBehaviour = GetComponent<AIShopperBehaviour>();
+        if (aiBehaviour != null)
+        {
+            aiBehaviour.ResetState();
+        }
+        var navAgent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+        if (navAgent != null)
+        {
+            navAgent.enabled = true;
+        }
+        var AInavScript = GetComponent<AIShopperBehaviour>();
+        if (AInavScript != null)
+        {
+            AInavScript.enabled = true;
+        }
+        // Return to pool
+        isKnockedOut = false;
+        targetPool.ReturnObject(gameObject);
+    }
+
+    public bool IsKnockedOut()
+    {
+        return isKnockedOut;
     }
 }

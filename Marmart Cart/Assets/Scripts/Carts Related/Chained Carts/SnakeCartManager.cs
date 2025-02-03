@@ -44,21 +44,32 @@ public class SnakeCartManager : MonoBehaviour
 
     void CreateBodyParts()
     {
-        if(snakeBody.Count == 0)
+        if (snakeBody.Count == 0)
         {
             GameObject temp1 = Instantiate(bodyParts[0], transform.position, transform.rotation, transform);
-            if(!temp1.GetComponent<MarkerManager>())
+            temp1.tag = "Player";
+            // Ensure MarkerManager is added
+            if (!temp1.GetComponent<MarkerManager>())
             {
                 temp1.AddComponent<MarkerManager>();
             }
+
+            // Set as collected by the player
+            var cartManager = temp1.GetComponent<ChainedCartManager>();
+            if (cartManager != null)
+            {
+                cartManager.CollectByPlayer();
+            }
+
             snakeBody.Add(temp1);
             LeadingCartRaycaster = temp1.GetComponent<LeadingCartRaycaster>();
             setupCamera.Raise();
             bodyParts.RemoveAt(0);
             return;
         }
+
         MarkerManager markM = snakeBody[snakeBody.Count - 1].GetComponent<MarkerManager>();
-        if(countUp == 0)
+        if (countUp == 0)
         {
             markM.ClearMarkerList();
         }
@@ -66,10 +77,20 @@ public class SnakeCartManager : MonoBehaviour
         if (countUp >= distanceBetween)
         {
             GameObject temp = Instantiate(bodyParts[0], markM.markerList[0].position, markM.markerList[0].rotation, transform);
-            if(!temp.GetComponent<MarkerManager>())
+            temp.tag = "Player";
+            // Ensure MarkerManager is added
+            if (!temp.GetComponent<MarkerManager>())
             {
                 temp.AddComponent<MarkerManager>();
             }
+
+            // Set as collected by the player
+            var cartManager = temp.GetComponent<ChainedCartManager>();
+            if (cartManager != null)
+            {
+                cartManager.CollectByPlayer();
+            }
+
             snakeBody.Add(temp);
             bodyParts.RemoveAt(0);
             temp.GetComponent<MarkerManager>().ClearMarkerList();
@@ -119,21 +140,10 @@ public class SnakeCartManager : MonoBehaviour
 
     public void AddBodyParts(GameObject addedObj)
     {
-        // Set the object as collected
-        var cartManager = addedObj.GetComponent<ChainedCartManager>();
-        if (cartManager != null)
-        {
-            cartManager.CollectByPlayer();
-            // Add the object to the bodyParts list
-            bodyParts.Add(addedObj);
+        bodyParts.Add(addedObj);
 
-            // Start the coroutine to delay the VFX
-            StartCoroutine(DelayedPlayVFX());
-        }
-        else
-        {
-            Debug.LogError("ChainedCartManager missing on instantiated object: " + addedObj.name);
-        }
+        StartCoroutine(DelayedPlayVFX());
+        
     }
 
     private IEnumerator DelayedPlayVFX()
@@ -167,5 +177,14 @@ public class SnakeCartManager : MonoBehaviour
     public void TemporarilyDisableDetaching()
     {
         LeadingCartRaycaster.TemporarilyDisableDetaching();
+    }
+
+    public int GetSnakeBodyLength()
+    {
+        return snakeBody.Count;
+    }
+    public List<GameObject> GetSnakeBody()
+    {
+        return snakeBody;
     }
 }

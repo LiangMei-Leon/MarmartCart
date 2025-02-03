@@ -9,6 +9,7 @@ TagManager:
   - SnakeCartManager
   - Exit
   - Item
+  - GameManager
   layers:
   - Default
   - TransparentFX

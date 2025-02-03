@@ -9,17 +9,40 @@ public class AIShopperBehaviour : MonoBehaviour
     [SerializeField] private float wanderRange = 20f;   // Distance for random wandering
     [SerializeField] private float baseSpeed = 3.5f;
     [SerializeField] private float escapeSpeedMultiplier = 2f;
-
+    [Header("Carrying Items")]
+    [SerializeField] private GameObject normalItemVisual; // Visual for normal item
+    [SerializeField] private GameObject bonusItemVisual; // Visual for bonus item
+    [SerializeField] private GameEvent collectNormalItemEvent; // Event for normal item
+    [SerializeField] private GameEvent collectBonusItemEvent; // Event for bonus item
     private NavMeshAgent agent;
     private Transform targetItem;
     private Transform targetExit;
+    private bool itemIsBonus = false;
 
-    private void Start()
+    private GameObject runningVFX;
+    private GameObject hittingVFX;
+
+    [SerializeField] GameObjectPool targetPool;
+
+    private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
         agent.speed = baseSpeed;
-
+    }
+    private void Start()
+    {
         FindRandomTargetItem();
+
+        runningVFX = this.transform.GetChild(0).GetChild(0).gameObject;
+        runningVFX.SetActive(false);
+        hittingVFX = this.transform.GetChild(0).GetChild(1).gameObject;
+        hittingVFX.SetActive(false);
+
+        // Disable item visuals initially
+        normalItemVisual = this.transform.GetChild(1).GetChild(0).gameObject;
+        normalItemVisual.SetActive(false);
+        bonusItemVisual = this.transform.GetChild(1).GetChild(1).gameObject;
+        bonusItemVisual.SetActive(false);
     }
 
     private void Update()
@@ -79,6 +102,16 @@ public class AIShopperBehaviour : MonoBehaviour
             if (itemManager != null)
             {
                 itemManager.CollectByAI(); // Mark as collected by AI
+                if(!itemManager.isBonusCart)
+                {
+                    itemIsBonus = false;
+                    normalItemVisual.SetActive(true);
+                }
+                else
+                {
+                    itemIsBonus = true;
+                    bonusItemVisual.SetActive(true);
+                }
             }
 
             Destroy(targetItem.gameObject); // Assume item is collected
@@ -94,16 +127,19 @@ public class AIShopperBehaviour : MonoBehaviour
     {
         if (targetExit != null)
         {
+            runningVFX.SetActive(true);
             agent.SetDestination(targetExit.position);
 
             if (Vector3.Distance(transform.position, targetExit.position) <= collectRange)
             {
                 // Exit reached, destroy AI or mark as "exited"
-                Destroy(gameObject);
+                ResetState();
+                targetPool.ReturnObject(gameObject);
             }
         }
         else
         {
+            runningVFX.SetActive(false);
             currentState = AIState.Wandering;
         }
     }
@@ -161,6 +197,33 @@ public class AIShopperBehaviour : MonoBehaviour
         }
     }
 
+    public void OnKnockOut()
+    {
+        hittingVFX.SetActive(true);
+        normalItemVisual.SetActive(false);
+        bonusItemVisual.SetActive(false);
+        runningVFX.SetActive(false);
+        if (currentState == AIState.Escaping)
+        {
+
+            if (!itemIsBonus)
+            {
+                collectNormalItemEvent.Raise();
+            }
+            else
+            {
+                collectBonusItemEvent.Raise();
+            }
+        }
+    }
+    public void ResetState()
+    {
+        currentState = AIState.Wandering;
+        agent.enabled = true;
+        agent.speed = baseSpeed;
+        targetItem = null;
+        targetExit = null;
+    }
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;
