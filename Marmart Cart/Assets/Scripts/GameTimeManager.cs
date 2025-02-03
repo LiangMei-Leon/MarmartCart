@@ -113,7 +113,7 @@ public class GameTimeManager : MonoBehaviour
         gamePaused = false;
         titleScreen.SetActive(false);
         ResumeGame();
-        musicManager.PlayMusic("BackgroundMusic");
+        //musicManager.PlayMusic("BackgroundMusic");
     }
 
     private void EndGame()
