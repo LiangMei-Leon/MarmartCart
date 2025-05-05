@@ -2,19 +2,23 @@ using UnityEngine;
 using Unity.Cinemachine;
 public class CameraManager : MonoBehaviour
 {
-    [SerializeField] private GameObject chainedCarts;
+    [SerializeField] private GameObject chainedCartsP1;
+    [SerializeField] private GameObject chainedCartsP2;
 
     [Header("Cameras")]
-    [SerializeField] CinemachineCamera topDownCamera;
+    [SerializeField] CinemachineCamera topDownCameraP1;
+    [SerializeField] CinemachineCamera topDownCameraP2;
 
     private void OnEnable()
     {
-        CameraSwitcher.Register(topDownCamera);
+        CameraSwitcher.Register(topDownCameraP1);
+        CameraSwitcher.Register(topDownCameraP2);
     }
 
     private void OnDisable()
     {
-        CameraSwitcher.Unregister(topDownCamera);
+        CameraSwitcher.Unregister(topDownCameraP1);
+        CameraSwitcher.Unregister(topDownCameraP2);
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -29,12 +33,20 @@ public class CameraManager : MonoBehaviour
         
     }
 
-    public void SetCameraToLookAtLeadingCart()
+    public void SetCameraP1ToLookAtLeadingCart()
     {
-        if(chainedCarts == null || topDownCamera == null)
+        if(chainedCartsP1 == null || topDownCameraP1 == null)
         {
-            Debug.LogError("Missing target objects or target camera to setup");
+            Debug.LogError("Missing target objects or target cameraP1 to setup");
         }
-        CameraSwitcher.UpdateCameraFocus(topDownCamera, chainedCarts.transform.GetChild(0));
+        CameraSwitcher.UpdateCameraFocus(topDownCameraP1, chainedCartsP1.transform.GetChild(0));
+    }
+    public void SetCameraP2ToLookAtLeadingCart()
+    {
+        if (chainedCartsP2 == null || topDownCameraP2 == null)
+        {
+            Debug.LogError("Missing target objects or target cameraP2 to setup");
+        }
+        CameraSwitcher.UpdateCameraFocus(topDownCameraP2, chainedCartsP2.transform.GetChild(0));
     }
 }

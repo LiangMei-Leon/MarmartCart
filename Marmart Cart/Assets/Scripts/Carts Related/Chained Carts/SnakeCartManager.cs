@@ -10,11 +10,16 @@ public class SnakeCartManager : MonoBehaviour
     [SerializeField] List<GameObject> snakeBody = new List<GameObject>();
 
     LeadingCartRaycaster LeadingCartRaycaster;
+    [SerializeField] bool isPlayer1 = true;
 
     [Header("Related Events")]
     [SerializeField] GameEvent setupCamera;
 
     float countUp = 0;
+
+    [Header("PlayerInputManager")]
+    [SerializeField] private PlayerInputManager playerInputManager;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -47,7 +52,10 @@ public class SnakeCartManager : MonoBehaviour
         if (snakeBody.Count == 0)
         {
             GameObject temp1 = Instantiate(bodyParts[0], transform.position, transform.rotation, transform);
-            temp1.tag = "Player";
+            if(isPlayer1)
+                temp1.tag = "Player1";
+            else
+                temp1.tag = "Player2";
             // Ensure MarkerManager is added
             if (!temp1.GetComponent<MarkerManager>())
             {
@@ -65,6 +73,14 @@ public class SnakeCartManager : MonoBehaviour
             LeadingCartRaycaster = temp1.GetComponent<LeadingCartRaycaster>();
             setupCamera.Raise();
             bodyParts.RemoveAt(0);
+
+            if(playerInputManager != null)
+            {
+                if (isPlayer1)
+                    playerInputManager.PairGamepad1WithPlayer1();
+                else
+                    playerInputManager.PairGamepad2WithPlayer2();
+            }
             return;
         }
 

@@ -10,6 +10,8 @@ TagManager:
   - Exit
   - Item
   - GameManager
+  - Player1
+  - Player2
   layers:
   - Default
   - TransparentFX

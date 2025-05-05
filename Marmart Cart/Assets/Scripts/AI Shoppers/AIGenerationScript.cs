@@ -43,7 +43,7 @@ public class AIGenerationScript : MonoBehaviour
             pool.SpawnPool();
         }
         // Find the spawn center (typically the player)
-        spawnCenter = GameObject.FindGameObjectWithTag("Player").transform;
+        spawnCenter = GameObject.FindGameObjectWithTag("Player2").transform;
         if (spawnCenter == null)
         {
             Debug.LogError("Failed to locate the center of AI generation.");

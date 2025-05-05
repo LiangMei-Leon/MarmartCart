@@ -673,11 +673,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0693562bac5d814abfcb8fb90a990de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useKeyboard: 1
-  useGamepad: 0
+  useKeyboard: 0
+  useGamepad: 1
   controllable: 1
-  boostEvent: {fileID: 11400000, guid: 3aeaccc6664a25346b77bae38223b5d0, type: 2}
-  resetCartEvent: {fileID: 11400000, guid: ec6acc4ad101416458a8963117372088, type: 2}
+  boostEvent: {fileID: 11400000, guid: 63f020d701030904f98502e230ee870d, type: 2}
+  resetCartEvent: {fileID: 11400000, guid: f44f14401f0830440997e67714386a94, type: 2}
 --- !u!114 &3901328475939746546
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -711,7 +711,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Event: {fileID: 11400000, guid: 3aeaccc6664a25346b77bae38223b5d0, type: 2}
+  Event: {fileID: 11400000, guid: 63f020d701030904f98502e230ee870d, type: 2}
   Response:
     m_PersistentCalls:
       m_Calls:
@@ -775,7 +775,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Event: {fileID: 11400000, guid: ec6acc4ad101416458a8963117372088, type: 2}
+  Event: {fileID: 11400000, guid: f44f14401f0830440997e67714386a94, type: 2}
   Response:
     m_PersistentCalls:
       m_Calls:
@@ -809,7 +809,7 @@ GameObject:
   - component: {fileID: 8281348779868106150}
   - component: {fileID: 8990966824022932014}
   m_Layer: 7
-  m_Name: Leading Cart
+  m_Name: Leading Cart 1
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

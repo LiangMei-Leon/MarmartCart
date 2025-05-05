@@ -12,8 +12,11 @@ public class AIShopperBehaviour : MonoBehaviour
     [Header("Carrying Items")]
     [SerializeField] private GameObject normalItemVisual; // Visual for normal item
     [SerializeField] private GameObject bonusItemVisual; // Visual for bonus item
-    [SerializeField] private GameEvent collectNormalItemEvent; // Event for normal item
-    [SerializeField] private GameEvent collectBonusItemEvent; // Event for bonus item
+    [SerializeField] private GameEvent p1CollectNormalItemEvent; // Event for normal item p1
+    [SerializeField] private GameEvent p1CollectBonusItemEvent; // Event for bonus item p1
+    [SerializeField] private GameEvent p2CollectNormalItemEvent; // Event for normal item p2
+    [SerializeField] private GameEvent p2CollectBonusItemEvent; // Event for bonus item p2
+
     private NavMeshAgent agent;
     private Transform targetItem;
     private Transform targetExit;
@@ -197,7 +200,7 @@ public class AIShopperBehaviour : MonoBehaviour
         }
     }
 
-    public void OnKnockOut()
+    public void OnKnockOut(int playerIndex)
     {
         hittingVFX.SetActive(true);
         normalItemVisual.SetActive(false);
@@ -205,15 +208,31 @@ public class AIShopperBehaviour : MonoBehaviour
         runningVFX.SetActive(false);
         if (currentState == AIState.Escaping)
         {
+            if(playerIndex == 1)
+            {
+                if (!itemIsBonus)
+                {
+                    p1CollectNormalItemEvent.Raise();
+                }
+                else
+                {
+                    p1CollectBonusItemEvent.Raise();
+                }
+            }
+            else if (playerIndex == 2)
+            {
 
-            if (!itemIsBonus)
-            {
-                collectNormalItemEvent.Raise();
+                if (!itemIsBonus)
+                {
+                    p2CollectNormalItemEvent.Raise();
+                }
+                else
+                {
+                    p2CollectBonusItemEvent.Raise();
+                }
             }
-            else
-            {
-                collectBonusItemEvent.Raise();
-            }
+
+    
         }
     }
     public void ResetState()

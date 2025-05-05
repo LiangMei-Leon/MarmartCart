@@ -43,7 +43,7 @@ public class AIShopperPhysics : MonoBehaviour
     {
         if (isKnockedOut) return; // Prevent multiple knockouts
 
-        if (other.gameObject.CompareTag("Player"))
+        if (other.gameObject.CompareTag("Player1"))
         {
             // Play one of the two sound effects randomly
             if (Random.value < 0.5f) // Random.value gives a float between 0 and 1
@@ -56,7 +56,24 @@ public class AIShopperPhysics : MonoBehaviour
             }
             rb.isKinematic = false;
             KnockOut();
-            shopperBehaviour.OnKnockOut();
+            int playerIndex = 1;
+            shopperBehaviour.OnKnockOut(playerIndex);
+        }
+        else if (other.gameObject.CompareTag("Player2"))
+        {
+            // Play one of the two sound effects randomly
+            if (Random.value < 0.5f) // Random.value gives a float between 0 and 1
+            {
+                sfxManager.PlaySFX("HitCharacter1");
+            }
+            else
+            {
+                sfxManager.PlaySFX("HitCharacter2");
+            }
+            rb.isKinematic = false;
+            KnockOut();
+            int playerIndex = 2;
+            shopperBehaviour.OnKnockOut(playerIndex);
         }
     }
 

@@ -41,7 +41,7 @@ public class ItemGenerationManager : MonoBehaviour
 
     private void Start()
     {
-        spawnCenter = GameObject.FindGameObjectWithTag("Player").transform;
+        spawnCenter = GameObject.FindGameObjectWithTag("Player1").transform;
         if(spawnCenter == null )
         {
             Debug.LogError("Fail to locate the center of item generation");
