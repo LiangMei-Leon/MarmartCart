@@ -55,8 +55,8 @@ public class AIShopperPhysics : MonoBehaviour
                 sfxManager.PlaySFX("HitCharacter2");
             }
             rb.isKinematic = false;
-            KnockOut();
             int playerIndex = 1;
+            KnockOut(playerIndex);
             shopperBehaviour.OnKnockOut(playerIndex);
         }
         else if (other.gameObject.CompareTag("Player2"))
@@ -71,18 +71,18 @@ public class AIShopperPhysics : MonoBehaviour
                 sfxManager.PlaySFX("HitCharacter2");
             }
             rb.isKinematic = false;
-            KnockOut();
             int playerIndex = 2;
+            KnockOut(playerIndex);
             shopperBehaviour.OnKnockOut(playerIndex);
         }
     }
 
-    private void KnockOut()
+    private void KnockOut(int playerIndex)
     {
         if (rb == null) return;
 
         isKnockedOut = true;
-        gameManager.IncreaseHitCount();
+        gameManager.IncreaseHitCount(playerIndex);
         // Generate a random direction for knockback
         Vector3 randomDirection = new Vector3(
             Random.Range(-1f, 1f),

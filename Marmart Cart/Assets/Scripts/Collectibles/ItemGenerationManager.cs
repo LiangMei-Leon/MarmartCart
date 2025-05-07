@@ -3,6 +3,7 @@ using UnityEngine;
 public class ItemGenerationManager : MonoBehaviour
 {
     [Header("Spawn Settings")]
+    [SerializeField] private bool isForPlayer1 = true;
     [SerializeField] private Transform spawnCenter;
 
     [Header("Spawn Settings")]
@@ -41,8 +42,11 @@ public class ItemGenerationManager : MonoBehaviour
 
     private void Start()
     {
-        spawnCenter = GameObject.FindGameObjectWithTag("Player1").transform;
-        if(spawnCenter == null )
+        if (isForPlayer1)
+            spawnCenter = GameObject.FindGameObjectWithTag("Player1").transform;
+        else
+            spawnCenter = GameObject.FindGameObjectWithTag("Player2").transform;
+        if (spawnCenter == null )
         {
             Debug.LogError("Fail to locate the center of item generation");
         }

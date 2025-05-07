@@ -3,6 +3,7 @@ using UnityEngine;
 public class AIGenerationScript : MonoBehaviour
 {
     [Header("Spawn Settings")]
+    [SerializeField] private bool isForPlayer1 = true;
     [SerializeField] private Transform spawnCenter;
 
     [Header("Spawn Area Settings")]
@@ -43,7 +44,11 @@ public class AIGenerationScript : MonoBehaviour
             pool.SpawnPool();
         }
         // Find the spawn center (typically the player)
-        spawnCenter = GameObject.FindGameObjectWithTag("Player2").transform;
+        if (isForPlayer1)
+            spawnCenter = GameObject.FindGameObjectWithTag("Player1").transform;
+        else
+            spawnCenter = GameObject.FindGameObjectWithTag("Player2").transform;
+
         if (spawnCenter == null)
         {
             Debug.LogError("Failed to locate the center of AI generation.");

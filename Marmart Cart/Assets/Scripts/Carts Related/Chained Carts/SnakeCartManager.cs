@@ -93,7 +93,10 @@ public class SnakeCartManager : MonoBehaviour
         if (countUp >= distanceBetween)
         {
             GameObject temp = Instantiate(bodyParts[0], markM.markerList[0].position, markM.markerList[0].rotation, transform);
-            temp.tag = "Player";
+            if (isPlayer1)
+                temp.tag = "Player1";
+            else
+                temp.tag = "Player2";
             // Ensure MarkerManager is added
             if (!temp.GetComponent<MarkerManager>())
             {

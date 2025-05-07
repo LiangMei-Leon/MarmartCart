@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class LeadingCartRaycaster : MonoBehaviour
 {
+    [SerializeField] CartControlScript cartControlInput;
+
     [Header("Raycast Settings")]
     [SerializeField] LayerMask layerMask;
     [SerializeField] float distance;
@@ -77,6 +79,7 @@ public class LeadingCartRaycaster : MonoBehaviour
         if(collision.gameObject.CompareTag("Obstacles"))
         {
             sfxManager.PlaySFX("CrashWalls");
+            cartControlInput.AllowFlip();
         }
     }
 }
