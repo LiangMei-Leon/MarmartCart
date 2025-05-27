@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e01023b4e10a033458893eb9e3d4f8e8, type: 3}
-  m_Name: Collect Normal Cart
+  m_Name: Collect Normal Cart P1
   m_EditorClassIdentifier: 
-  DeveloperDescription: 'Raise this when the player successfully collect
+  DeveloperDescription: '(P1) Raise this when the player successfully collect
 
-    a normal
-    cart'
+    a
+    normal cart'

@@ -22,8 +22,10 @@ public class ChainedCartManager : MonoBehaviour
     private LeadingCartRaycaster hitInfo;
 
     [Header("Related Events")]
-    [SerializeField] GameEvent collectNormalCartEvent;
-    [SerializeField] GameEvent collectBonusCartEvent;
+    [SerializeField] GameEvent p1collectNormalCartEvent;
+    [SerializeField] GameEvent p1collectBonusCartEvent;
+    [SerializeField] GameEvent p2collectNormalCartEvent;
+    [SerializeField] GameEvent p2collectBonusCartEvent;
 
     void Awake()
     {
@@ -92,16 +94,29 @@ public class ChainedCartManager : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player") && !isCollectedByPlayer)
+        if (other.CompareTag("Player1") && !isCollectedByPlayer)
         {
             // isCollectedByPlayer = true;
             if(isBonusCart)
             {
-                collectBonusCartEvent.Raise();
+                p1collectBonusCartEvent.Raise();
             }
             else
             {
-                collectNormalCartEvent.Raise();
+                p1collectNormalCartEvent.Raise();
+            }
+            Destroy(this.gameObject);
+        }
+        if (other.CompareTag("Player2") && !isCollectedByPlayer)
+        {
+            // isCollectedByPlayer = true;
+            if (isBonusCart)
+            {
+                p2collectBonusCartEvent.Raise();
+            }
+            else
+            {
+                p2collectNormalCartEvent.Raise();
             }
             Destroy(this.gameObject);
         }

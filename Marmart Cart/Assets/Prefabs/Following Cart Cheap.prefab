@@ -989,8 +989,10 @@ MonoBehaviour:
   collectVFX: {fileID: 1106169482944890282}
   <isCollectedByPlayer>k__BackingField: 0
   <isCollectedByAI>k__BackingField: 0
-  collectNormalCartEvent: {fileID: 11400000, guid: e276d5233b388ba49a963275c3ade278, type: 2}
-  collectBonusCartEvent: {fileID: 11400000, guid: 86cf779dca08a0a4497fc14537f5b9c9, type: 2}
+  p1collectNormalCartEvent: {fileID: 11400000, guid: e276d5233b388ba49a963275c3ade278, type: 2}
+  p1collectBonusCartEvent: {fileID: 11400000, guid: 86cf779dca08a0a4497fc14537f5b9c9, type: 2}
+  p2collectNormalCartEvent: {fileID: 11400000, guid: 5795e0b2d0274704bb75ba566dd756ab, type: 2}
+  p2collectBonusCartEvent: {fileID: 11400000, guid: 7a39b94ec0dfa3644a1780908cec255c, type: 2}
 --- !u!65 &4352900759099298663
 BoxCollider:
   m_ObjectHideFlags: 0
