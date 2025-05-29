@@ -33,7 +33,7 @@ public class LeadingCartBehaviour : MonoBehaviour
     [SerializeField] AnimationCurve engineTorqueCurve;
     [SerializeField] float maxEngineTorque = 100f;
     [SerializeField] float thresholdSpeed = 0.1f;  // Small threshold to treat near-zero speeds as zero
-    [SerializeField] float regularMaxSpeed = 10f;        // Regular forward speed
+    public float regularMaxSpeed = 10f;        // Regular forward speed
     [SerializeField] float minSpeed = 5f;          // minimum speed cap
     [SerializeField] float brakeFactor = 1f;
     [SerializeField] float maxBrakeForce = 1f;
