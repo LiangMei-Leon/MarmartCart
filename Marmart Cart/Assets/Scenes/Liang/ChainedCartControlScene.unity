@@ -1716,7 +1716,7 @@ GameObject:
   - component: {fileID: 150689657}
   - component: {fileID: 150689656}
   - component: {fileID: 150689655}
-  m_Layer: 9
+  m_Layer: 10
   m_Name: Wall (9)
   m_TagString: Obstacles
   m_Icon: {fileID: 0}
@@ -2470,7 +2470,7 @@ GameObject:
   - component: {fileID: 214394149}
   - component: {fileID: 214394148}
   - component: {fileID: 214394147}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Cube
   m_TagString: Obstacles
   m_Icon: {fileID: 0}
@@ -4563,7 +4563,7 @@ GameObject:
   - component: {fileID: 393362299}
   - component: {fileID: 393362298}
   - component: {fileID: 393362297}
-  m_Layer: 9
+  m_Layer: 10
   m_Name: Wall (8)
   m_TagString: Obstacles
   m_Icon: {fileID: 0}
@@ -4675,6 +4675,38 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 393362295}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &395223204
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 395223205}
+  m_Layer: 0
+  m_Name: Model
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &395223205
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 395223204}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2045370581}
+  m_Father: {fileID: 648269227}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &395871677
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4988,7 +5020,7 @@ GameObject:
   - component: {fileID: 405823044}
   - component: {fileID: 405823043}
   - component: {fileID: 405823042}
-  m_Layer: 9
+  m_Layer: 10
   m_Name: Wall (7)
   m_TagString: Obstacles
   m_Icon: {fileID: 0}
@@ -5897,7 +5929,7 @@ GameObject:
   - component: {fileID: 480002261}
   - component: {fileID: 480002260}
   - component: {fileID: 480002259}
-  m_Layer: 9
+  m_Layer: 10
   m_Name: Wall (11)
   m_TagString: Obstacles
   m_Icon: {fileID: 0}
@@ -6827,7 +6859,7 @@ GameObject:
   - component: {fileID: 522590944}
   - component: {fileID: 522590943}
   - component: {fileID: 522590946}
-  m_Layer: 9
+  m_Layer: 10
   m_Name: Wall
   m_TagString: Obstacles
   m_Icon: {fileID: 0}
@@ -8899,6 +8931,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 648269227}
+  - component: {fileID: 648269228}
+  - component: {fileID: 648269229}
   m_Layer: 0
   m_Name: Dino
   m_TagString: Untagged
@@ -8915,13 +8949,62 @@ Transform:
   m_GameObject: {fileID: 648269226}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 55.1, y: 1.9, z: -446.7}
+  m_LocalPosition: {x: 93, y: 1.9, z: -446.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2045370581}
+  - {fileID: 395223205}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &648269228
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 648269226}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 7.8118706, y: 10.123787, z: 7.5341187}
+  m_Center: {x: -0.44646645, y: 3.0905342, z: -0.59020996}
+--- !u!114 &648269229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 648269226}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49e09cab5aef3f249807e3a6f3002a91, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 3
+  stageAttackRadius:
+  - 10
+  - 12
+  - 15
+  stageAttackInterval:
+  - 15
+  - 12
+  - 10
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 512
+  moveDistance: 15
+  moveSpeed: 7.5
+  angleStep: 15
+  raycastDistance: 1000
 --- !u!1001 &652735700
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11459,7 +11542,7 @@ GameObject:
   - component: {fileID: 844723498}
   - component: {fileID: 844723497}
   - component: {fileID: 844723500}
-  m_Layer: 9
+  m_Layer: 10
   m_Name: Wall (4)
   m_TagString: Obstacles
   m_Icon: {fileID: 0}
@@ -12372,7 +12455,7 @@ GameObject:
   - component: {fileID: 904092520}
   - component: {fileID: 904092519}
   - component: {fileID: 904092518}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Cube
   m_TagString: Obstacles
   m_Icon: {fileID: 0}
@@ -13441,7 +13524,7 @@ GameObject:
   - component: {fileID: 960637133}
   - component: {fileID: 960637132}
   - component: {fileID: 960637131}
-  m_Layer: 9
+  m_Layer: 10
   m_Name: Wall (12)
   m_TagString: Obstacles
   m_Icon: {fileID: 0}
@@ -14386,7 +14469,7 @@ GameObject:
   - component: {fileID: 1003983983}
   - component: {fileID: 1003983982}
   - component: {fileID: 1003983985}
-  m_Layer: 9
+  m_Layer: 10
   m_Name: Wall (2)
   m_TagString: Obstacles
   m_Icon: {fileID: 0}
@@ -15005,7 +15088,7 @@ GameObject:
   - component: {fileID: 1081642712}
   - component: {fileID: 1081642711}
   - component: {fileID: 1081642710}
-  m_Layer: 9
+  m_Layer: 10
   m_Name: Wall (6)
   m_TagString: Obstacles
   m_Icon: {fileID: 0}
@@ -16093,7 +16176,7 @@ GameObject:
   - component: {fileID: 1149472146}
   - component: {fileID: 1149472145}
   - component: {fileID: 1149472148}
-  m_Layer: 9
+  m_Layer: 10
   m_Name: Wall (3)
   m_TagString: Obstacles
   m_Icon: {fileID: 0}
@@ -16218,7 +16301,7 @@ GameObject:
   - component: {fileID: 1153857855}
   - component: {fileID: 1153857854}
   - component: {fileID: 1153857857}
-  m_Layer: 9
+  m_Layer: 10
   m_Name: Wall (1)
   m_TagString: Obstacles
   m_Icon: {fileID: 0}
@@ -16528,7 +16611,7 @@ GameObject:
   - component: {fileID: 1162653844}
   - component: {fileID: 1162653843}
   - component: {fileID: 1162653842}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Cube
   m_TagString: Obstacles
   m_Icon: {fileID: 0}
@@ -17023,7 +17106,7 @@ GameObject:
   - component: {fileID: 1214106455}
   - component: {fileID: 1214106454}
   - component: {fileID: 1214106457}
-  m_Layer: 9
+  m_Layer: 10
   m_Name: Wall (5)
   m_TagString: Obstacles
   m_Icon: {fileID: 0}
@@ -20015,7 +20098,7 @@ GameObject:
   - component: {fileID: 1373495721}
   - component: {fileID: 1373495720}
   - component: {fileID: 1373495719}
-  m_Layer: 9
+  m_Layer: 10
   m_Name: Wall (10)
   m_TagString: Obstacles
   m_Icon: {fileID: 0}
@@ -21282,7 +21365,7 @@ GameObject:
   - component: {fileID: 1494435730}
   - component: {fileID: 1494435729}
   - component: {fileID: 1494435728}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Cube
   m_TagString: Obstacles
   m_Icon: {fileID: 0}
@@ -22498,7 +22581,7 @@ GameObject:
   - component: {fileID: 1638726990}
   - component: {fileID: 1638726989}
   - component: {fileID: 1638726988}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Cube
   m_TagString: Obstacles
   m_Icon: {fileID: 0}
@@ -26642,11 +26725,11 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 648269227}
+    m_TransformParent: {fileID: 395223205}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 7035c8509a9fe404882c127036ae9054, type: 3}
       propertyPath: m_LocalScale.x
-      value: 13.940001
+      value: 13.9400015
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7035c8509a9fe404882c127036ae9054, type: 3}
       propertyPath: m_LocalScale.y
