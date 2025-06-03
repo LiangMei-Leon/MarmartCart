@@ -10,6 +10,8 @@ public class DinoBehaviour : MonoBehaviour
     [Header("Attack Settings (Stage-based)")]
     [SerializeField] private float[] stageAttackRadius = { 10f, 12f, 15f };
     [SerializeField] private float[] stageAttackInterval = { 15f, 12f, 10f };
+    [SerializeField] private int[] stagePathLength = { 10, 15, 20 };
+    [SerializeField] private int[] stageTurnCounts = { 1, 2, 3 };
     [SerializeField] private LayerMask obstacleLayer;
 
     private float attackTimer;
@@ -21,10 +23,15 @@ public class DinoBehaviour : MonoBehaviour
     [SerializeField] private float raycastDistance = 1000f;
     private bool isMoving = false;
     private Vector3 moveTarget;
+    [SerializeField] private DinoTileManager dinoTileManager;
+
     void Start()
     {
         currentHealth = maxHealth;
         attackTimer = stageAttackInterval[currentStage];
+        dinoTileManager.SetPathLength(stagePathLength[currentStage]);
+        dinoTileManager.SetTurnCounts(stageTurnCounts[currentStage]);
+        dinoTileManager.GeneratePath();
     }
 
     void Update()
@@ -102,6 +109,11 @@ public class DinoBehaviour : MonoBehaviour
             currentHealth--;
             Debug.Log($"Dino took damage! Stage is now {currentStage + 1}");
             attackTimer = stageAttackInterval[currentStage]; // Reset timer for new stage
+
+            //update path diffculy level and generate
+            dinoTileManager.SetPathLength(stagePathLength[currentStage]);
+            dinoTileManager.SetTurnCounts(stageTurnCounts[currentStage]);
+            dinoTileManager.GeneratePath();
         }
     }
     void OnDrawGizmosSelected()
