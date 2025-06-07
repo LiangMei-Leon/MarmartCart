@@ -79,6 +79,13 @@ public class LeadingCartRaycaster : MonoBehaviour
         if(collision.gameObject.CompareTag("Obstacles"))
         {
             sfxManager.PlaySFX("CrashWalls");
+            //cartControlInput.AllowFlip();
+            Destroy(collision.gameObject);
+        }
+
+        if (collision.gameObject.CompareTag("Walls"))
+        {
+            sfxManager.PlaySFX("CrashWalls");
             cartControlInput.AllowFlip();
         }
     }

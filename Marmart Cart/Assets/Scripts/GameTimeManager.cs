@@ -35,7 +35,7 @@ public class GameTimeManager : MonoBehaviour
     [SerializeField] private int pointsPerHit = 5;
     [SerializeField] private int pointsPerNormalItem = 20;
     [SerializeField] private int pointsPerBonusItem = 30;
-
+    [SerializeField] private MartConditionManager martConditionManager;
 
     [Header("Player Carts")]
     //Player 1
@@ -311,7 +311,24 @@ public class GameTimeManager : MonoBehaviour
             $"Player2 Score: {finalScoreP2}";
 
         scoreBreakdownText.text =
-            $"Total Score: {finalScoreP1 + finalScoreP2}\n" +
-            "Thanks For Shopping!";
+            $"Total Score: {finalScoreP1 + finalScoreP2 + Mathf.RoundToInt(martConditionManager.percent * 10000)}\n\n" + $"Mart Condition Score: {Mathf.RoundToInt(martConditionManager.percent * 10000)}" +
+            "Thanks For Protecting the Mart!";
+    }
+
+    public float GetCurrentGameTime()
+    {
+        return elapsedTime;
+    }
+
+    public int GetCurrentGameStage()
+    {
+        if(elapsedTime >= 0f && elapsedTime <= 60f)
+            return 0;
+        if (elapsedTime > 60f && elapsedTime <= 120f)
+            return 1;
+        else /*if (elapsedTime > 120f && elapsedTime <= 180f)*/
+            return 2;
+
+        return 0;
     }
 }

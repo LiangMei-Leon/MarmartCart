@@ -5,7 +5,7 @@ public class DinoBehaviour : MonoBehaviour
     [Header("Stage Settings")]
     [SerializeField] private int maxHealth = 3;
     private int currentHealth;
-    private int currentStage => Mathf.Clamp(maxHealth - currentHealth, 0, 2);
+    [SerializeField] private int currentStage = 0;
 
     [Header("Attack Settings (Stage-based)")]
     [SerializeField] private float[] stageAttackRadius = { 10f, 12f, 15f };
@@ -25,9 +25,20 @@ public class DinoBehaviour : MonoBehaviour
     private Vector3 moveTarget;
     [SerializeField] private DinoTileManager dinoTileManager;
 
+    [SerializeField] private GameTimeManager gameTimeManager;
+
+    [SerializeField] private GameObject bonusItemPrefab;
+    [SerializeField] private LayerMask groundLayer;
+
+    void Awake()
+    {
+    }
     void Start()
     {
+
         currentHealth = maxHealth;
+        gameTimeManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameTimeManager>();
+        currentStage = gameTimeManager.GetCurrentGameStage();
         attackTimer = stageAttackInterval[currentStage];
         dinoTileManager.SetPathLength(stagePathLength[currentStage]);
         dinoTileManager.SetTurnCounts(stageTurnCounts[currentStage]);
@@ -36,6 +47,10 @@ public class DinoBehaviour : MonoBehaviour
 
     void Update()
     {
+        currentStage = gameTimeManager.GetCurrentGameStage();
+        dinoTileManager.SetPathLength(stagePathLength[currentStage]);
+        dinoTileManager.SetTurnCounts(stageTurnCounts[currentStage]);
+
         attackTimer -= Time.deltaTime;
         if (attackTimer <= 0f)
         {
@@ -71,7 +86,8 @@ public class DinoBehaviour : MonoBehaviour
     private void TryFindMovementDirection()
     {
         float randomStartAngle = Random.Range(0f, 360f);
-        Vector3 origin = transform.position + Vector3.up * 0.5f;
+        Vector3 origin = transform.position;
+        origin.y = 1f;
 
         for (float angleOffset = 0; angleOffset < 360f; angleOffset += angleStep)
         {
@@ -95,18 +111,34 @@ public class DinoBehaviour : MonoBehaviour
         if (Vector3.Distance(transform.position, moveTarget) < 0.01f)
         {
             isMoving = false;
+            //dinoTileManager.GeneratePath();
         }
     }
     public void TakeDamage()
     {
-        if (currentHealth <= 1)
+        currentHealth--;
+        if (currentHealth <= 0)
         {
             Debug.Log("Dino defeated!");
-            Destroy(gameObject); // Or trigger death animation/event instead
+            for (int i = 0; i < 10; i++)
+            {
+                // Keep trying to find a valid spawn position
+                Vector3 spawnPosition = GetValidSpawnPosition();
+                if (spawnPosition != Vector3.zero)
+                {
+                    Instantiate(bonusItemPrefab, spawnPosition + new Vector3(0, 10f, 0), Quaternion.identity);
+                }
+                else
+                {
+                    Debug.LogWarning("Failed to find a valid spawn position after multiple attempts.");
+                }
+            }
+            dinoTileManager.ClearExistingTiles();
+            Destroy(this.gameObject); // Or trigger death animation/event instead
         }
         else
         {
-            currentHealth--;
+            
             Debug.Log($"Dino took damage! Stage is now {currentStage + 1}");
             attackTimer = stageAttackInterval[currentStage]; // Reset timer for new stage
 
@@ -115,6 +147,41 @@ public class DinoBehaviour : MonoBehaviour
             dinoTileManager.SetTurnCounts(stageTurnCounts[currentStage]);
             dinoTileManager.GeneratePath();
         }
+    }
+
+    private Vector3 GetValidSpawnPosition()
+    {
+        int maxRetries = 50; // Limit the number of retries to prevent infinite loops
+        int attempts = 0;
+
+        while (attempts < maxRetries)
+        {
+            // Generate a random point within the radius, ensuring it’s beyond minDistanceFromCenter
+            Vector2 randomPoint = Random.insideUnitCircle * 20f;
+            if (randomPoint.magnitude >= 1f)
+            {
+                Vector3 spawnPosition = new Vector3(randomPoint.x, 20, randomPoint.y) + this.transform.position;
+
+                // Raycast to detect any surface
+                if (Physics.Raycast(spawnPosition, Vector3.down, out RaycastHit hit, Mathf.Infinity))
+                {
+                    // Check if the hit object is on the ground layer
+                    if (((1 << hit.collider.gameObject.layer) & groundLayer) != 0)
+                    {
+                        return hit.point; // Valid ground point
+                    }
+                    else
+                    {
+                        // If not on ground layer, continue trying
+                        Debug.Log($"Invalid hit on layer {hit.collider.gameObject.layer}, retrying...");
+                    }
+                }
+            }
+
+            attempts++;
+        }
+
+        return Vector3.zero; // Return an invalid position if no ground is found after retries
     }
     void OnDrawGizmosSelected()
     {

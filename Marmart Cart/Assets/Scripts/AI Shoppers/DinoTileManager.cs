@@ -53,7 +53,13 @@ public class DinoTileManager : MonoBehaviour
 
         Vector3 currentPos = GetRandomStartPosition();
         Vector3 currentDir = GetRandomDirection();
-        int stepBeforeTurn = Mathf.Max(1, pathLength / Mathf.Max(1, turnCount));
+        // STEP 1: Precompute turn indices for even spacing
+        List<int> turnIndices = new();
+        for (int t = 1; t <= turnCount; t++)
+        {
+            int turnAt = Mathf.RoundToInt((float)t * (pathLength - 1) / (turnCount + 1));
+            turnIndices.Add(turnAt);
+        }
 
         for (int i = 0; i < pathLength; i++)
         {
@@ -71,8 +77,8 @@ public class DinoTileManager : MonoBehaviour
             // Move forward
             currentPos += currentDir * tileSpacing;
 
-            // Change direction at turn intervals
-            if (i > 0 && i % stepBeforeTurn == 0)
+            // Turn at specific, evenly spaced steps
+            if (turnIndices.Contains(i))
             {
                 currentDir = GetNextDirection(currentDir);
             }
@@ -108,7 +114,7 @@ public class DinoTileManager : MonoBehaviour
         dinoBehaviour.TakeDamage();
     }
 
-    private void ClearExistingTiles()
+    public void ClearExistingTiles()
     {
         foreach (var tile in player1Tiles)
             if (tile) Destroy(tile.gameObject);
@@ -138,26 +144,16 @@ public class DinoTileManager : MonoBehaviour
 
     private Vector3 GetRandomDirection()
     {
-        Vector3[] directions = { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
-        return directions[Random.Range(0, directions.Length)];
+        float[] baseAngles = { 0f, 120f, 240f };
+        float angle = baseAngles[Random.Range(0, baseAngles.Length)];
+        return Quaternion.Euler(0f, angle, 0f) * Vector3.forward;
     }
 
     private Vector3 GetNextDirection(Vector3 previousDirection)
     {
-        List<Vector3> options = new();
-
-        if (previousDirection == Vector3.forward || previousDirection == Vector3.back)
-        {
-            options.Add(Vector3.left);
-            options.Add(Vector3.right);
-        }
-        else
-        {
-            options.Add(Vector3.forward);
-            options.Add(Vector3.back);
-        }
-
-        return options[Random.Range(0, options.Count)];
+        float[] turnAngles = { -60f, 60f }; // Only left and right
+        float chosenAngle = turnAngles[Random.Range(0, turnAngles.Length)];
+        return Quaternion.Euler(0f, chosenAngle, 0f) * previousDirection.normalized;
     }
 
     private Vector3 RoundToGrid(Vector3 pos)

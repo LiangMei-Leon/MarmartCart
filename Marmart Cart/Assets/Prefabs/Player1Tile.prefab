@@ -116,7 +116,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 3.81, y: 0, z: -430}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.25, y: 1, z: 1.25}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6443006888681223566}
@@ -136,6 +136,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   owner: 0
   isCovered: 0
+  defaultMaterial: {fileID: 2100000, guid: 396bc6589cce9004cb68c02dd7726c91, type: 2}
+  coveredMaterial: {fileID: 2100000, guid: 09172ba6ac1426540bcbd2bfceee8332, type: 2}
 --- !u!136 &181650326304813269
 CapsuleCollider:
   m_ObjectHideFlags: 0

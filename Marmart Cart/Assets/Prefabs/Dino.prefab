@@ -1,0 +1,236 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5917778710518677704
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5943536882666774543}
+  m_Layer: 0
+  m_Name: Model
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5943536882666774543
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5917778710518677704}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 8.47, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5582429173396951421}
+  m_Father: {fileID: 7365301331898775550}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8825317781508640386
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7365301331898775550}
+  - component: {fileID: 8888559782915405104}
+  - component: {fileID: 4137748200215300740}
+  - component: {fileID: 1494541150520090000}
+  m_Layer: 0
+  m_Name: Dino
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7365301331898775550
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8825317781508640386}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 76.8, y: 1, z: -418.31}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5943536882666774543}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &8888559782915405104
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8825317781508640386}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 0
+  serializedVersion: 3
+  m_Size: {x: 7.8118706, y: 10.123787, z: 7.5341187}
+  m_Center: {x: -0.44646645, y: 11.89, z: -0.59020996}
+--- !u!114 &4137748200215300740
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8825317781508640386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49e09cab5aef3f249807e3a6f3002a91, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 1
+  currentStage: 0
+  stageAttackRadius:
+  - 15
+  - 20
+  - 30
+  stageAttackInterval:
+  - 15
+  - 15
+  - 15
+  stagePathLength: 050000000a0000000f000000
+  stageTurnCounts: 000000000100000002000000
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 512
+  moveDistance: 30
+  moveSpeed: 10
+  angleStep: 15
+  raycastDistance: 1000
+  dinoTileManager: {fileID: 1494541150520090000}
+  gameTimeManager: {fileID: 0}
+  bonusItemPrefab: {fileID: 5125540016162396937, guid: 6babe8a17500fa54787592962df13c24, type: 3}
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 64
+--- !u!114 &1494541150520090000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8825317781508640386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f687c6d8da5eced4496a947e89ffce16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  p1TilePrefab: {fileID: 4289824111171447664, guid: f292627d2c36bb24ebda22317c15540b, type: 3}
+  p2TilePrefab: {fileID: 2452620159070998055, guid: 77e35c5652f9c6a4eb760654f0b5d451, type: 3}
+  pathLength: 1
+  turnCount: 3
+  tileSpacing: 3.25
+  minStartDistance: 2
+  maxStartDistance: 9
+  dinoCenter: {fileID: 7365301331898775550}
+  player1Tiles: []
+  player2Tiles: []
+  dinoBehaviour: {fileID: 4137748200215300740}
+--- !u!1001 &5400516053936060054
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 5943536882666774543}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 5d2774c756b1dd14f92b89738318a2ca, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5d2774c756b1dd14f92b89738318a2ca, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5d2774c756b1dd14f92b89738318a2ca, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5d2774c756b1dd14f92b89738318a2ca, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5d2774c756b1dd14f92b89738318a2ca, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5d2774c756b1dd14f92b89738318a2ca, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5d2774c756b1dd14f92b89738318a2ca, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5d2774c756b1dd14f92b89738318a2ca, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5d2774c756b1dd14f92b89738318a2ca, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5d2774c756b1dd14f92b89738318a2ca, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5d2774c756b1dd14f92b89738318a2ca, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5d2774c756b1dd14f92b89738318a2ca, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5d2774c756b1dd14f92b89738318a2ca, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5d2774c756b1dd14f92b89738318a2ca, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -905581353497292442, guid: 5d2774c756b1dd14f92b89738318a2ca, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: d3209d07e9fe4a841b37f0f5c60e3ea0, type: 2}
+    - target: {fileID: -905581353497292442, guid: 5d2774c756b1dd14f92b89738318a2ca, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: d3209d07e9fe4a841b37f0f5c60e3ea0, type: 2}
+    - target: {fileID: 919132149155446097, guid: 5d2774c756b1dd14f92b89738318a2ca, type: 3}
+      propertyPath: m_Name
+      value: Low_poly_UFO
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 5d2774c756b1dd14f92b89738318a2ca, type: 3}
+--- !u!4 &5582429173396951421 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 5d2774c756b1dd14f92b89738318a2ca, type: 3}
+  m_PrefabInstance: {fileID: 5400516053936060054}
+  m_PrefabAsset: {fileID: 0}
