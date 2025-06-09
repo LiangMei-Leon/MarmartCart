@@ -7,7 +7,8 @@ public class PlayerIndictor : MonoBehaviour
 
     public Transform player1;        // The player this indicator follows (e.g. Player 1)
     public Transform player2;        // The target player (e.g. Player 2)
-    public float distanceFromPlayer = 2f; // How far away from Player A it should appear
+
+    private Vector3 direction;
 
     private void Start()
     {
@@ -20,23 +21,20 @@ public class PlayerIndictor : MonoBehaviour
     {
         if (player1 == null || player2 == null) return;
 
+
         if (isForPlayer1)
         {
-            Vector3 direction = (player2.position - player1.position).normalized;
-            Vector3 offset = direction * distanceFromPlayer;
-            transform.position = player1.position + offset;
-
-            // Optional: face the direction of movement or look at player B
-            transform.forward = direction;
+            direction = player2.position - player1.position;
         }
         else
         {
-            Vector3 direction = (player1.position - player2.position).normalized;
-            Vector3 offset = direction * distanceFromPlayer;
-            transform.position = player2.position + offset;
-
-            // Optional: face the direction of movement or look at player B
-            transform.forward = direction;
+            direction = player1.position - player2.position;
         }
+
+        // Compute angle in degrees (relative to world forward)
+        float angle = Mathf.Atan2(direction.z, direction.x) * Mathf.Rad2Deg;
+
+        // Rotate around Z (2D sprite rotation)
+        transform.rotation = Quaternion.Euler(90f, 0f, angle - 67f);
     }
 }
