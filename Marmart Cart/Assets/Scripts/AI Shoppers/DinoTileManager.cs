@@ -91,6 +91,8 @@ public class DinoTileManager : MonoBehaviour
 
     private bool AllTilesCovered()
     {
+        if (player1Tiles.Count == 0 || player2Tiles.Count == 0) return false;
+
         foreach (var tile in player1Tiles)
         {
             if (tile == null) continue;

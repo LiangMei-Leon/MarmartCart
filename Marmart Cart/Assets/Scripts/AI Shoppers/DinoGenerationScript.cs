@@ -34,12 +34,12 @@ public class DinoGenerationScript : MonoBehaviour
     [SerializeField] private GameObject dinoPrefab;
 
     private float nextSpawnTime;
-
+    private GameObject existingDino;
     private void Start()
     {
         spawnCenter = this.transform;
         UpdateGamePhase(); // Initialize phase on start
-        nextSpawnTime = Time.time + spawnInterval; // Delay first spawn until interval passes
+        nextSpawnTime = Time.time; // + spawnInterval; // Delay first spawn until interval passes
     }
 
     void Update()
@@ -85,13 +85,16 @@ public class DinoGenerationScript : MonoBehaviour
 
     private void SpawnItems()
     {
-        for (int i = 0; i < itemsPerSpawn; i++)
+        if (existingDino != null)
         {
-            // Keep trying to find a valid spawn position
+            existingDino.GetComponent<DinoBehaviour>().IncreaseLevel();
+        }
+        else
+        {
             Vector3 spawnPosition = GetValidSpawnPosition();
             if (spawnPosition != Vector3.zero)
             {
-                Instantiate(dinoPrefab, spawnPosition + new Vector3(0, 1f, 0), Quaternion.identity);
+                existingDino = Instantiate(dinoPrefab, spawnPosition + new Vector3(0, -5f, 0), Quaternion.identity);
             }
             else
             {
@@ -102,7 +105,7 @@ public class DinoGenerationScript : MonoBehaviour
 
     private Vector3 GetValidSpawnPosition()
     {
-        int maxRetries = 50; // Limit the number of retries to prevent infinite loops
+        int maxRetries = 500; // Limit the number of retries to prevent infinite loops
         int attempts = 0;
 
         while (attempts < maxRetries)

@@ -1,11 +1,12 @@
 using UnityEngine;
+using TMPro;
 
 public class DinoBehaviour : MonoBehaviour
 {
     [Header("Stage Settings")]
     [SerializeField] private int maxHealth = 3;
     private int currentHealth;
-    [SerializeField] private int currentStage = 0;
+    [SerializeField] private int currentLevel = 1;
 
     [Header("Attack Settings (Stage-based)")]
     [SerializeField] private float[] stageAttackRadius = { 10f, 12f, 15f };
@@ -14,7 +15,12 @@ public class DinoBehaviour : MonoBehaviour
     [SerializeField] private int[] stageTurnCounts = { 1, 2, 3 };
     [SerializeField] private LayerMask obstacleLayer;
 
+    [SerializeField] private TextMeshProUGUI attackTimerText;
+    [SerializeField] private TextMeshProUGUI levelText;
     private float attackTimer;
+    private float originalY;
+
+    private bool hasSelectedObject = false;
 
     [Header("Movement Settings")]
     [SerializeField] private float moveDistance = 3f;
@@ -32,48 +38,102 @@ public class DinoBehaviour : MonoBehaviour
 
     void Awake()
     {
+        gameTimeManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameTimeManager>();
     }
     void Start()
     {
+        currentLevel = gameTimeManager.GetCurrentGameStage() + 1;
 
         currentHealth = maxHealth;
         gameTimeManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameTimeManager>();
-        currentStage = gameTimeManager.GetCurrentGameStage();
-        attackTimer = stageAttackInterval[currentStage];
-        dinoTileManager.SetPathLength(stagePathLength[currentStage]);
-        dinoTileManager.SetTurnCounts(stageTurnCounts[currentStage]);
+
+
+        attackTimer = stageAttackInterval[currentLevel - 1];
+        attackTimerText = this.gameObject.transform.GetChild(1).GetChild(0).GetComponent<TextMeshProUGUI>();
+        levelText = this.gameObject.transform.GetChild(1).GetChild(1).GetComponent<TextMeshProUGUI>();
+        levelText.text = $"Level {currentLevel}";
+
+        dinoTileManager.SetPathLength(stagePathLength[currentLevel - 1]);
+        dinoTileManager.SetTurnCounts(stageTurnCounts[currentLevel - 1]);
         dinoTileManager.GeneratePath();
+
+        originalY = transform.position.y;
     }
 
     void Update()
     {
-        currentStage = gameTimeManager.GetCurrentGameStage();
-        dinoTileManager.SetPathLength(stagePathLength[currentStage]);
-        dinoTileManager.SetTurnCounts(stageTurnCounts[currentStage]);
-
-        attackTimer -= Time.deltaTime;
-        if (attackTimer <= 0f)
-        {
-            PerformAttack();
-            TryFindMovementDirection();
-            attackTimer = stageAttackInterval[currentStage];
-        }
+        levelText.text = $"Level {currentLevel}";
+        dinoTileManager.SetPathLength(stagePathLength[currentLevel - 1]);
+        dinoTileManager.SetTurnCounts(stageTurnCounts[currentLevel - 1]);
 
         if (isMoving)
         {
+            dinoTileManager.ClearExistingTiles();
+            // Rotate around Y while moving
+            this.gameObject.transform.GetChild(0).transform.Rotate(Vector3.up, 180f * Time.deltaTime); // Adjust speed as needed
+            attackTimerText.text = $"Moving...";
             MoveTowardsTarget();
             return;
         }
+        else
+        {
+            if(!hasSelectedObject)
+            {
+                SelectObjects();
+            }
+            // Subtle idle bounce on Z axis
+            float bounce = Mathf.Sin(Time.time * 1f) * 0.5f; // Adjust frequency & amplitude
+            Vector3 basePosition = new Vector3(transform.position.x, originalY, transform.position.z);
+            transform.position = basePosition + new Vector3(0f, bounce, 0f);
 
-//         if (Input.GetKeyDown(KeyCode.K))
-//         {
-//             TakeDamage();
-//         }
+            attackTimer -= Time.deltaTime;
+            attackTimerText.text = $"{Mathf.FloorToInt(attackTimer)}";
+            if (attackTimer <= 0f)
+            {
+                PerformAttack();
+                TryFindMovementDirection();
+                attackTimer = stageAttackInterval[currentLevel - 1];
+            }
+        }
     }
 
+    private void SelectObjects()
+    {
+        float radius = stageAttackRadius[currentLevel - 1];
+        Collider[] hits = Physics.OverlapSphere(transform.position, radius, obstacleLayer);
+        foreach (Collider hit in hits)
+        {
+            if (hit.CompareTag("Obstacles"))
+            {
+               if(hit.gameObject.GetComponent<Outline>() != null)
+                {
+                    Outline outline = hit.gameObject.GetComponent<Outline>();
+                    outline.enabled = true;
+                }
+            }
+        }
+        hasSelectedObject = true;
+    }
+
+    private void DeselectObjects()
+    {
+        Collider[] hits = Physics.OverlapSphere(transform.position, stageAttackRadius[currentLevel - 1], obstacleLayer);
+        foreach (Collider hit in hits)
+        {
+            if (hit.CompareTag("Obstacles"))
+            {
+                if (hit.gameObject.GetComponent<Outline>() != null)
+                {
+                    Outline outline = hit.gameObject.GetComponent<Outline>();
+                    outline.enabled = false;
+                }
+            }
+        }
+        hasSelectedObject = false;
+    }
     private void PerformAttack()
     {
-        float radius = stageAttackRadius[currentStage];
+        float radius = stageAttackRadius[currentLevel - 1];
         Collider[] hits = Physics.OverlapSphere(transform.position, radius, obstacleLayer);
         foreach (Collider hit in hits)
         {
@@ -98,8 +158,9 @@ public class DinoBehaviour : MonoBehaviour
             {
                 if (hit.collider.CompareTag("Obstacles"))
                 {
-                    moveTarget = transform.position + direction.normalized * moveDistance;
+                    moveTarget = new Vector3(hit.point.x, this.transform.position.y, hit.point.z);
                     isMoving = true;
+                    hasSelectedObject = false;
                     return;
                 }
             }
@@ -111,7 +172,7 @@ public class DinoBehaviour : MonoBehaviour
         if (Vector3.Distance(transform.position, moveTarget) < 0.01f)
         {
             isMoving = false;
-            //dinoTileManager.GeneratePath();
+            dinoTileManager.GeneratePath();
         }
     }
     public void TakeDamage()
@@ -119,7 +180,7 @@ public class DinoBehaviour : MonoBehaviour
         currentHealth--;
         if (currentHealth <= 0)
         {
-            Debug.Log("Dino defeated!");
+            // Debug.Log("Dino defeated!");
             for (int i = 0; i < 10; i++)
             {
                 // Keep trying to find a valid spawn position
@@ -133,19 +194,9 @@ public class DinoBehaviour : MonoBehaviour
                     Debug.LogWarning("Failed to find a valid spawn position after multiple attempts.");
                 }
             }
+            DeselectObjects();
             dinoTileManager.ClearExistingTiles();
             Destroy(this.gameObject); // Or trigger death animation/event instead
-        }
-        else
-        {
-            
-            Debug.Log($"Dino took damage! Stage is now {currentStage + 1}");
-            attackTimer = stageAttackInterval[currentStage]; // Reset timer for new stage
-
-            //update path diffculy level and generate
-            dinoTileManager.SetPathLength(stagePathLength[currentStage]);
-            dinoTileManager.SetTurnCounts(stageTurnCounts[currentStage]);
-            dinoTileManager.GeneratePath();
         }
     }
 
@@ -183,9 +234,16 @@ public class DinoBehaviour : MonoBehaviour
 
         return Vector3.zero; // Return an invalid position if no ground is found after retries
     }
+    public void IncreaseLevel()
+    {
+        currentLevel++;
+        Debug.Log($"Dino leveled up! Now Level {currentLevel}");
+        // You could trigger a visual effect or difficulty recalculation here
+    }
+
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, stageAttackRadius[currentStage]);
+        Gizmos.DrawWireSphere(transform.position, stageAttackRadius[currentLevel - 1]);
     }
 }
