@@ -79,9 +79,10 @@ public class SnakeCartManager : MonoBehaviour
             if(playerInputManager != null)
             {
                 if (isPlayer1)
-                    playerInputManager.PairGamepad1WithPlayer1();
-                else
-                    playerInputManager.PairGamepad2WithPlayer2();
+                    playerInputManager.SetupPlayers();
+                    //playerInputManager.PairGamepad1WithPlayer1();
+                //else
+                    //playerInputManager.PairGamepad2WithPlayer2();
             }
             return;
         }
@@ -207,6 +208,30 @@ public class SnakeCartManager : MonoBehaviour
     public List<GameObject> GetSnakeBody()
     {
         return snakeBody;
+    }
+    public void TriggerAllPowerupsDelayed()
+    {
+        StartCoroutine(DelayedTrigger());
+    }
+    private IEnumerator DelayedTrigger()
+    {
+        yield return new WaitForSeconds(0.2f); // Delay
+
+        foreach (var cart in this.GetSnakeBody())
+        {
+            var cartManager = cart.GetComponent<ChainedCartManager>();
+            if (cartManager != null && cartManager.isBonusCart)
+            {
+                GameObject powerupObject = cart.transform.GetChild(4).gameObject;
+                //Debug.Log(powerupObject.name);
+                var powerup = powerupObject.GetComponent<IPowerup>();
+                if (powerup != null)
+                {
+                    //Debug.Log("Fire");
+                    powerup.ActivatePowerup();
+                }
+            }
+        }
     }
     public void SpeedUpPowerUp()
     {

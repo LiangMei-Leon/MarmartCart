@@ -127,7 +127,7 @@ public class DinoGenerationScript : MonoBehaviour
                     else
                     {
                         // If not on ground layer, continue trying
-                        Debug.Log($"Invalid hit on layer {hit.collider.gameObject.layer}, retrying...");
+                        //Debug.Log($"Invalid hit on layer {hit.collider.gameObject.layer}, retrying...");
                     }
                 }
             }

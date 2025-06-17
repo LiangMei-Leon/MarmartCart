@@ -107,6 +107,38 @@ public class CartControlScript : MonoBehaviour
 
         _inputActions.Enable(); // Only enable after setup is complete
     }
+    public void InitializeWithKeyboard()
+    {
+        assignedDevice = Keyboard.current;
+
+        _inputActions = new InputSystem_Actions();
+        user = InputUser.CreateUserWithoutPairedDevices();
+        user.AssociateActionsWithUser(_inputActions);
+        InputUser.PerformPairingWithDevice(Keyboard.current, user);
+
+        _inputActions.Enable();
+
+        _inputActions.Player.Move.performed += ctx =>
+        {
+            if (ctx.control.device == Keyboard.current)
+                _inputVector = ctx.ReadValue<Vector2>();
+        };
+        _inputActions.Player.Move.canceled += ctx =>
+        {
+            if (ctx.control.device == Keyboard.current)
+                _inputVector = Vector2.zero;
+        };
+        _inputActions.Player.Boost.performed += ctx =>
+        {
+            if (ctx.control.device == Keyboard.current)
+                boostEvent.Raise();
+        };
+        _inputActions.Player.FlipDirection.performed += ctx =>
+        {
+            if (ctx.control.device == Keyboard.current && canFlip)
+                resetCartEvent.Raise();
+        };
+    }
     //private void OnEnable()
     //{
     //    _inputActions.Enable();

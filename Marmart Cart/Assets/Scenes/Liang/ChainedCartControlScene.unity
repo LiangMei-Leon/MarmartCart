@@ -3458,6 +3458,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player1: {fileID: 1981863287}
   player2: {fileID: 203355757}
+  enableDebugMode: 1
 --- !u!4 &447031818
 Transform:
   m_ObjectHideFlags: 0
@@ -5264,6 +5265,18 @@ MonoBehaviour:
           m_StringArgument: CollectCart
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1981863288}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: TriggerAllPowerupsDelayed
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: CollectCart
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &591100674
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5296,6 +5309,18 @@ MonoBehaviour:
         m_TargetAssemblyTypeName: SfxManager, Assembly-CSharp
         m_MethodName: PlaySFX
         m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: CollectCart
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 203355758}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: TriggerAllPowerupsDelayed
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -5998,7 +6023,7 @@ MonoBehaviour:
   phase1Duration: 30
   phase1SpawnInterval: 6
   phase1ItemsPerSpawn: 4
-  phase1NormalItemProbability: 80
+  phase1NormalItemProbability: 0
   phase2Duration: 70
   phase2SpawnInterval: 6
   phase2ItemsPerSpawn: 3
@@ -10353,7 +10378,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1156087960
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17166,7 +17191,7 @@ PrefabInstance:
       objectReference: {fileID: 920119361}
     - target: {fileID: 1478538068427815336, guid: 6babe8a17500fa54787592962df13c24, type: 3}
       propertyPath: m_VersionIndex
-      value: 4028
+      value: 4166
       objectReference: {fileID: 0}
     - target: {fileID: 2413974099969063298, guid: 6babe8a17500fa54787592962df13c24, type: 3}
       propertyPath: m_LocalPosition.x
@@ -17633,6 +17658,67 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 38a4b231a51f98a4baec729cfbb4ef62, type: 3}
+--- !u!1001 &6289706352768283983
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 352989075615052655, guid: f995e36666a08a345a43cc1e81eda7ef, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 33.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 352989075615052655, guid: f995e36666a08a345a43cc1e81eda7ef, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 2.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 352989075615052655, guid: f995e36666a08a345a43cc1e81eda7ef, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -441.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 352989075615052655, guid: f995e36666a08a345a43cc1e81eda7ef, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 352989075615052655, guid: f995e36666a08a345a43cc1e81eda7ef, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 352989075615052655, guid: f995e36666a08a345a43cc1e81eda7ef, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 352989075615052655, guid: f995e36666a08a345a43cc1e81eda7ef, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 352989075615052655, guid: f995e36666a08a345a43cc1e81eda7ef, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 352989075615052655, guid: f995e36666a08a345a43cc1e81eda7ef, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 352989075615052655, guid: f995e36666a08a345a43cc1e81eda7ef, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6426267421857823117, guid: f995e36666a08a345a43cc1e81eda7ef, type: 3}
+      propertyPath: m_Name
+      value: RadioDishBullet
+      objectReference: {fileID: 0}
+    - target: {fileID: 6426267421857823117, guid: f995e36666a08a345a43cc1e81eda7ef, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: f995e36666a08a345a43cc1e81eda7ef, type: 3}
 --- !u!1001 &6853379099097399147
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -17941,3 +18027,4 @@ SceneRoots:
   - {fileID: 1315659594446538471}
   - {fileID: 2022898326}
   - {fileID: 1886278737}
+  - {fileID: 6289706352768283983}

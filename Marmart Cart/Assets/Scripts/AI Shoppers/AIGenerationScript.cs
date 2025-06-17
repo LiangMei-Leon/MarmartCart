@@ -104,7 +104,7 @@ public class AIGenerationScript : MonoBehaviour
         if (isSpawning) return; // Prevent overlapping calls
         isSpawning = true;
 
-        Debug.Log("SpawnAIWave called");
+        //Debug.Log("SpawnAIWave called");
         for (int i = 0; i < aiPerWave; i++)
         {
             Vector3 spawnPosition = GetValidSpawnPosition();

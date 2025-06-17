@@ -240,6 +240,10 @@ public class DinoBehaviour : MonoBehaviour
         Debug.Log($"Dino leveled up! Now Level {currentLevel}");
         // You could trigger a visual effect or difficulty recalculation here
     }
+    public void AddToAttackTimer(float time)
+    {
+        attackTimer += time;
+    }
 
     void OnDrawGizmosSelected()
     {

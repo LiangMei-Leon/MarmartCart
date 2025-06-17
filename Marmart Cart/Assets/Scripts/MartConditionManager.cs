@@ -58,7 +58,7 @@ public class MartConditionManager : MonoBehaviour
             {
                 percent = (float)registeredShelves.Count / initialShelfCount;
                 conditionText.text = $"{Mathf.RoundToInt(percent * 100)}%";
-                Debug.Log($"[Mart Health] {percent:P0} ({registeredShelves.Count}/{initialShelfCount})");
+                //Debug.Log($"[Mart Health] {percent:P0} ({registeredShelves.Count}/{initialShelfCount})");
             }
         }
     }
