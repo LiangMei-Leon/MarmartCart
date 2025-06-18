@@ -34,12 +34,12 @@ public class DinoGenerationScript : MonoBehaviour
     [SerializeField] private GameObject dinoPrefab;
 
     private float nextSpawnTime;
-    private GameObject existingDino;
+    public GameObject existingDino;
     private void Start()
     {
         spawnCenter = this.transform;
         UpdateGamePhase(); // Initialize phase on start
-        nextSpawnTime = Time.time; // + spawnInterval; // Delay first spawn until interval passes
+        nextSpawnTime = Time.time + spawnInterval; // Delay first spawn until interval passes
     }
 
     void Update()
@@ -137,7 +137,10 @@ public class DinoGenerationScript : MonoBehaviour
 
         return Vector3.zero; // Return an invalid position if no ground is found after retries
     }
-
+    public GameObject GetExistingDino()
+    {
+        return existingDino;
+    }
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;

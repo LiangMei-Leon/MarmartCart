@@ -38,7 +38,7 @@ public class DinoTile : MonoBehaviour
             SetCoveredVisual(true);
         }
 
-        if (other.CompareTag("Obstacles"))
+        if (other.CompareTag("Obstacles") || other.CompareTag("Walls"))
         {
             coveringObstacle = other.gameObject;
             obstacleActive = true;

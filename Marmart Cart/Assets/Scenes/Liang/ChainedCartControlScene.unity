@@ -5603,14 +5603,14 @@ MonoBehaviour:
   phase1Duration: 30
   phase1SpawnInterval: 6
   phase1ItemsPerSpawn: 3
-  phase1NormalItemProbability: 80
-  phase2Duration: 70
+  phase1NormalItemProbability: 100
+  phase2Duration: 80
   phase2SpawnInterval: 6
   phase2ItemsPerSpawn: 4
-  phase2NormalItemProbability: 70
+  phase2NormalItemProbability: 90
   phase3SpawnInterval: 5
   phase3ItemsPerSpawn: 5
-  phase3NormalItemProbability: 60
+  phase3NormalItemProbability: 75
   normalItemPrefab: {fileID: 6914780558269192623, guid: cc094b8fa5c360c419dc66086c996fc2, type: 3}
   bonusItemPrefab: {fileID: 5125540016162396937, guid: 6babe8a17500fa54787592962df13c24, type: 3}
 --- !u!4 &601234365
@@ -6022,15 +6022,15 @@ MonoBehaviour:
     m_Bits: 64
   phase1Duration: 30
   phase1SpawnInterval: 6
-  phase1ItemsPerSpawn: 4
-  phase1NormalItemProbability: 0
-  phase2Duration: 70
+  phase1ItemsPerSpawn: 3
+  phase1NormalItemProbability: 100
+  phase2Duration: 80
   phase2SpawnInterval: 6
-  phase2ItemsPerSpawn: 3
-  phase2NormalItemProbability: 70
+  phase2ItemsPerSpawn: 4
+  phase2NormalItemProbability: 90
   phase3SpawnInterval: 5
   phase3ItemsPerSpawn: 5
-  phase3NormalItemProbability: 60
+  phase3NormalItemProbability: 75
   normalItemPrefab: {fileID: 6914780558269192623, guid: cc094b8fa5c360c419dc66086c996fc2, type: 3}
   bonusItemPrefab: {fileID: 5125540016162396937, guid: 6babe8a17500fa54787592962df13c24, type: 3}
 --- !u!4 &707475391
@@ -10378,7 +10378,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1156087960
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10397,15 +10397,16 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 576
-  phase1Duration: 180
+  phase1Duration: 30
   phase1SpawnInterval: 30
   phase1ItemsPerSpawn: 1
   phase2Duration: 80
-  phase2SpawnInterval: 30
+  phase2SpawnInterval: 20
   phase2ItemsPerSpawn: 1
-  phase3SpawnInterval: 30
+  phase3SpawnInterval: 15
   phase3ItemsPerSpawn: 1
   dinoPrefab: {fileID: 8825317781508640386, guid: 38a4b231a51f98a4baec729cfbb4ef62, type: 3}
+  existingDino: {fileID: 0}
 --- !u!4 &1156087961
 Transform:
   m_ObjectHideFlags: 0
@@ -15709,7 +15710,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!23 &1886278735
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -15772,7 +15773,7 @@ Transform:
   m_GameObject: {fileID: 1886278733}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 32.918404, y: -13.617687, z: -445.4353}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -15787,12 +15788,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1886278733}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b999b52b8dc2c7c49a4c0db455322fba, type: 3}
+  m_Script: {fileID: 11500000, guid: b7295d491fbc4b649a473b9b2b133696, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   isForPlayer1: 0
-  player1: {fileID: 0}
-  player2: {fileID: 0}
+  offsetDistance: 2
 --- !u!1001 &1890987260
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -16567,7 +16567,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!23 &2022898324
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -16630,7 +16630,7 @@ Transform:
   m_GameObject: {fileID: 2022898322}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 32.918404, y: -13.617687, z: -445.4353}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -16645,12 +16645,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 2022898322}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b999b52b8dc2c7c49a4c0db455322fba, type: 3}
+  m_Script: {fileID: 11500000, guid: b7295d491fbc4b649a473b9b2b133696, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   isForPlayer1: 1
-  player1: {fileID: 0}
-  player2: {fileID: 0}
+  offsetDistance: 2
 --- !u!1 &2043680623
 GameObject:
   m_ObjectHideFlags: 0

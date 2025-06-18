@@ -36,9 +36,12 @@ public class DinoBehaviour : MonoBehaviour
     [SerializeField] private GameObject bonusItemPrefab;
     [SerializeField] private LayerMask groundLayer;
 
+    private DinoGenerationScript dinoSpawner;
     void Awake()
     {
         gameTimeManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameTimeManager>();
+
+        dinoSpawner = FindFirstObjectByType<DinoGenerationScript>();
     }
     void Start()
     {
@@ -191,11 +194,12 @@ public class DinoBehaviour : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogWarning("Failed to find a valid spawn position after multiple attempts.");
+                    //Debug.LogWarning("Failed to find a valid spawn position after multiple attempts.");
                 }
             }
             DeselectObjects();
             dinoTileManager.ClearExistingTiles();
+            dinoSpawner.existingDino = null;
             Destroy(this.gameObject); // Or trigger death animation/event instead
         }
     }
@@ -224,7 +228,7 @@ public class DinoBehaviour : MonoBehaviour
                     else
                     {
                         // If not on ground layer, continue trying
-                        Debug.Log($"Invalid hit on layer {hit.collider.gameObject.layer}, retrying...");
+                        // Debug.Log($"Invalid hit on layer {hit.collider.gameObject.layer}, retrying...");
                     }
                 }
             }

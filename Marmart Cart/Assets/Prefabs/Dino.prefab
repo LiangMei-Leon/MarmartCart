@@ -492,17 +492,17 @@ MonoBehaviour:
   - 50
   - 60
   stageAttackInterval:
-  - 35
   - 30
-  - 30
-  - 25
   - 20
-  - 20
-  - 20
-  - 20
-  - 20
-  - 20
-  - 20
+  - 15
+  - 10
+  - 10
+  - 5
+  - 5
+  - 5
+  - 5
+  - 5
+  - 5
   stagePathLength: 050000000a0000000f00000014000000140000001900000019000000190000001e0000002300000028000000
   stageTurnCounts: 0000000001000000020000000300000004000000050000000600000006000000070000000700000008000000
   obstacleLayer:
@@ -511,12 +511,12 @@ MonoBehaviour:
   attackTimerText: {fileID: 0}
   levelText: {fileID: 0}
   moveDistance: 30
-  moveSpeed: 10
+  moveSpeed: 20
   angleStep: 15
   raycastDistance: 1000
   dinoTileManager: {fileID: 1494541150520090000}
   gameTimeManager: {fileID: 0}
-  bonusItemPrefab: {fileID: 5125540016162396937, guid: 6babe8a17500fa54787592962df13c24, type: 3}
+  bonusItemPrefab: {fileID: 6914780558269192623, guid: cc094b8fa5c360c419dc66086c996fc2, type: 3}
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
