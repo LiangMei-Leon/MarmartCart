@@ -10,8 +10,9 @@ public class DinoTile : MonoBehaviour
 
     public bool IsCovered => isCovered;
     public PlayerOwner Owner => owner;
-    private GameObject coveringObstacle;
-    private bool obstacleActive = false;
+    private bool isCoveredByShelf = false;
+
+    private ShelvesBehavior shelf;
 
     [Header("Materials")]
     [SerializeField] private Material defaultMaterial;
@@ -38,11 +39,18 @@ public class DinoTile : MonoBehaviour
             SetCoveredVisual(true);
         }
 
-        if (other.CompareTag("Obstacles") || other.CompareTag("Walls"))
+        if (other.CompareTag("Obstacles"))
         {
-            coveringObstacle = other.gameObject;
-            obstacleActive = true;
+            isCoveredByShelf = true;
+            isCovered = true;
+            SetCoveredVisual(true);
 
+            // If shelf has behavior script, let it track this tile
+            shelf = other.GetComponent<ShelvesBehavior>();
+            
+        }
+        if (other.CompareTag("Walls"))
+        {
             isCovered = true;
             SetCoveredVisual(true);
         }
@@ -60,19 +68,15 @@ public class DinoTile : MonoBehaviour
             isCovered = false;
             SetCoveredVisual(false);
         }
-
     }
-
+    public void UncoverTileFromObstacle()
+    {
+        isCovered = false;
+        SetCoveredVisual(false);
+        isCoveredByShelf = false;
+    }
     private void OnTriggerEnter(Collider other)
     {
-        // Destroy if it overlaps a shelf (obstacle)
-//         if (other.CompareTag("Obstacles"))
-//         {
-//             //DestroyTile();
-//             isCovered = true;
-//             SetCoveredVisual(true);
-//             return;
-//         }
 
         // Destroy if it hits a tile of the opposite player
         DinoTile otherTile = other.GetComponent<DinoTile>();
@@ -91,11 +95,19 @@ public class DinoTile : MonoBehaviour
     }
     private void Update()
     {
-        if (obstacleActive && coveringObstacle == null)
+        if (isCoveredByShelf)
         {
-            isCovered = false;
-            SetCoveredVisual(false);
-            obstacleActive = false; // stop checking
+            if (shelf == null)
+            {
+                isCovered = false;
+                SetCoveredVisual(false);
+                isCoveredByShelf = false; // stop checking
+            }
+            else if (shelf != null && shelf.getIsBeingSucked())
+                {
+                    UncoverTileFromObstacle();
+                }
+            
         }
     }
     public void DestroyTile()

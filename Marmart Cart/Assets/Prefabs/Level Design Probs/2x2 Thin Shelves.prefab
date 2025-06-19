@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8890569153996241594}
   - component: {fileID: 8154621091870084764}
   - component: {fileID: 7677963019299987501}
+  - component: {fileID: 2158712119381246902}
   m_Layer: 9
   m_Name: 2x2 Thin Shelves
   m_TagString: Obstacles
@@ -368,6 +369,18 @@ MonoBehaviour:
     - {x: 0.57735026, y: 0.57735026, z: -0.57735026}
     - {x: 0.57735026, y: 0.57735026, z: 0.57735026}
     - {x: 0.70710677, y: 0, z: 0.70710677}
+--- !u!114 &2158712119381246902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4941242808371738706}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6d0d9cc41c543345a47a820ea06f772, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &4391673553046408224
 PrefabInstance:
   m_ObjectHideFlags: 0

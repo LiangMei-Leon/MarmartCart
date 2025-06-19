@@ -6,24 +6,34 @@ public class DinoIndictor : MonoBehaviour
     [SerializeField] private bool isForPlayer1 = true;
     [SerializeField] private float offsetDistance = 2f;
 
-    private Transform player;
+    [SerializeField] private Transform player;
     private Transform dino;
-    private DinoGenerationScript dinoSpawner;
+    [SerializeField] private DinoGenerationScript dinoSpawner;
 
     private void Start()
     {
-        var p1 = GameObject.FindGameObjectWithTag("Player1");
-        var p2 = GameObject.FindGameObjectWithTag("Player2");
-
-        player = isForPlayer1 ? p1?.transform : p2?.transform;
+        
         dinoSpawner = FindFirstObjectByType<DinoGenerationScript>();
     }
+    public void RegisterPlayer(bool isPlayer1)
+    {
+        GameObject playerRef;
+        if (isPlayer1)
+            playerRef = GameObject.FindGameObjectWithTag("Player1");
+        else
+            playerRef = GameObject.FindGameObjectWithTag("Player2");
 
+        player = isPlayer1 ? playerRef?.transform : playerRef?.transform;
+    }
     private void Update()
     {
-        if (dinoSpawner == null || player == null) return;
+        if (dinoSpawner == null || player == null)
+        {
+            Debug.Log("Null");
+            return;
+        }
 
-        var dinoObj = dinoSpawner.GetExistingDino(); // safer than FindFirstObjectByType
+            var dinoObj = dinoSpawner.GetExistingDino(); // safer than FindFirstObjectByType
         if (dinoObj != null)
         {
             GetComponent<MeshRenderer>().enabled = true;
@@ -33,8 +43,7 @@ public class DinoIndictor : MonoBehaviour
             direction.y = 0f;
             direction.Normalize();
 
-            transform.position = player.position + direction * 2f + Vector3.up * 0.5f;
-            transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+            transform.position = player.position + direction * offsetDistance + Vector3.up * -1f;
         }
         else
         {

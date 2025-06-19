@@ -4,7 +4,7 @@ public class RadioDishBullet : MonoBehaviour
 {
     private Vector3 targetPosition;
     private float speed;
-
+    [SerializeField] private float delayAttackTime = 0.5f;
     public void Initialize(Vector3 target, float bulletSpeed)
     {
         targetPosition = target;
@@ -29,7 +29,7 @@ public class RadioDishBullet : MonoBehaviour
     {
         if (other.TryGetComponent<DinoBehaviour>(out var dino))
         {
-            dino.AddToAttackTimer(1f);
+            dino.AddToAttackTimer(delayAttackTime);
             Debug.Log("Hit");
             // Optional: hit VFX/sound
             Destroy(gameObject,0.05f);

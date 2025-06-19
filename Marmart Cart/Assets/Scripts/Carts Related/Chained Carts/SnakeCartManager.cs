@@ -22,6 +22,8 @@ public class SnakeCartManager : MonoBehaviour
     [Header("PlayerInputManager")]
     [SerializeField] private PlayerInputManager playerInputManager;
 
+    [SerializeField] private DinoIndictor dinoIndictor;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -83,6 +85,10 @@ public class SnakeCartManager : MonoBehaviour
                     //playerInputManager.PairGamepad1WithPlayer1();
                 //else
                     //playerInputManager.PairGamepad2WithPlayer2();
+            }
+            if(dinoIndictor != null)
+            {
+                dinoIndictor.RegisterPlayer(isPlayer1);
             }
             return;
         }

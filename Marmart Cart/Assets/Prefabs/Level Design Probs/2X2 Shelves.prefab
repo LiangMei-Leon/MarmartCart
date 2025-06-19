@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1654145384852969786}
   - component: {fileID: 1921944503188006301}
   - component: {fileID: 6216221864588745458}
+  - component: {fileID: 9092478337010778019}
   m_Layer: 9
   m_Name: 2X2 Shelves
   m_TagString: Obstacles
@@ -1966,6 +1967,18 @@ MonoBehaviour:
     - {x: 0.7756362, y: 0.57733977, z: -0.2550828}
     - {x: 0.25507814, y: 0.5773608, z: 0.7756221}
     - {x: 0.2884259, y: 0.38414884, z: 0.87706333}
+--- !u!114 &9092478337010778019
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8689872829888108982}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6d0d9cc41c543345a47a820ea06f772, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &3819486095429786668
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2033,6 +2046,10 @@ PrefabInstance:
     - target: {fileID: 416468, guid: fe51d80727aedd545871247d7f1fd25c, type: 3}
       propertyPath: m_ConstrainProportionsScale
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2327870, guid: fe51d80727aedd545871247d7f1fd25c, type: 3}
+      propertyPath: m_StaticShadowCaster
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 64797462154306034, guid: fe51d80727aedd545871247d7f1fd25c, type: 3}
       propertyPath: m_Enabled
@@ -2117,6 +2134,10 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2327870, guid: fe51d80727aedd545871247d7f1fd25c, type: 3}
+      propertyPath: m_StaticShadowCaster
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 64797462154306034, guid: fe51d80727aedd545871247d7f1fd25c, type: 3}
       propertyPath: m_Enabled
       value: 0
@@ -2200,6 +2221,10 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2327870, guid: fe51d80727aedd545871247d7f1fd25c, type: 3}
+      propertyPath: m_StaticShadowCaster
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 64797462154306034, guid: fe51d80727aedd545871247d7f1fd25c, type: 3}
       propertyPath: m_Enabled
       value: 0
@@ -2282,6 +2307,10 @@ PrefabInstance:
     - target: {fileID: 416468, guid: fe51d80727aedd545871247d7f1fd25c, type: 3}
       propertyPath: m_ConstrainProportionsScale
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2327870, guid: fe51d80727aedd545871247d7f1fd25c, type: 3}
+      propertyPath: m_StaticShadowCaster
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 64797462154306034, guid: fe51d80727aedd545871247d7f1fd25c, type: 3}
       propertyPath: m_Enabled

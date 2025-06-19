@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using System.Collections.Generic;
 
 public class DinoBehaviour : MonoBehaviour
 {
@@ -35,6 +36,9 @@ public class DinoBehaviour : MonoBehaviour
 
     [SerializeField] private GameObject bonusItemPrefab;
     [SerializeField] private LayerMask groundLayer;
+    private List<Collider> selectedObstacles = new List<Collider>();
+
+    private Light attackRadiusLight;
 
     private DinoGenerationScript dinoSpawner;
     void Awake()
@@ -42,6 +46,8 @@ public class DinoBehaviour : MonoBehaviour
         gameTimeManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameTimeManager>();
 
         dinoSpawner = FindFirstObjectByType<DinoGenerationScript>();
+
+        attackRadiusLight = this.transform.GetChild(2).GetComponent<Light>();
     }
     void Start()
     {
@@ -95,56 +101,67 @@ public class DinoBehaviour : MonoBehaviour
             {
                 PerformAttack();
                 TryFindMovementDirection();
+                DeselectObjects();
                 attackTimer = stageAttackInterval[currentLevel - 1];
             }
         }
+
+        attackRadiusLight.innerSpotAngle = stageAttackRadius[currentLevel - 1] + 40f;
+        attackRadiusLight.spotAngle = attackRadiusLight.innerSpotAngle * 1.05f;
     }
 
     private void SelectObjects()
     {
+        selectedObstacles.Clear(); // clear previous selection
+
         float radius = stageAttackRadius[currentLevel - 1];
         Collider[] hits = Physics.OverlapSphere(transform.position, radius, obstacleLayer);
+
         foreach (Collider hit in hits)
         {
             if (hit.CompareTag("Obstacles"))
             {
-               if(hit.gameObject.GetComponent<Outline>() != null)
-                {
-                    Outline outline = hit.gameObject.GetComponent<Outline>();
+                selectedObstacles.Add(hit);
+
+                var outline = hit.GetComponent<Outline>();
+                if (outline != null)
                     outline.enabled = true;
-                }
+
+                var shelf = hit.GetComponent<ShelvesBehavior>();
+                if (shelf != null)
+                    shelf.BeginSuckEffect();
             }
         }
+
         hasSelectedObject = true;
     }
 
     private void DeselectObjects()
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, stageAttackRadius[currentLevel - 1], obstacleLayer);
-        foreach (Collider hit in hits)
+        foreach (var hit in selectedObstacles)
         {
-            if (hit.CompareTag("Obstacles"))
-            {
-                if (hit.gameObject.GetComponent<Outline>() != null)
-                {
-                    Outline outline = hit.gameObject.GetComponent<Outline>();
-                    outline.enabled = false;
-                }
-            }
+            if (hit == null) continue;
+
+            var outline = hit.GetComponent<Outline>();
+            if (outline != null)
+                outline.enabled = false;
+
+            var shelf = hit.GetComponent<ShelvesBehavior>();
+            if (shelf != null)
+                shelf.StopAndRestore();
         }
+
+        selectedObstacles.Clear();
         hasSelectedObject = false;
     }
     private void PerformAttack()
     {
-        float radius = stageAttackRadius[currentLevel - 1];
-        Collider[] hits = Physics.OverlapSphere(transform.position, radius, obstacleLayer);
-        foreach (Collider hit in hits)
+        foreach (var hit in selectedObstacles)
         {
-            if (hit.CompareTag("Obstacles"))
-            {
-                Destroy(hit.gameObject);
-            }
+            if (hit == null) continue;
+            Destroy(hit.gameObject);
         }
+
     }
     private void TryFindMovementDirection()
     {
