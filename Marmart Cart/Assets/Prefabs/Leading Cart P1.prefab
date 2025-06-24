@@ -603,7 +603,8 @@ MonoBehaviour:
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  boostForce: 50
+  targetSpeed: 20
+  boostForce: 20
   boostTime: 1
   decelerationRate: 10
   isBoosting: 0
@@ -666,21 +667,21 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.6510362
-      inSlope: -0.044324335
-      outSlope: -0.044324335
+      value: 0.7520523
+      inSlope: -0.11393653
+      outSlope: -0.11393653
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.11954188
+      outWeight: 0.08088762
     - serializedVersion: 3
-      time: 1
-      value: 0.55102396
-      inSlope: -0.16766876
+      time: 1.0007324
+      value: 0.49945253
+      inSlope: -0.40493578
       outSlope: -0.3780344
       tangentMode: 1
       weightedMode: 0
-      inWeight: 0.10665709
+      inWeight: 0.13528982
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
@@ -726,7 +727,8 @@ MonoBehaviour:
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  boostForce: 50
+  targetSpeed: 20
+  boostForce: 20
   boostTime: 1
   decelerationRate: 10
   isBoosting: 0
@@ -1378,21 +1380,21 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.6510362
-      inSlope: -0.044324335
-      outSlope: -0.044324335
+      value: 0.7520523
+      inSlope: -0.11393653
+      outSlope: -0.11393653
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.11954188
+      outWeight: 0.08088762
     - serializedVersion: 3
-      time: 1
-      value: 0.55102396
-      inSlope: -0.16766876
+      time: 1.0007324
+      value: 0.49945253
+      inSlope: -0.40493578
       outSlope: -0.3780344
       tangentMode: 1
       weightedMode: 0
-      inWeight: 0.10665709
+      inWeight: 0.13528982
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
@@ -1438,7 +1440,8 @@ MonoBehaviour:
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  boostForce: 50
+  targetSpeed: 20
+  boostForce: 20
   boostTime: 1
   decelerationRate: 10
   isBoosting: 0
@@ -1561,7 +1564,8 @@ MonoBehaviour:
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  boostForce: 50
+  targetSpeed: 20
+  boostForce: 20
   boostTime: 1
   decelerationRate: 10
   isBoosting: 0

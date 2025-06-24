@@ -37,7 +37,7 @@ public class LeadingCartBehaviour : MonoBehaviour
     [SerializeField] float minSpeed = 5f;          // minimum speed cap
     [SerializeField] float brakeFactor = 1f;
     [SerializeField] float maxBrakeForce = 1f;
-
+    [SerializeField] private float targetSpeed = 20f;
     private Vector3 finalSuspensionForce;
     private Vector3 finalSteeringForce;
     private Vector3 finalBrakeForce;
@@ -123,9 +123,10 @@ public class LeadingCartBehaviour : MonoBehaviour
 
                 // Apply the force at the wheel's position to counteract the lateral sliding.
                 cartBody.AddForceAtPosition(finalSteeringForce, transform.position);
-            
+
             #endregion
 
+            /*
             #region Acceleration and Brake System
 
             Vector3 accelDirection = transform.forward;
@@ -144,6 +145,31 @@ public class LeadingCartBehaviour : MonoBehaviour
             {
                 Brake();
             }
+            #endregion
+            */
+            #region Constant Forward Drive System
+
+            Vector3 accelDirection = transform.forward;
+            float cartSpeed = Vector3.Dot(cartBody.transform.forward, cartBody.linearVelocity);
+
+            // Always attempt to maintain targetSpeed if grounded
+            if (isGrounded)
+            {
+                float speedError = targetSpeed - cartSpeed;
+
+                if (speedError > 0.1f)
+                {
+                    float normalizedSpeed = Mathf.Clamp01(Mathf.Abs(cartSpeed) / targetSpeed);
+                    float availableTorque = engineTorqueCurve.Evaluate(normalizedSpeed);
+                    float acceleration = speedError / Time.fixedDeltaTime;
+
+                    float forceMag = Mathf.Min(acceleration * cartBody.mass, maxEngineTorque * availableTorque);
+                    Vector3 forwardForce = accelDirection * forceMag;
+
+                    cartBody.AddForceAtPosition(forwardForce, transform.position);
+                }
+            }
+
             #endregion
         }
         else
