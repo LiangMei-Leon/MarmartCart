@@ -694,7 +694,7 @@ MonoBehaviour:
   boostDuration: 1.25
   speedLerpRate: 50
   isBoosting: 0
-  disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
+  disableDetachEvent: {fileID: 11400000, guid: 87a9fb9219fdbba4ea0baff15a1c840a, type: 2}
 --- !u!1 &4656564825517800351
 GameObject:
   m_ObjectHideFlags: 0
@@ -818,7 +818,7 @@ MonoBehaviour:
   boostDuration: 1.25
   speedLerpRate: 50
   isBoosting: 0
-  disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
+  disableDetachEvent: {fileID: 11400000, guid: 87a9fb9219fdbba4ea0baff15a1c840a, type: 2}
 --- !u!1 &6061795394319341633
 GameObject:
   m_ObjectHideFlags: 0
@@ -1404,7 +1404,7 @@ MonoBehaviour:
   distance: 1
   raycastOffset: 1.3
   <hitDirection>k__BackingField: {x: 0, y: 0, z: 0}
-  detachCooldown: 3
+  detachCooldown: 1.5
   cooldownTimer: 0
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
   sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
@@ -1531,7 +1531,7 @@ MonoBehaviour:
   boostDuration: 1.25
   speedLerpRate: 50
   isBoosting: 0
-  disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
+  disableDetachEvent: {fileID: 11400000, guid: 87a9fb9219fdbba4ea0baff15a1c840a, type: 2}
 --- !u!1 &7077051624068430394
 GameObject:
   m_ObjectHideFlags: 0
@@ -1655,7 +1655,7 @@ MonoBehaviour:
   boostDuration: 1.25
   speedLerpRate: 50
   isBoosting: 0
-  disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
+  disableDetachEvent: {fileID: 11400000, guid: 87a9fb9219fdbba4ea0baff15a1c840a, type: 2}
 --- !u!1 &7898887286195177743
 GameObject:
   m_ObjectHideFlags: 0

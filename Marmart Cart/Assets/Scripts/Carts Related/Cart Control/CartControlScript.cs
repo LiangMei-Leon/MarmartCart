@@ -196,4 +196,8 @@ public class CartControlScript : MonoBehaviour
         controllable = true;
     }
 
+    public bool IsCharing()
+    {
+        return !controllable;
+    }
 }

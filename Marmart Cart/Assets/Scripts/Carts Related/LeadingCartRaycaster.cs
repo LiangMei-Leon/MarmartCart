@@ -38,31 +38,78 @@ public class LeadingCartRaycaster : MonoBehaviour
         cooldownTimer -= Time.deltaTime;
         Vector3 rayStartPosition = transform.position + transform.forward * raycastOffset;
         RaycastHit hit;
-        if (Physics.Raycast(rayStartPosition, transform.forward, out hit, distance, layerMask))
+        if(GMode.Instance.IsCoop)
         {
-            // Debug.Log(hit.transform.gameObject.name);
-            if(hit.transform.gameObject.GetComponent<ChainedCartManager>() != null)
+            if (Physics.Raycast(rayStartPosition, transform.forward, out hit, distance, layerMask))
             {
-                ChainedCartManager cartInfo = hit.transform.gameObject.GetComponent<ChainedCartManager>();
-                if (cartInfo.isCollectedByPlayer && cooldownTimer <= 0f)
+                // Debug.Log(hit.transform.gameObject.name);
+                if (hit.transform.gameObject.GetComponent<ChainedCartManager>() != null)
                 {
-                    hitDirection = -1 * hit.normal;
-                    cartInfo.OnDetach();
-                    sfxManager.PlaySFX("Detach");
+                    ChainedCartManager cartInfo = hit.transform.gameObject.GetComponent<ChainedCartManager>();
+                    if (cartInfo.isCollectedByPlayer && cooldownTimer <= 0f)
+                    {
+                        hitDirection = -1 * hit.normal;
+                        cartInfo.OnDetach();
+                        sfxManager.PlaySFX("Detach");
+                    }
+                }
+
+                if (hit.transform.gameObject.CompareTag("Obstacles"))
+                {
+                    //Debug.Log("Raised");
+                    disableDetachEvent.Raise();
                 }
             }
-
-            if(hit.transform.gameObject.CompareTag("Obstacles"))
+        }
+        else if (GMode.Instance.IsCompetitive)
+        {
+            if (Physics.Raycast(rayStartPosition, transform.forward, out hit, distance, layerMask))
             {
-                //Debug.Log("Raised");
-                disableDetachEvent.Raise();
+                // Check if the hit object is a Chained Cart
+                if (hit.transform.gameObject.GetComponent<ChainedCartManager>() != null)
+                {
+                    GameObject hitObject = hit.transform.gameObject;
+                    ChainedCartManager hitCartInfo = hitObject.GetComponent<ChainedCartManager>();
+                    
+                    if (cartControlInput.IsCharing())
+                    {
+                        // If the player is charging, we can detach any cart it hits along the way
+                        if (hitCartInfo.isCollectedByPlayer && cooldownTimer <= 0f)
+                        {
+                            //hitDirection = -1 * hit.normal;
+                            hitCartInfo.OnDetach();
+                            sfxManager.PlaySFX("Detach");
+                        }
+                    }
+                    else
+                    {
+                        // If the player is not charging, we only detach if the cart has the same tag as the leading cart (Only detach if it's the same player)
+                        if (hitObject.CompareTag(this.gameObject.tag))
+                        {
+                            if (hitCartInfo.isCollectedByPlayer && cooldownTimer <= 0f)
+                            {
+                                //hitDirection = -1 * hit.normal;
+                                hitCartInfo.OnDetach();
+                                sfxManager.PlaySFX("Detach");
+                            }
+                        }
+                    }
+                    
+                }
+                // Check if the hit object is an obstacle
+                if (hit.transform.gameObject.CompareTag("Obstacles"))
+                {
+                    //Debug.Log("Raised");
+                    disableDetachEvent.Raise();
+                    Destroy(hit.transform.gameObject);
+                }
             }
         }
     }
 
     public void TemporarilyDisableDetaching()
     {
-        Debug.Log("Attempt to reset timer");
+        //Debug.Log("Attempt to reset timer");
         cooldownTimer = detachCooldown;
     }
 
@@ -79,14 +126,32 @@ public class LeadingCartRaycaster : MonoBehaviour
         if(collision.gameObject.CompareTag("Obstacles"))
         {
             sfxManager.PlaySFX("CrashWalls");
-            //cartControlInput.AllowFlip();
-            Destroy(collision.gameObject);
+            if(GMode.Instance.IsCompetitive)
+            {
+                cartControlInput.AllowFlip();
+
+                if(cartControlInput.IsCharing())
+                {
+                    Destroy(collision.gameObject);
+                }
+            }
         }
 
         if (collision.gameObject.CompareTag("Walls"))
         {
             sfxManager.PlaySFX("CrashWalls");
             cartControlInput.AllowFlip();
+        }
+    }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Obstacles"))
+        {
+            //sfxManager.PlaySFX("CrashWalls");
+            //cartControlInput.AllowFlip();
+            if (GMode.Instance.IsCompetitive && cartControlInput.IsCharing())
+                Destroy(collision.gameObject);
         }
     }
 }
