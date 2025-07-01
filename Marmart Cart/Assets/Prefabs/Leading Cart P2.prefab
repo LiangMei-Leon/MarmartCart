@@ -689,9 +689,10 @@ MonoBehaviour:
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  boostForce: 50
-  boostTime: 1
-  decelerationRate: 10
+  targetSpeed: 20
+  boostedSpeed: 27.5
+  boostDuration: 1.25
+  speedLerpRate: 50
   isBoosting: 0
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
 --- !u!1 &4656564825517800351
@@ -812,9 +813,10 @@ MonoBehaviour:
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  boostForce: 50
-  boostTime: 1
-  decelerationRate: 10
+  targetSpeed: 20
+  boostedSpeed: 27.5
+  boostDuration: 1.25
+  speedLerpRate: 50
   isBoosting: 0
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
 --- !u!1 &6061795394319341633
@@ -1524,9 +1526,10 @@ MonoBehaviour:
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  boostForce: 50
-  boostTime: 1
-  decelerationRate: 10
+  targetSpeed: 20
+  boostedSpeed: 27.5
+  boostDuration: 1.25
+  speedLerpRate: 50
   isBoosting: 0
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
 --- !u!1 &7077051624068430394
@@ -1647,9 +1650,10 @@ MonoBehaviour:
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  boostForce: 50
-  boostTime: 1
-  decelerationRate: 10
+  targetSpeed: 20
+  boostedSpeed: 27.5
+  boostDuration: 1.25
+  speedLerpRate: 50
   isBoosting: 0
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
 --- !u!1 &7898887286195177743

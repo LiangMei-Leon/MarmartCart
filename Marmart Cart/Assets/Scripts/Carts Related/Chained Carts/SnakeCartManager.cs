@@ -8,6 +8,8 @@ using UnityEngine;
 public class SnakeCartManager : MonoBehaviour
 {
     [SerializeField] float distanceBetween = 0.2f; // The spawn rate time difference that creates an illusion of distance in between snake bodies
+    //[SerializeField] float cartSpacing = 1f; // world space units
+
     [SerializeField] List<GameObject> bodyParts = new List<GameObject>();
     [SerializeField] List<GameObject> snakeBody = new List<GameObject>();
 
@@ -156,6 +158,12 @@ public class SnakeCartManager : MonoBehaviour
                 snakeBody.RemoveRange(i, snakeBody.Count - i);
 
                 break; // Exit the loop as we've detached all necessary carts
+            }
+
+            if (snakeBody[i] == null)
+            {
+                snakeBody.RemoveAt(i);
+                i = i - 1;
             }
         }
 

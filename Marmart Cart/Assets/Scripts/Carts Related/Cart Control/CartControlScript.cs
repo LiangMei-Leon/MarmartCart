@@ -21,7 +21,7 @@ public class CartControlScript : MonoBehaviour
     [SerializeField] private GameEvent boostEvent; // raise this event when the player accelerates (boost)
     [SerializeField] private GameEvent resetCartEvent; // raise this event when the player wants to reset the cart (to solve stuck issues)
 
-    [SerializeField] private bool canFlip = false;  
+    [SerializeField] private bool canFlip = false;
     //void Awake()
     //{
     //    _inputActions = new InputSystem_Actions(); // reference to the new input system class
@@ -149,7 +149,7 @@ public class CartControlScript : MonoBehaviour
     //}
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
@@ -166,10 +166,10 @@ public class CartControlScript : MonoBehaviour
         // Transfer 2D input to 3D input (from xy to xz)
         _input = new Vector3(_inputVector.x, 0, _inputVector.y);
 
-        desiredDirection = _input.ToIso();
+        desiredDirection = controllable ? _input.ToIso() : Vector3.zero;
 
         // Draw a ray to visualize the direction of the input in the scene view
-        Debug.DrawRay(transform.position, desiredDirection, Color.red);
+        // Debug.DrawRay(transform.position, desiredDirection, Color.red);
     }
     public void CleanupInput()
     {
@@ -185,4 +185,15 @@ public class CartControlScript : MonoBehaviour
     {
         canFlip = false;
     }
+
+    public void DisableControl()
+    {
+        controllable = false;
+    }
+
+    public void EnableControl()
+    {
+        controllable = true;
+    }
+
 }

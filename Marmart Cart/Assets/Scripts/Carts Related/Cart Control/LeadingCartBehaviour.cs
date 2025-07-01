@@ -43,10 +43,14 @@ public class LeadingCartBehaviour : MonoBehaviour
     private Vector3 finalBrakeForce;
 
     [Header("Boost Settings")]
-    [SerializeField] private float boostForce = 80f;       // Force applied to the cart to boost
-    [SerializeField] private float boostTime = 1f;     // Duration to hold the boosted speed
-    [SerializeField] private float decelerationRate = 10f; // Rate at which the cart returns to normal speed
+    [SerializeField] private float boostedSpeed = 20f;
+    [SerializeField] private float boostDuration = 2f;
+    [SerializeField] private float speedLerpRate = 5f;
+    //[SerializeField] private float boostForce = 80f;       // Force applied to the cart to boost
+    //[SerializeField] private float boostTime = 1f;     // Duration to hold the boosted speed
+    //[SerializeField] private float decelerationRate = 10f; // Rate at which the cart returns to normal speed
     public bool isBoosting = false;                       // Flag to track if boost is active
+
 
     [Header("Events")]
     [SerializeField] GameEvent disableDetachEvent;
@@ -179,45 +183,43 @@ public class LeadingCartBehaviour : MonoBehaviour
     }
     public void StartBoost()
     {
-        // Ensure that the boost is only triggered if not already active
         if (!isBoosting)
-        {
             StartCoroutine(BoostCoroutine());
-        }
     }
 
     private IEnumerator BoostCoroutine()
     {
         isBoosting = true;
+        cartControlInput.DisableControl();
 
-        // Initial setup for boost direction and force
-        Vector3 accelDirection = transform.forward;
-        float holdTime = boostTime;     // Duration to maintain the boosted speed
-
-        // Step 1: Apply consistent boost force for boostTime duration
+        float originalSpeed = targetSpeed;
         float timeElapsed = 0f;
-        while (timeElapsed < boostTime)
-        {
-            // Apply a constant boost force to achieve a consistent acceleration
-            cartBody.AddForceAtPosition(accelDirection * boostForce, transform.position);
 
+        // Step 1: Ramp up to boostedSpeed
+        while (timeElapsed < boostDuration * 0.25f)
+        {
+            targetSpeed = Mathf.Lerp(originalSpeed, boostedSpeed, timeElapsed / (boostDuration * 0.25f));
             timeElapsed += Time.deltaTime;
             yield return null;
         }
 
-        // Step 2: Hold the boosted speed for holdTime duration
-        yield return new WaitForSeconds(holdTime);
+        targetSpeed = boostedSpeed;
 
-        // Step 3: Decelerate gradually back to normal speed
-        while (cartBody.linearVelocity.magnitude > regularMaxSpeed)
+        // Step 2: Hold boosted speed
+        yield return new WaitForSeconds(boostDuration * 0.5f);
+
+        // Step 3: Ramp down
+        timeElapsed = 0f;
+        while (timeElapsed < boostDuration * 0.25f)
         {
-            Vector3 decelerationForce = -cartBody.linearVelocity.normalized * decelerationRate * Time.deltaTime * cartBody.mass;
-            cartBody.AddForce(decelerationForce, ForceMode.Acceleration);
-
+            targetSpeed = Mathf.Lerp(boostedSpeed, originalSpeed, timeElapsed / (boostDuration * 0.25f));
+            timeElapsed += Time.deltaTime;
             yield return null;
         }
 
-        isBoosting = false; // Reset the boosting flag
+        targetSpeed = originalSpeed;
+        cartControlInput.EnableControl();
+        isBoosting = false;
     }
 
     public void Brake()

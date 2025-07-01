@@ -795,6 +795,7 @@ MonoBehaviour:
   offsetValueCurve: {fileID: 0}
   cartMaxSpeed: 30
   offsetValue: 0
+  markerSpacing: 0.1
 --- !u!114 &5338754579923443633
 MonoBehaviour:
   m_ObjectHideFlags: 0
