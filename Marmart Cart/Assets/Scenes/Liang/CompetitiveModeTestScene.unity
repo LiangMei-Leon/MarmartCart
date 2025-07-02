@@ -9109,7 +9109,7 @@ PrefabInstance:
       objectReference: {fileID: 1986866068}
     - target: {fileID: 3001835831875782124, guid: c6c12bfc1b7ace847be00ecc6a8d5d79, type: 3}
       propertyPath: m_VersionIndex
-      value: 3800
+      value: 3809
       objectReference: {fileID: 0}
     - target: {fileID: 5691429360340611677, guid: c6c12bfc1b7ace847be00ecc6a8d5d79, type: 3}
       propertyPath: m_Mesh
@@ -9163,6 +9163,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8990966824022932014, guid: c6c12bfc1b7ace847be00ecc6a8d5d79, type: 3}
+      propertyPath: snakeCartManager
+      value: 
+      objectReference: {fileID: 203355758}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -12946,7 +12950,7 @@ PrefabInstance:
       objectReference: {fileID: 148288554}
     - target: {fileID: 3001835831875782124, guid: 8b73817db514d35448f8eae48c6e04fb, type: 3}
       propertyPath: m_VersionIndex
-      value: 3803
+      value: 3812
       objectReference: {fileID: 0}
     - target: {fileID: 5691429360340611677, guid: 8b73817db514d35448f8eae48c6e04fb, type: 3}
       propertyPath: m_Mesh
@@ -13000,6 +13004,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8990966824022932014, guid: 8b73817db514d35448f8eae48c6e04fb, type: 3}
+      propertyPath: snakeCartManager
+      value: 
+      objectReference: {fileID: 1981863288}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

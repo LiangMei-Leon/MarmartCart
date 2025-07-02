@@ -3,6 +3,7 @@ using UnityEngine;
 public class LeadingCartRaycaster : MonoBehaviour
 {
     [SerializeField] CartControlScript cartControlInput;
+    [SerializeField] SnakeCartManager snakeCartManager;
 
     [Header("Raycast Settings")]
     [SerializeField] LayerMask layerMask;
@@ -22,7 +23,7 @@ public class LeadingCartRaycaster : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        snakeCartManager = this.transform.parent.GetComponent<SnakeCartManager>();
     }
 
     // Update is called once per frame
@@ -83,7 +84,20 @@ public class LeadingCartRaycaster : MonoBehaviour
                     }
                     else
                     {
-                        // If the player is not charging, we only detach if the cart has the same tag as the leading cart (Only detach if it's the same player)
+                        // If the player is not charging, detach itself from the begining if it hits the opponent's cart
+                        if (!hitObject.CompareTag(this.gameObject.tag))
+                        {
+                            if (hitCartInfo.isCollectedByPlayer && cooldownTimer <= 0f)
+                            {
+                                //hitDirection = -1 * hit.normal;
+                                if(snakeCartManager.GetSnakeBody().Count >= 2)
+                                {
+                                    snakeCartManager.GetSnakeBody()[1].GetComponent<ChainedCartManager>().OnDetach();
+                                    sfxManager.PlaySFX("Detach");
+                                }
+                            }
+                        }
+                        // If the player is not charging, detach carts if it hits its own cart
                         if (hitObject.CompareTag(this.gameObject.tag))
                         {
                             if (hitCartInfo.isCollectedByPlayer && cooldownTimer <= 0f)
@@ -97,7 +111,7 @@ public class LeadingCartRaycaster : MonoBehaviour
                     
                 }
                 // Check if the hit object is an obstacle
-                if (hit.transform.gameObject.CompareTag("Obstacles"))
+                if (hit.transform.gameObject.CompareTag("Obstacles") && cartControlInput.IsCharing())
                 {
                     //Debug.Log("Raised");
                     disableDetachEvent.Raise();

@@ -1186,7 +1186,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 3797
+  m_VersionIndex: 3806
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -1312,6 +1312,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cartControlInput: {fileID: 8217884270544574180}
+  snakeCartManager: {fileID: 0}
   layerMask:
     serializedVersion: 2
     m_Bits: 4294967295
