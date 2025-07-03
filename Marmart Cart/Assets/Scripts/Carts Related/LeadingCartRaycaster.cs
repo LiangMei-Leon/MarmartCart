@@ -89,12 +89,23 @@ public class LeadingCartRaycaster : MonoBehaviour
                         {
                             if (hitCartInfo.isCollectedByPlayer && cooldownTimer <= 0f)
                             {
+                                cooldownTimer = 4f;
                                 //hitDirection = -1 * hit.normal;
                                 if(snakeCartManager.GetSnakeBody().Count >= 2)
                                 {
                                     snakeCartManager.GetSnakeBody()[1].GetComponent<ChainedCartManager>().OnDetach();
                                     sfxManager.PlaySFX("Detach");
                                 }
+
+                                LeadingCartBehaviour leadingCartBehaviour0 = this.gameObject.transform.GetChild(0).GetChild(0).GetComponent<LeadingCartBehaviour>();
+                                LeadingCartBehaviour leadingCartBehaviour1 = this.gameObject.transform.GetChild(0).GetChild(1).GetComponent<LeadingCartBehaviour>();
+                                LeadingCartBehaviour leadingCartBehaviour2 = this.gameObject.transform.GetChild(0).GetChild(2).GetComponent<LeadingCartBehaviour>();
+                                LeadingCartBehaviour leadingCartBehaviour3 = this.gameObject.transform.GetChild(0).GetChild(3).GetComponent<LeadingCartBehaviour>();
+
+                                leadingCartBehaviour0.SetSpeedToZero(2f);
+                                leadingCartBehaviour1.SetSpeedToZero(2f);
+                                leadingCartBehaviour2.SetSpeedToZero(2f);
+                                leadingCartBehaviour3.SetSpeedToZero(2f);
                             }
                         }
                         // If the player is not charging, detach carts if it hits its own cart

@@ -31,7 +31,13 @@ public class SnakeCartManager : MonoBehaviour
     {
         CreateBodyParts();
     }
-
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.J) && snakeBody.Count >= 2)
+        {
+            Destroy(snakeBody[1]);
+        }
+    }
     // Update is called once per frame
     void FixedUpdate()
     {
@@ -136,8 +142,14 @@ public class SnakeCartManager : MonoBehaviour
         }
         for (int i = 1; i < snakeBody.Count; i++)
         {
-            var cartManager = snakeBody[i].GetComponent<ChainedCartManager>();
+            if (snakeBody[i] == null)
+            {
+                snakeBody.RemoveAt(i);
+                i = i - 1;
+                break;
+            }
 
+            var cartManager = snakeBody[i].GetComponent<ChainedCartManager>();
             if (cartManager == null)
             {
                 Debug.LogError("No Chained Cart Manager Component on " + snakeBody[i].name);
@@ -158,12 +170,6 @@ public class SnakeCartManager : MonoBehaviour
                 snakeBody.RemoveRange(i, snakeBody.Count - i);
 
                 break; // Exit the loop as we've detached all necessary carts
-            }
-
-            if (snakeBody[i] == null)
-            {
-                snakeBody.RemoveAt(i);
-                i = i - 1;
             }
         }
 

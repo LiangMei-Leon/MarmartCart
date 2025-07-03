@@ -9,9 +9,6 @@ public class CartControlScript : MonoBehaviour
     private Vector2 _inputVector; // 2D Vector variable that stores the raw input read from the input system
     private Vector3 _input; // 3D Vector variable that stores the raw input from 2D to 3D coordinate system (xy -> xz)
 
-    [Header("Device Binding")]
-    [SerializeField] private bool useKeyboard;
-    [SerializeField] private bool useGamepad;
     private InputUser user;
     private InputDevice assignedDevice;
 
@@ -22,55 +19,7 @@ public class CartControlScript : MonoBehaviour
     [SerializeField] private GameEvent resetCartEvent; // raise this event when the player wants to reset the cart (to solve stuck issues)
 
     [SerializeField] private bool canFlip = false;
-    //void Awake()
-    //{
-    //    _inputActions = new InputSystem_Actions(); // reference to the new input system class
-
-    //    // Bind the movement action
-    //    _inputActions.Player.Move.performed += ctx => _inputVector = ctx.ReadValue<Vector2>();
-    //    _inputActions.Player.Move.canceled += ctx => _inputVector = Vector2.zero;
-
-    //    _inputActions.Player.Boost.performed += ctx => boostEvent.Raise();
-    //    _inputActions.Player.FlipDirection.performed += ctx => resetCartEvent.Raise();
-    //}
-    //void Awake()
-    //{
-    //    // Assign input device based on inspector
-    //    if (useKeyboard)
-    //        assignedDevice = Keyboard.current;
-    //    else if (useGamepad)
-    //        assignedDevice = Gamepad.current;
-
-    //    if (assignedDevice == null)
-    //    {
-    //        Debug.LogError($"Assigned device is missing for {gameObject.name}");
-    //        return;
-    //    }
-
-    //    _inputActions = new InputSystem_Actions();
-
-    //    _inputActions.Player.Move.performed += ctx =>
-    //    {
-    //        if (ctx.control.device == assignedDevice)
-    //            _inputVector = ctx.ReadValue<Vector2>();
-    //    };
-    //    _inputActions.Player.Move.canceled += ctx =>
-    //    {
-    //        if (ctx.control.device == assignedDevice)
-    //            _inputVector = Vector2.zero;
-    //    };
-
-    //    _inputActions.Player.Boost.performed += ctx =>
-    //    {
-    //        if (ctx.control.device == assignedDevice)
-    //            boostEvent.Raise();
-    //    };
-    //    _inputActions.Player.FlipDirection.performed += ctx =>
-    //    {
-    //        if (ctx.control.device == assignedDevice)
-    //            resetCartEvent.Raise();
-    //    };
-    //}
+    
     public void InitializeWithDevice(InputDevice device)
     {
         assignedDevice = device;
@@ -139,14 +88,6 @@ public class CartControlScript : MonoBehaviour
                 resetCartEvent.Raise();
         };
     }
-    //private void OnEnable()
-    //{
-    //    _inputActions.Enable();
-    //}
-    //private void OnDisable()
-    //{
-    //    _inputActions.Disable();
-    //}
     void Start()
     {
 

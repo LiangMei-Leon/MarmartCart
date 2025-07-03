@@ -38,9 +38,11 @@ public class LeadingCartBehaviour : MonoBehaviour
     [SerializeField] float brakeFactor = 1f;
     [SerializeField] float maxBrakeForce = 1f;
     [SerializeField] private float targetSpeed = 20f;
+    private float cacheSpeed = 20f;
     private Vector3 finalSuspensionForce;
     private Vector3 finalSteeringForce;
     private Vector3 finalBrakeForce;
+    private bool isBraking = false;
 
     [Header("Boost Settings")]
     [SerializeField] private float boostedSpeed = 20f;
@@ -161,7 +163,16 @@ public class LeadingCartBehaviour : MonoBehaviour
             {
                 float speedError = targetSpeed - cartSpeed;
 
-                if (speedError > 0.1f)
+                if (Mathf.Abs(targetSpeed) < 0.1f && Mathf.Abs(cartSpeed) > 0.1f)
+                {
+                    // INSTANT hard stop + small knockback
+                    Vector3 knockbackDir = -cartBody.linearVelocity.normalized;
+                    float knockbackSpeed = 2f; // tweak this
+
+                    cartBody.linearVelocity = knockbackDir * 0f;
+                    cartBody.AddForceAtPosition(knockbackDir * knockbackSpeed, transform.position);
+                }
+                else if (speedError > 0.1f)
                 {
                     float normalizedSpeed = Mathf.Clamp01(Mathf.Abs(cartSpeed) / targetSpeed);
                     float availableTorque = engineTorqueCurve.Evaluate(normalizedSpeed);
@@ -173,8 +184,10 @@ public class LeadingCartBehaviour : MonoBehaviour
                     cartBody.AddForceAtPosition(forwardForce, transform.position);
                 }
             }
-
             #endregion
+            // Brake the cart, slow to zero now
+            //if (isBraking)
+            //    Brake();
         }
         else
         {
@@ -249,6 +262,21 @@ public class LeadingCartBehaviour : MonoBehaviour
         Vector3 desiredFacingDirection = -1 * cartBody.gameObject.transform.forward;
         cartBody.gameObject.transform.rotation = Quaternion.LookRotation(desiredFacingDirection);
 
+    }
+
+    public void SetSpeedToZero(float duration)
+    {
+        cacheSpeed = targetSpeed;
+        targetSpeed = 0f;
+        isBraking = true;
+        Invoke(nameof(ResetSpeed), duration);
+    }
+
+    public void ResetSpeed()
+    {
+        Debug.Log("ResetSpeed executed");
+        targetSpeed = 20f;
+        isBraking = false;
     }
     void OnDrawGizmos()
     {

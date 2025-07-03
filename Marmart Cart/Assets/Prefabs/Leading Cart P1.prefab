@@ -780,8 +780,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0693562bac5d814abfcb8fb90a990de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useKeyboard: 1
-  useGamepad: 0
   controllable: 1
   boostEvent: {fileID: 11400000, guid: 3aeaccc6664a25346b77bae38223b5d0, type: 2}
   resetCartEvent: {fileID: 11400000, guid: ec6acc4ad101416458a8963117372088, type: 2}
@@ -1319,7 +1317,7 @@ MonoBehaviour:
   distance: 1
   raycastOffset: 1.3
   <hitDirection>k__BackingField: {x: 0, y: 0, z: 0}
-  detachCooldown: 1.5
+  detachCooldown: 1
   cooldownTimer: 0
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
   sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
