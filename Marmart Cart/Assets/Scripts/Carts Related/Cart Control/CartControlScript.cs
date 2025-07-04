@@ -17,7 +17,7 @@ public class CartControlScript : MonoBehaviour
     [SerializeField] private bool controllable = true; // variable that controls if the system gonna read input
     [SerializeField] private GameEvent boostEvent; // raise this event when the player accelerates (boost)
     [SerializeField] private GameEvent resetCartEvent; // raise this event when the player wants to reset the cart (to solve stuck issues)
-
+    [SerializeField] private bool canBoost = true;
     [SerializeField] private bool canFlip = false;
     
     public void InitializeWithDevice(InputDevice device)
@@ -45,7 +45,7 @@ public class CartControlScript : MonoBehaviour
         };
         _inputActions.Player.Boost.performed += ctx =>
         {
-            if (ctx.control.device == device)
+            if (ctx.control.device == device && canBoost)
                 boostEvent.Raise();
         };
         _inputActions.Player.FlipDirection.performed += ctx =>
@@ -79,7 +79,7 @@ public class CartControlScript : MonoBehaviour
         };
         _inputActions.Player.Boost.performed += ctx =>
         {
-            if (ctx.control.device == Keyboard.current)
+            if (ctx.control.device == Keyboard.current && canBoost)
                 boostEvent.Raise();
         };
         _inputActions.Player.FlipDirection.performed += ctx =>
@@ -126,7 +126,14 @@ public class CartControlScript : MonoBehaviour
     {
         canFlip = false;
     }
-
+    public void AllowBoost()
+    {
+        canBoost = true;
+    }
+    public void DisallowBoost()
+    {
+        canBoost = false;
+    }
     public void DisableControl()
     {
         controllable = false;

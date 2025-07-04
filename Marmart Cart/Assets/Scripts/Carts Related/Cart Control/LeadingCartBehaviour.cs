@@ -42,7 +42,6 @@ public class LeadingCartBehaviour : MonoBehaviour
     private Vector3 finalSuspensionForce;
     private Vector3 finalSteeringForce;
     private Vector3 finalBrakeForce;
-    private bool isBraking = false;
 
     [Header("Boost Settings")]
     [SerializeField] private float boostedSpeed = 20f;
@@ -163,16 +162,7 @@ public class LeadingCartBehaviour : MonoBehaviour
             {
                 float speedError = targetSpeed - cartSpeed;
 
-                if (Mathf.Abs(targetSpeed) < 0.1f && Mathf.Abs(cartSpeed) > 0.1f)
-                {
-                    // INSTANT hard stop + small knockback
-                    Vector3 knockbackDir = -cartBody.linearVelocity.normalized;
-                    float knockbackSpeed = 2f; // tweak this
-
-                    cartBody.linearVelocity = knockbackDir * 0f;
-                    cartBody.AddForceAtPosition(knockbackDir * knockbackSpeed, transform.position);
-                }
-                else if (speedError > 0.1f)
+                if (speedError > 0.1f)
                 {
                     float normalizedSpeed = Mathf.Clamp01(Mathf.Abs(cartSpeed) / targetSpeed);
                     float availableTorque = engineTorqueCurve.Evaluate(normalizedSpeed);
@@ -196,6 +186,7 @@ public class LeadingCartBehaviour : MonoBehaviour
     }
     public void StartBoost()
     {
+        cartControlInput.DisallowFlip();
         if (!isBoosting)
             StartCoroutine(BoostCoroutine());
     }
@@ -232,6 +223,7 @@ public class LeadingCartBehaviour : MonoBehaviour
 
         targetSpeed = originalSpeed;
         cartControlInput.EnableControl();
+        cartControlInput.DisallowFlip();
         isBoosting = false;
     }
 
@@ -268,15 +260,22 @@ public class LeadingCartBehaviour : MonoBehaviour
     {
         cacheSpeed = targetSpeed;
         targetSpeed = 0f;
-        isBraking = true;
+        Vector3 knockbackDir = -cartBody.linearVelocity.normalized;
+        float knockbackForce = 200f; // Make this punchy
+
+        // Instant stop
+        cartBody.linearVelocity = Vector3.zero;
+
+        // Apply force at the offset point
+        cartBody.AddForceAtPosition(knockbackDir * knockbackForce, transform.position, ForceMode.Impulse);
         Invoke(nameof(ResetSpeed), duration);
     }
 
     public void ResetSpeed()
     {
-        Debug.Log("ResetSpeed executed");
-        targetSpeed = 20f;
-        isBraking = false;
+        //Debug.Log("ResetSpeed executed");
+        targetSpeed = cacheSpeed;
+        cartControlInput.AllowBoost();
     }
     void OnDrawGizmos()
     {

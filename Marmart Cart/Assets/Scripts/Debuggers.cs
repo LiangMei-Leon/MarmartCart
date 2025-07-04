@@ -23,7 +23,19 @@ public class Debuggers : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.F1))
             attachedCartEvent.Raise();
+        if (Input.GetKeyDown(KeyCode.F2))
+        {
+            attachedCartEvent.Raise();
+            attachedCartEvent.Raise();
+            attachedCartEvent.Raise();
+            attachedCartEvent.Raise();
+            attachedCartEvent.Raise();
+            attachedCartEvent.Raise();
+            attachedCartEvent.Raise();
+            attachedCartEvent.Raise();
+            attachedCartEvent.Raise();
+            attachedCartEvent.Raise();
+        }
             
-
     }
 }

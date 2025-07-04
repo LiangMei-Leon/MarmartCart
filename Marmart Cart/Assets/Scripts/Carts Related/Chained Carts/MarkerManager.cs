@@ -22,31 +22,16 @@ public class MarkerManager : MonoBehaviour
     [SerializeField] float cartMaxSpeed = 30f;
     [SerializeField] float offsetValue = 0.0f;
 
-    private Rigidbody cartRigidbody;
-    private SnakeCartManager snakeCartManager;
-
-    private Vector3 lastMarkerPosition;
-    //[SerializeField] private float markerSpacing = 1f; // Desired distance between each marker
-    private float distanceSinceLastMarker = 0f;
     void Start()
     {
         offsetValueCurve = Resources.Load<AnimationCurveVariable>("SO_Variables/Offset Value Curve");
-        snakeCartManager = GameObject.FindWithTag("SnakeCartManager").GetComponent<SnakeCartManager>();
-        if (snakeCartManager != null)
-        {
-            cartRigidbody = snakeCartManager.gameObject.transform.GetChild(0).GetComponent<Rigidbody>(); //refer to the leading cart's rigidbody
-        }
+       
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(cartRigidbody != null)
-        {
-            float cartSpeed = Vector3.Dot(cartRigidbody.gameObject.transform.forward, cartRigidbody.linearVelocity);
-            offsetValue = offsetValueCurve.curve.Evaluate(Mathf.Abs(cartSpeed) / cartMaxSpeed);
-            // offsetValue = 0.5f;
-        }
+        
     }
 
     void FixedUpdate()

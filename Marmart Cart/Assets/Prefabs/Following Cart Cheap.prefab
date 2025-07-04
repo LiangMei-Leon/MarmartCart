@@ -860,7 +860,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 3944
+  m_VersionIndex: 4028
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -973,7 +973,6 @@ MonoBehaviour:
   offsetValueCurve: {fileID: 0}
   cartMaxSpeed: 30
   offsetValue: 0
-  markerSpacing: 0.1
 --- !u!114 &6471618177495573124
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -990,6 +989,8 @@ MonoBehaviour:
   collectVFX: {fileID: 1106169482944890282}
   <isCollectedByPlayer>k__BackingField: 0
   <isCollectedByAI>k__BackingField: 0
+  p1Snake: {fileID: 0}
+  p2Snake: {fileID: 0}
   p1collectNormalCartEvent: {fileID: 11400000, guid: e276d5233b388ba49a963275c3ade278, type: 2}
   p1collectBonusCartEvent: {fileID: 11400000, guid: 86cf779dca08a0a4497fc14537f5b9c9, type: 2}
   p2collectNormalCartEvent: {fileID: 11400000, guid: 5795e0b2d0274704bb75ba566dd756ab, type: 2}

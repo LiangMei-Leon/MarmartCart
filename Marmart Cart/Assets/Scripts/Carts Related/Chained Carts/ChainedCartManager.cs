@@ -19,7 +19,12 @@ public class ChainedCartManager : MonoBehaviour
     public bool isAvailable => !isCollectedByPlayer && !isCollectedByAI;
 
     private Rigidbody rb;
-    private LeadingCartRaycaster hitInfo;
+    [SerializeField] private GameObject p1Snake;
+    private LeadingCartRaycaster p1Raycaster;
+    private bool p1AllowCollect = true;
+    [SerializeField] private GameObject p2Snake;
+    private LeadingCartRaycaster p2Raycaster;
+    private bool p2AllowCollect = true;
 
     [Header("Related Events")]
     [SerializeField] GameEvent p1collectNormalCartEvent;
@@ -44,28 +49,50 @@ public class ChainedCartManager : MonoBehaviour
         {
             Debug.LogError("Rigidbody not found on the GameObject. Please attach one.");
         }
-
-        snakeCartManager = GameObject.FindWithTag("SnakeCartManager").GetComponent<SnakeCartManager>();
-        if (snakeCartManager != null)
-        {
-            hitInfo = snakeCartManager.gameObject.transform.GetChild(0).GetComponent<LeadingCartRaycaster>();
-        }
+        p1Snake = GameObject.FindWithTag("SnakeCartManagerP1");
+        p1Raycaster = p1Snake.transform.GetChild(0).GetComponent<LeadingCartRaycaster>();
+        p1AllowCollect = !p1Raycaster.getIfInGhostMode();
+        p2Snake = GameObject.FindWithTag("SnakeCartManagerP2");
+        p2Raycaster = p2Snake.transform.GetChild(0).GetComponent<LeadingCartRaycaster>();
+        p2AllowCollect = !p2Raycaster.getIfInGhostMode();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Escape))
-        {
-            PlayVFX();
-        }
+        p1AllowCollect = !p1Raycaster.getIfInGhostMode();
+        p2AllowCollect = !p2Raycaster.getIfInGhostMode();
     }
 
     public void OnDetach()
     {
         if (rb == null) return;
         this.gameObject.tag = "Item";
-        Vector3 forceDirection = hitInfo.hitDirection;
+        Vector3 forceDirection = UnityEngine.Random.insideUnitSphere;
+
+        isCollectedByPlayer = false;
+
+        // Normalize the input direction to ensure it's a unit vector
+        forceDirection.y = 0; // Ensure it's constrained to the XZ plane
+        forceDirection.Normalize();
+
+        // Scale the randomized direction by a random force magnitude
+        float forceMagnitude = UnityEngine.Random.Range(10f, 30f); // Adjust range as needed
+        Vector3 randomForce = forceDirection * forceMagnitude;
+
+        // Apply the force to the Rigidbody
+        rb.AddForce(randomForce, ForceMode.Impulse);
+
+        // Optionally, add some torque for rotational randomness
+        Vector3 randomTorque = UnityEngine.Random.insideUnitSphere * UnityEngine.Random.Range(20f, 30f); // Adjust range as needed
+        rb.AddTorque(randomTorque, ForceMode.Impulse);
+    }
+
+    public void OnDetach(Vector3 hitDirection)
+    {
+        if (rb == null) return;
+        this.gameObject.tag = "Item";
+        Vector3 forceDirection = hitDirection;
 
         isCollectedByPlayer = false;
 
@@ -81,7 +108,7 @@ public class ChainedCartManager : MonoBehaviour
         Vector3 randomizedDirection = rotation * forceDirection;
 
         // Scale the randomized direction by a random force magnitude
-        float forceMagnitude = UnityEngine.Random.Range(50f, 70f); // Adjust range as needed
+        float forceMagnitude = UnityEngine.Random.Range(30f, 50f); // Adjust range as needed
         Vector3 randomForce = randomizedDirection * forceMagnitude;
 
         // Apply the force to the Rigidbody
@@ -94,7 +121,7 @@ public class ChainedCartManager : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player1") && !isCollectedByPlayer)
+        if (other.CompareTag("Player1") && !isCollectedByPlayer && p1AllowCollect)
         {
             // isCollectedByPlayer = true;
             if(isBonusCart)
@@ -107,7 +134,7 @@ public class ChainedCartManager : MonoBehaviour
             }
             Destroy(this.gameObject);
         }
-        if (other.CompareTag("Player2") && !isCollectedByPlayer)
+        if (other.CompareTag("Player2") && !isCollectedByPlayer && p2AllowCollect)
         {
             // isCollectedByPlayer = true;
             if (isBonusCart)
@@ -124,11 +151,11 @@ public class ChainedCartManager : MonoBehaviour
 
     public void PlayVFX()
     {
-        Debug.Log("Attempt to play vfx on: " + gameObject.name);
-        Debug.Log($"ParticleSystem state: IsPlaying = {collectVFX.isPlaying}, IsEmitting = {collectVFX.isEmitting}");
+        //Debug.Log("Attempt to play vfx on: " + gameObject.name);
+       // Debug.Log($"ParticleSystem state: IsPlaying = {collectVFX.isPlaying}, IsEmitting = {collectVFX.isEmitting}");
         collectVFX.Stop();
         collectVFX.Play();
-        Debug.Log($"After Play: IsPlaying = {collectVFX.isPlaying}, IsEmitting = {collectVFX.isEmitting}");
+        //Debug.Log($"After Play: IsPlaying = {collectVFX.isPlaying}, IsEmitting = {collectVFX.isEmitting}");
     }
 
     public void CollectByPlayer()

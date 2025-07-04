@@ -1328,7 +1328,7 @@ GameObject:
   - component: {fileID: 203355758}
   m_Layer: 0
   m_Name: Chain of Carts P2
-  m_TagString: SnakeCartManager
+  m_TagString: SnakeCartManagerP2
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3108,6 +3108,161 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3132851427165294272, guid: f85843c996b669541812333ce8fa3657, type: 3}
   m_PrefabInstance: {fileID: 395871677}
   m_PrefabAsset: {fileID: 0}
+--- !u!43 &396635993
+Mesh:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: pb_Mesh-5622240
+  serializedVersion: 11
+  m_SubMeshes: []
+  m_Shapes:
+    vertices: []
+    shapes: []
+    channels: []
+    fullWeights: []
+  m_BindPose: []
+  m_BoneNameHashes: 
+  m_RootBoneNameHash: 0
+  m_BonesAABB: []
+  m_VariableBoneCountWeights:
+    m_Data: 
+  m_MeshCompression: 0
+  m_IsReadable: 1
+  m_KeepVertices: 0
+  m_KeepIndices: 0
+  m_IndexFormat: 0
+  m_IndexBuffer: 
+  m_VertexData:
+    serializedVersion: 3
+    m_VertexCount: 0
+    m_Channels:
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 3
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    m_DataSize: 0
+    _typelessdata: 
+  m_CompressedMesh:
+    m_Vertices:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_UV:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Normals:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Tangents:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Weights:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_NormalSigns:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_TangentSigns:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_FloatColors:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_BoneIndices:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Triangles:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_UVInfo: 0
+  m_LocalAABB:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  m_MeshUsageFlags: 0
+  m_CookingOptions: 30
+  m_BakedConvexCollisionMesh: 
+  m_BakedTriangleCollisionMesh: 
+  'm_MeshMetrics[0]': 1
+  'm_MeshMetrics[1]': 1
+  m_MeshOptimizationFlags: 1
+  m_StreamData:
+    serializedVersion: 2
+    offset: 0
+    size: 0
+    path: 
 --- !u!1 &405823040
 GameObject:
   m_ObjectHideFlags: 0
@@ -5285,11 +5440,11 @@ GameObject:
   m_Component:
   - component: {fileID: 591100670}
   - component: {fileID: 591100671}
+  - component: {fileID: 591100676}
   - component: {fileID: 591100672}
   - component: {fileID: 591100673}
   - component: {fileID: 591100675}
   - component: {fileID: 591100674}
-  - component: {fileID: 591100676}
   m_Layer: 0
   m_Name: Cart Events Listener
   m_TagString: Untagged
@@ -9109,12 +9264,24 @@ PrefabInstance:
       objectReference: {fileID: 1986866068}
     - target: {fileID: 3001835831875782124, guid: c6c12bfc1b7ace847be00ecc6a8d5d79, type: 3}
       propertyPath: m_VersionIndex
-      value: 3815
+      value: 3842
+      objectReference: {fileID: 0}
+    - target: {fileID: 4657071365911286611, guid: c6c12bfc1b7ace847be00ecc6a8d5d79, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 396635993}
+    - target: {fileID: 4657071365911286611, guid: c6c12bfc1b7ace847be00ecc6a8d5d79, type: 3}
+      propertyPath: m_VersionIndex
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 4657071365911286611, guid: c6c12bfc1b7ace847be00ecc6a8d5d79, type: 3}
+      propertyPath: m_MeshFormatVersion
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 5691429360340611677, guid: c6c12bfc1b7ace847be00ecc6a8d5d79, type: 3}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: 1986866068}
+      objectReference: {fileID: 396635993}
     - target: {fileID: 6000561608375612997, guid: c6c12bfc1b7ace847be00ecc6a8d5d79, type: 3}
       propertyPath: m_LocalPosition.x
       value: -38.4
@@ -12950,7 +13117,7 @@ PrefabInstance:
       objectReference: {fileID: 148288554}
     - target: {fileID: 3001835831875782124, guid: 8b73817db514d35448f8eae48c6e04fb, type: 3}
       propertyPath: m_VersionIndex
-      value: 3818
+      value: 3917
       objectReference: {fileID: 0}
     - target: {fileID: 5691429360340611677, guid: 8b73817db514d35448f8eae48c6e04fb, type: 3}
       propertyPath: m_Mesh
@@ -16757,7 +16924,7 @@ GameObject:
   - component: {fileID: 1981863288}
   m_Layer: 0
   m_Name: Chain of Carts P1
-  m_TagString: SnakeCartManager
+  m_TagString: SnakeCartManagerP1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -17604,19 +17771,19 @@ PrefabInstance:
       objectReference: {fileID: 993783746}
     - target: {fileID: 6287979600128673227, guid: cc094b8fa5c360c419dc66086c996fc2, type: 3}
       propertyPath: m_VersionIndex
-      value: 4013
+      value: 4034
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: cc094b8fa5c360c419dc66086c996fc2, type: 3}
-      propertyPath: <isCollectedByPlayer>k__BackingField
-      value: 0
-      objectReference: {fileID: 0}
+      propertyPath: p1Snake
+      value: 
+      objectReference: {fileID: 1981863287}
+    - target: {fileID: 6471618177495573124, guid: cc094b8fa5c360c419dc66086c996fc2, type: 3}
+      propertyPath: p2Snake
+      value: 
+      objectReference: {fileID: 203355757}
     - target: {fileID: 6914780558269192623, guid: cc094b8fa5c360c419dc66086c996fc2, type: 3}
       propertyPath: m_Name
       value: Following Cart Cheap
-      objectReference: {fileID: 0}
-    - target: {fileID: 6914780558269192623, guid: cc094b8fa5c360c419dc66086c996fc2, type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7662453414008975933, guid: cc094b8fa5c360c419dc66086c996fc2, type: 3}
       propertyPath: m_Mesh
@@ -17681,7 +17848,7 @@ PrefabInstance:
       objectReference: {fileID: 920119361}
     - target: {fileID: 1478538068427815336, guid: 6babe8a17500fa54787592962df13c24, type: 3}
       propertyPath: m_VersionIndex
-      value: 4178
+      value: 4181
       objectReference: {fileID: 0}
     - target: {fileID: 2413974099969063298, guid: 6babe8a17500fa54787592962df13c24, type: 3}
       propertyPath: m_LocalPosition.x

@@ -13,6 +13,8 @@ TagManager:
   - Player1
   - Player2
   - Walls
+  - SnakeCartManagerP1
+  - SnakeCartManagerP2
   layers:
   - Default
   - TransparentFX

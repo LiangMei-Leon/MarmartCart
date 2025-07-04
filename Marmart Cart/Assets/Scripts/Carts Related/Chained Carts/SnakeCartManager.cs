@@ -253,42 +253,42 @@ public class SnakeCartManager : MonoBehaviour
             }
         }
     }
-    public void SpeedUpPowerUp()
-    {
-        int bonusRatio = 1;
-        // Count items in the snake body player 2
-        foreach (var cart in this.GetSnakeBody())
-        {
-            var cartManager = cart.GetComponent<ChainedCartManager>();
-            if (cartManager != null)
-            {
-                if (cartManager.isBonusCart)
-                    bonusRatio++;
-            }
-        }
-        LeadingCartBehaviour leadingCartBehaviour0 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(0).GetComponent<LeadingCartBehaviour>();
-        LeadingCartBehaviour leadingCartBehaviour1 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(1).GetComponent<LeadingCartBehaviour>();
-        LeadingCartBehaviour leadingCartBehaviour2 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(2).GetComponent<LeadingCartBehaviour>();
-        LeadingCartBehaviour leadingCartBehaviour3 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(3).GetComponent<LeadingCartBehaviour>();
+    //public void SpeedUpPowerUp()
+    //{
+    //    int bonusRatio = 1;
+    //    // Count items in the snake body player 2
+    //    foreach (var cart in this.GetSnakeBody())
+    //    {
+    //        var cartManager = cart.GetComponent<ChainedCartManager>();
+    //        if (cartManager != null)
+    //        {
+    //            if (cartManager.isBonusCart)
+    //                bonusRatio++;
+    //        }
+    //    }
+    //    LeadingCartBehaviour leadingCartBehaviour0 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(0).GetComponent<LeadingCartBehaviour>();
+    //    LeadingCartBehaviour leadingCartBehaviour1 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(1).GetComponent<LeadingCartBehaviour>();
+    //    LeadingCartBehaviour leadingCartBehaviour2 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(2).GetComponent<LeadingCartBehaviour>();
+    //    LeadingCartBehaviour leadingCartBehaviour3 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(3).GetComponent<LeadingCartBehaviour>();
 
-        leadingCartBehaviour0.regularMaxSpeed += bonusRatio;
-        leadingCartBehaviour1.regularMaxSpeed += bonusRatio;
-        leadingCartBehaviour2.regularMaxSpeed += bonusRatio;
-        leadingCartBehaviour3.regularMaxSpeed += bonusRatio;
+    //    leadingCartBehaviour0.regularMaxSpeed += bonusRatio;
+    //    leadingCartBehaviour1.regularMaxSpeed += bonusRatio;
+    //    leadingCartBehaviour2.regularMaxSpeed += bonusRatio;
+    //    leadingCartBehaviour3.regularMaxSpeed += bonusRatio;
 
-        Invoke("ResetCartMaxSpeed", 5f);
-    }
+    //    Invoke("ResetCartMaxSpeed", 5f);
+    //}
 
-    void ResetCartMaxSpeed()
-    {
-        LeadingCartBehaviour leadingCartBehaviour0 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(0).GetComponent<LeadingCartBehaviour>();
-        LeadingCartBehaviour leadingCartBehaviour1 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(1).GetComponent<LeadingCartBehaviour>();
-        LeadingCartBehaviour leadingCartBehaviour2 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(2).GetComponent<LeadingCartBehaviour>();
-        LeadingCartBehaviour leadingCartBehaviour3 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(3).GetComponent<LeadingCartBehaviour>();
+    //void ResetCartMaxSpeed()
+    //{
+    //    LeadingCartBehaviour leadingCartBehaviour0 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(0).GetComponent<LeadingCartBehaviour>();
+    //    LeadingCartBehaviour leadingCartBehaviour1 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(1).GetComponent<LeadingCartBehaviour>();
+    //    LeadingCartBehaviour leadingCartBehaviour2 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(2).GetComponent<LeadingCartBehaviour>();
+    //    LeadingCartBehaviour leadingCartBehaviour3 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(3).GetComponent<LeadingCartBehaviour>();
 
-        leadingCartBehaviour0.regularMaxSpeed = 20f;
-        leadingCartBehaviour1.regularMaxSpeed = 20f;
-        leadingCartBehaviour2.regularMaxSpeed = 20f;
-        leadingCartBehaviour3.regularMaxSpeed = 20f;
-    }
+    //    leadingCartBehaviour0.regularMaxSpeed = 20f;
+    //    leadingCartBehaviour1.regularMaxSpeed = 20f;
+    //    leadingCartBehaviour2.regularMaxSpeed = 20f;
+    //    leadingCartBehaviour3.regularMaxSpeed = 20f;
+    //}
 }
