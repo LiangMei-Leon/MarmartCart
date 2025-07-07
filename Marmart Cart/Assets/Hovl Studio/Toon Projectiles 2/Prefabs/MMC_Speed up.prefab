@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 135880312642943706}
   - component: {fileID: 8750870575721843976}
   m_Layer: 0
-  m_Name: MMC_Spped up
+  m_Name: MMC_Speed up
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -46,7 +46,7 @@ ParticleSystem:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1564468091806366}
   serializedVersion: 8
-  lengthInSec: 1
+  lengthInSec: 1.25
   simulationSpeed: 1
   stopAction: 0
   cullingMode: 1
@@ -121,7 +121,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1
+      scalar: 1.25
       minScalar: 0.2
       maxCurve:
         serializedVersion: 2
@@ -4875,7 +4875,6 @@ ParticleSystemRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: f1b23a4dd34122b4084cf47d208e55f9, type: 2}
-  - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

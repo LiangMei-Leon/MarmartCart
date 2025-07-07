@@ -23,6 +23,7 @@ public class LeadingCartRaycaster : MonoBehaviour
     [SerializeField] GameEvent disableDetachEvent;
 
     [SerializeField] SfxManager sfxManager;
+    [SerializeField] GameObject chargingVFX;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -44,6 +45,14 @@ public class LeadingCartRaycaster : MonoBehaviour
         else
         {
             cartInGhostMode = false;
+        }
+        if(cartControlInput.IsCharing())
+        {
+            chargingVFX.SetActive(true);
+        }
+        else
+        {
+            chargingVFX.SetActive(false);
         }
     }
 
