@@ -15,11 +15,15 @@ public class CartControlScript : MonoBehaviour
     public Vector3 desiredDirection { get; private set; } // Public property to provide desired direction
 
     [SerializeField] private bool controllable = true; // variable that controls if the system gonna read input
+    [SerializeField] private bool isInPit = false;
     [SerializeField] private GameEvent boostEvent; // raise this event when the player accelerates (boost)
     [SerializeField] private GameEvent resetCartEvent; // raise this event when the player wants to reset the cart (to solve stuck issues)
     [SerializeField] private bool canBoost = true;
     [SerializeField] private bool canFlip = false;
-    
+
+    // fro cart pit check out actions
+    private CheckOutManager activeCheckoutManager;
+
     public void InitializeWithDevice(InputDevice device)
     {
         assignedDevice = device;
@@ -52,6 +56,17 @@ public class CartControlScript : MonoBehaviour
         {
             if (ctx.control.device == device && canFlip)
                 resetCartEvent.Raise();
+        };
+        // inputs for check out pit
+        _inputActions.Player.CheckOut.performed += ctx =>
+        {
+            if (ctx.control.device == device && activeCheckoutManager != null)
+                activeCheckoutManager.TryCheckoutCart();
+        };
+        _inputActions.Player.QuitCheckOut.performed += ctx =>
+        {
+            if (ctx.control.device == device && activeCheckoutManager != null)
+                activeCheckoutManager.QuitCheckout();
         };
 
         _inputActions.Enable(); // Only enable after setup is complete
@@ -87,6 +102,17 @@ public class CartControlScript : MonoBehaviour
             if (ctx.control.device == Keyboard.current && canFlip)
                 resetCartEvent.Raise();
         };
+        // inputs for check out pit
+        _inputActions.Player.CheckOut.performed += ctx =>
+        {
+            if (ctx.control.device == Keyboard.current && activeCheckoutManager != null)
+                activeCheckoutManager.TryCheckoutCart();
+        };
+        _inputActions.Player.QuitCheckOut.performed += ctx =>
+        {
+            if (ctx.control.device == Keyboard.current && activeCheckoutManager != null)
+                activeCheckoutManager.QuitCheckout();
+        };
     }
     void Start()
     {
@@ -96,7 +122,7 @@ public class CartControlScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (controllable)
+        if (controllable && !isInPit)
         {
             GatherInput();
         }
@@ -116,6 +142,10 @@ public class CartControlScript : MonoBehaviour
     {
         _inputActions?.Disable();
         InputUser.PerformPairingWithDevice(null, user); // unpair
+    }
+    public void SetActiveCheckoutHandler(CheckOutManager currenetCheckoutManager)
+    {
+        activeCheckoutManager = currenetCheckoutManager;
     }
 
     public void AllowFlip()
@@ -143,7 +173,14 @@ public class CartControlScript : MonoBehaviour
     {
         controllable = true;
     }
-
+    public void SetInPit()
+    {
+        isInPit = true;
+    }
+    public void SetOutPit()
+    {
+        isInPit = false;
+    }
     public bool IsCharing()
     {
         return !controllable;

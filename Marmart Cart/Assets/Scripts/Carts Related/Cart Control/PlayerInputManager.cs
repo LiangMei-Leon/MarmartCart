@@ -42,28 +42,4 @@ public class PlayerInputManager : MonoBehaviour
             Debug.LogError("No gamepads found, and debug mode is off.");
         }
     }
-    public void PairGamepad1WithPlayer1()
-    {
-        var allGamepads = Gamepad.all;
-
-        if (allGamepads.Count < 2)
-        {
-            Debug.LogError("Two gamepads are required for this test.");
-            return;
-        }
-
-        player1.transform.GetChild(0).GetChild(3).GetComponent<CartControlScript>().InitializeWithDevice(allGamepads[0]);
-    }
-    public void PairGamepad2WithPlayer2()
-    {
-        var allGamepads = Gamepad.all;
-
-        if (allGamepads.Count < 2)
-        {
-            Debug.LogError("Two gamepads are required for this test.");
-            return;
-        }
-
-        player2.transform.GetChild(0).GetChild(3).GetComponent<CartControlScript>().InitializeWithDevice(allGamepads[1]);
-    }
 }

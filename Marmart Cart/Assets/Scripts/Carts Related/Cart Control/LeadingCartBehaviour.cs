@@ -270,11 +270,17 @@ public class LeadingCartBehaviour : MonoBehaviour
         cartBody.AddForceAtPosition(knockbackDir * knockbackForce, transform.position, ForceMode.Impulse);
         Invoke(nameof(ResetSpeed), duration);
     }
-
+    
+    public void SetSpeedToZero()
+    {
+        cacheSpeed = targetSpeed;
+        targetSpeed = 0f;
+        cartBody.linearVelocity = Vector3.zero;
+    }
     public void ResetSpeed()
     {
         //Debug.Log("ResetSpeed executed");
-        targetSpeed = cacheSpeed;
+        targetSpeed = 20f;
         cartControlInput.AllowBoost();
     }
     void OnDrawGizmos()

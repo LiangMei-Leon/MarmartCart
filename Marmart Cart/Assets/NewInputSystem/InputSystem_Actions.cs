@@ -117,20 +117,27 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""CheckOut"",
+                    ""type"": ""Button"",
+                    ""id"": ""bf53dbfc-38bf-46f4-841f-15ecc31c459a"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""QuitCheckOut"",
+                    ""type"": ""Button"",
+                    ""id"": ""71757203-3eef-4bae-b5a4-bc5312a6ec70"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
-                {
-                    ""name"": """",
-                    ""id"": ""978bfe49-cc26-4a3d-ab7b-7d7a29327403"",
-                    ""path"": ""<Gamepad>/leftStick"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": "";Gamepad"",
-                    ""action"": ""Move"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
                 {
                     ""name"": ""WASD"",
                     ""id"": ""00ca640b-d935-4593-8157-c05846ea39b3"",
@@ -231,28 +238,6 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": true
                 },
                 {
-                    ""name"": """",
-                    ""id"": ""1635d3fe-58b6-4ba9-a4e2-f4b964f6b5c8"",
-                    ""path"": ""<XRController>/{Primary2DAxis}"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""XR"",
-                    ""action"": ""Move"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""3ea4d645-4504-4529-b061-ab81934c3752"",
-                    ""path"": ""<Joystick>/stick"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Joystick"",
-                    ""action"": ""Move"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
                     ""name"": ""2DVector_WASD"",
                     ""id"": ""b295a701-aaf6-4972-8e7a-a719ed54c474"",
                     ""path"": ""2DVector"",
@@ -309,6 +294,39 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
+                    ""id"": ""978bfe49-cc26-4a3d-ab7b-7d7a29327403"",
+                    ""path"": ""<Gamepad>/leftStick"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Gamepad"",
+                    ""action"": ""Move"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1635d3fe-58b6-4ba9-a4e2-f4b964f6b5c8"",
+                    ""path"": ""<XRController>/{Primary2DAxis}"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""XR"",
+                    ""action"": ""Move"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3ea4d645-4504-4529-b061-ab81934c3752"",
+                    ""path"": ""<Joystick>/stick"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Joystick"",
+                    ""action"": ""Move"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
                     ""id"": ""d28adb4a-aaa9-4a6f-8db0-78904e1cf502"",
                     ""path"": ""<Gamepad>/leftStick"",
                     ""interactions"": """",
@@ -359,6 +377,50 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": "";Controller"",
                     ""action"": ""FlipDirection"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""bd558e09-2e60-499f-9c8a-2e66b74908bf"",
+                    ""path"": ""<Keyboard>/f"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard_WASD"",
+                    ""action"": ""CheckOut"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8504d0a1-40e3-4b1d-bb6e-3fd9e040337a"",
+                    ""path"": ""<Gamepad>/buttonWest"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Controller"",
+                    ""action"": ""CheckOut"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""a58ff98a-3e05-45a0-8e7f-0bbe2f08925a"",
+                    ""path"": ""<Keyboard>/c"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard_WASD"",
+                    ""action"": ""QuitCheckOut"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""05656349-f474-4408-91de-c98bbbf88608"",
+                    ""path"": ""<Gamepad>/buttonNorth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Controller"",
+                    ""action"": ""QuitCheckOut"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -965,6 +1027,8 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         m_Player_Move = m_Player.FindAction("Move", throwIfNotFound: true);
         m_Player_Boost = m_Player.FindAction("Boost", throwIfNotFound: true);
         m_Player_FlipDirection = m_Player.FindAction("FlipDirection", throwIfNotFound: true);
+        m_Player_CheckOut = m_Player.FindAction("CheckOut", throwIfNotFound: true);
+        m_Player_QuitCheckOut = m_Player.FindAction("QuitCheckOut", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1061,6 +1125,8 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Move;
     private readonly InputAction m_Player_Boost;
     private readonly InputAction m_Player_FlipDirection;
+    private readonly InputAction m_Player_CheckOut;
+    private readonly InputAction m_Player_QuitCheckOut;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -1084,6 +1150,14 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/FlipDirection".
         /// </summary>
         public InputAction @FlipDirection => m_Wrapper.m_Player_FlipDirection;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/CheckOut".
+        /// </summary>
+        public InputAction @CheckOut => m_Wrapper.m_Player_CheckOut;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/QuitCheckOut".
+        /// </summary>
+        public InputAction @QuitCheckOut => m_Wrapper.m_Player_QuitCheckOut;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -1119,6 +1193,12 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @FlipDirection.started += instance.OnFlipDirection;
             @FlipDirection.performed += instance.OnFlipDirection;
             @FlipDirection.canceled += instance.OnFlipDirection;
+            @CheckOut.started += instance.OnCheckOut;
+            @CheckOut.performed += instance.OnCheckOut;
+            @CheckOut.canceled += instance.OnCheckOut;
+            @QuitCheckOut.started += instance.OnQuitCheckOut;
+            @QuitCheckOut.performed += instance.OnQuitCheckOut;
+            @QuitCheckOut.canceled += instance.OnQuitCheckOut;
         }
 
         /// <summary>
@@ -1139,6 +1219,12 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @FlipDirection.started -= instance.OnFlipDirection;
             @FlipDirection.performed -= instance.OnFlipDirection;
             @FlipDirection.canceled -= instance.OnFlipDirection;
+            @CheckOut.started -= instance.OnCheckOut;
+            @CheckOut.performed -= instance.OnCheckOut;
+            @CheckOut.canceled -= instance.OnCheckOut;
+            @QuitCheckOut.started -= instance.OnQuitCheckOut;
+            @QuitCheckOut.performed -= instance.OnQuitCheckOut;
+            @QuitCheckOut.canceled -= instance.OnQuitCheckOut;
         }
 
         /// <summary>
@@ -1486,6 +1572,20 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnFlipDirection(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "CheckOut" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnCheckOut(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "QuitCheckOut" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnQuitCheckOut(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.

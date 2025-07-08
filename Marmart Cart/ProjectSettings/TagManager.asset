@@ -15,6 +15,7 @@ TagManager:
   - Walls
   - SnakeCartManagerP1
   - SnakeCartManagerP2
+  - CheckOutStation
   layers:
   - Default
   - TransparentFX

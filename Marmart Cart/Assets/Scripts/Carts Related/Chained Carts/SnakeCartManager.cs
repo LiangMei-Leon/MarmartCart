@@ -33,10 +33,7 @@ public class SnakeCartManager : MonoBehaviour
     }
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.J) && snakeBody.Count >= 2)
-        {
-            Destroy(snakeBody[1]);
-        }
+        
     }
     // Update is called once per frame
     void FixedUpdate()
@@ -252,6 +249,19 @@ public class SnakeCartManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    public int CheckOutFirstChainedCart()
+    {
+        if (snakeBody.Count > 1)
+        {
+            GameObject removed = snakeBody[1];
+            snakeBody.RemoveAt(1);
+            Destroy(removed);
+
+            return snakeBody.Count;
+        }
+        return snakeBody.Count;
     }
     //public void SpeedUpPowerUp()
     //{

@@ -93,7 +93,7 @@ public class LeadingCartRaycaster : MonoBehaviour
                 {
                     GameObject hitObject = hit.transform.gameObject;
                     ChainedCartManager hitCartInfo = hitObject.GetComponent<ChainedCartManager>();
-                    
+                    // Todo:if the other player is in pit, despite charging or not, destroy self
                     if (cartControlInput.IsCharing())
                     {
                         // If the player is charging, we can detach any cart it hits along the way
@@ -130,6 +130,7 @@ public class LeadingCartRaycaster : MonoBehaviour
                 // If the hit object is the leading cart of the other player
                 else if (hit.transform.gameObject.GetComponent<LeadingCartRaycaster>() != null)
                 {
+                    // Todo:if the other player is in pit, despite charging or not, destroy self
                     // If charging, destory all the carts of that player
                     if (cartControlInput.IsCharing())
                     {
@@ -166,6 +167,11 @@ public class LeadingCartRaycaster : MonoBehaviour
     {
         //Debug.Log("Attempt to reset timer");
         cooldownTimer = detachCooldown;
+    }
+
+    public void SetInGhostModeWithTime(float time)
+    {
+        cooldownTimer = time;
     }
     private void DetachSelfCompletely()
     {
@@ -238,5 +244,10 @@ public class LeadingCartRaycaster : MonoBehaviour
     public bool getIfInGhostMode()
     {
         return cartInGhostMode;
+    }
+
+    public SnakeCartManager GetmySnakeCartManager()
+    {
+        return snakeCartManager;
     }
 }
