@@ -25,7 +25,7 @@ public class SnakeCartManager : MonoBehaviour
     [SerializeField] private PlayerInputManager playerInputManager;
 
     [SerializeField] private DinoIndictor dinoIndictor;
-
+    [SerializeField] private CashScoreManager cashScoreManager;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -255,6 +255,34 @@ public class SnakeCartManager : MonoBehaviour
     {
         if (snakeBody.Count > 1)
         {
+            // Reward player points
+            var cartManager = snakeBody[1].GetComponent<ChainedCartManager>();
+            if(cartManager != null)
+            {
+                if(cartManager.isBonusCart)
+                {
+                    if (isPlayer1)
+                    {
+                        cashScoreManager.IncreaseP1CheckedoutBonusCartCount();
+                    }
+                    else
+                    {
+                        cashScoreManager.IncreaseP2CheckedoutBonusCartCount();
+                    }
+                }
+                else
+                {
+                    if(isPlayer1)
+                    {
+                        cashScoreManager.IncreaseP1CheckedoutNormalCartCount();
+                    }
+                    else
+                    {
+                        cashScoreManager.IncreaseP2CheckedoutNormalCartCount();
+                    }
+                }
+            }
+            // Remove cart from list and from the player
             GameObject removed = snakeBody[1];
             snakeBody.RemoveAt(1);
             Destroy(removed);

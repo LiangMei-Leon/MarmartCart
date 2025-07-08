@@ -94,6 +94,19 @@ public class LeadingCartRaycaster : MonoBehaviour
                     GameObject hitObject = hit.transform.gameObject;
                     ChainedCartManager hitCartInfo = hitObject.GetComponent<ChainedCartManager>();
                     // Todo:if the other player is in pit, despite charging or not, destroy self
+                    if(hitCartInfo.isCollectedByPlayer && !hitCartInfo.CompareTag(this.tag))
+                    {
+                        if (hit.transform.parent.GetChild(0).GetComponentInChildren<CartControlScript>() != null)
+                        {
+                            CartControlScript hitCartController = hit.transform.parent.GetChild(0).GetComponentInChildren<CartControlScript>();
+                            if (hitCartController.GetIsInPit())
+                            {
+                                Debug.Log("hitted cart was in pit");
+                                return;
+                            }
+                        }
+                    }
+
                     if (cartControlInput.IsCharing())
                     {
                         // If the player is charging, we can detach any cart it hits along the way
@@ -131,6 +144,15 @@ public class LeadingCartRaycaster : MonoBehaviour
                 else if (hit.transform.gameObject.GetComponent<LeadingCartRaycaster>() != null)
                 {
                     // Todo:if the other player is in pit, despite charging or not, destroy self
+                    if (hit.transform.parent.GetChild(0).GetComponentInChildren<CartControlScript>() != null)
+                    {
+                        CartControlScript hitCartController = hit.transform.parent.GetChild(0).GetComponentInChildren<CartControlScript>();
+                        if (hitCartController.GetIsInPit())
+                        {
+                            Debug.Log("hitted cart was in pit");
+                            return;
+                        }
+                    }
                     // If charging, destory all the carts of that player
                     if (cartControlInput.IsCharing())
                     {
@@ -225,6 +247,20 @@ public class LeadingCartRaycaster : MonoBehaviour
         }
     }
 
+    private void OnCollisionExit(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Obstacles") || collision.gameObject.CompareTag("Walls"))
+        {
+            if (GMode.Instance.IsCompetitive)
+            {
+                if (cartControlInput.GetCanFlip())
+                {
+                    cartControlInput.DisallowFlip();
+                }
+            }
+        }
+    }
+
     private void OnCollisionStay(Collision collision)
     {
         if (collision.gameObject.CompareTag("Obstacles"))
@@ -236,7 +272,6 @@ public class LeadingCartRaycaster : MonoBehaviour
         }
         if (collision.gameObject.CompareTag("Walls"))
         {
-            Debug.Log("a");
             cartControlInput.AllowFlip();
         }
     }

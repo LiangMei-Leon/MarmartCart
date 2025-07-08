@@ -49,6 +49,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Speedup",
+                    "type": "Button",
+                    "id": "cfa6ac36-fab1-4d1e-84fd-56e6f1058a24",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -264,7 +273,7 @@
                 {
                     "name": "",
                     "id": "5905b64f-60b1-46f8-b233-e4ed6702b6e7",
-                    "path": "<Gamepad>/rightTrigger",
+                    "path": "<Gamepad>/leftTrigger",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Controller",
@@ -335,6 +344,28 @@
                     "processors": "",
                     "groups": ";Controller",
                     "action": "QuitCheckOut",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f15f44b1-8d95-4318-ab47-f487b1e28cfb",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard_WASD",
+                    "action": "Speedup",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "cc888b4e-5c00-4153-8ea8-3f02720a8ed2",
+                    "path": "<Gamepad>/rightTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Controller",
+                    "action": "Speedup",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

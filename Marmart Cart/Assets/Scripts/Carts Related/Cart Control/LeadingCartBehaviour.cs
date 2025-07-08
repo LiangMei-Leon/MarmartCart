@@ -38,7 +38,9 @@ public class LeadingCartBehaviour : MonoBehaviour
     [SerializeField] float brakeFactor = 1f;
     [SerializeField] float maxBrakeForce = 1f;
     [SerializeField] private float targetSpeed = 20f;
+    [SerializeField] private float upSpeed = 25f;
     private float cacheSpeed = 20f;
+    private bool isStopping = false;
     private Vector3 finalSuspensionForce;
     private Vector3 finalSteeringForce;
     private Vector3 finalBrakeForce;
@@ -69,7 +71,14 @@ public class LeadingCartBehaviour : MonoBehaviour
     }
     void Update()
     {
-
+        if(cartControlInput.IsSpeedingUp() && cartControlInput.CanSpeedingUp())
+        {
+            targetSpeed = upSpeed;
+        }
+        else if(!cartControlInput.GetIsInPit() && !isStopping && !isBoosting)
+        {
+            targetSpeed = 20f;
+        }
     }
     void FixedUpdate()
     {
@@ -258,6 +267,7 @@ public class LeadingCartBehaviour : MonoBehaviour
 
     public void SetSpeedToZero(float duration)
     {
+        isStopping = true;
         cacheSpeed = targetSpeed;
         targetSpeed = 0f;
         Vector3 knockbackDir = -cartBody.linearVelocity.normalized;
@@ -273,12 +283,14 @@ public class LeadingCartBehaviour : MonoBehaviour
     
     public void SetSpeedToZero()
     {
+        isStopping = true;
         cacheSpeed = targetSpeed;
         targetSpeed = 0f;
         cartBody.linearVelocity = Vector3.zero;
     }
     public void ResetSpeed()
     {
+        isStopping = false;
         //Debug.Log("ResetSpeed executed");
         targetSpeed = 20f;
         cartControlInput.AllowBoost();

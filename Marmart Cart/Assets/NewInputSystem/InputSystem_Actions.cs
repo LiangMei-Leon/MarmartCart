@@ -135,6 +135,15 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Speedup"",
+                    ""type"": ""Button"",
+                    ""id"": ""cfa6ac36-fab1-4d1e-84fd-56e6f1058a24"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -350,7 +359,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""5905b64f-60b1-46f8-b233-e4ed6702b6e7"",
-                    ""path"": ""<Gamepad>/rightTrigger"",
+                    ""path"": ""<Gamepad>/leftTrigger"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Controller"",
@@ -421,6 +430,28 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": "";Controller"",
                     ""action"": ""QuitCheckOut"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""f15f44b1-8d95-4318-ab47-f487b1e28cfb"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard_WASD"",
+                    ""action"": ""Speedup"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""cc888b4e-5c00-4153-8ea8-3f02720a8ed2"",
+                    ""path"": ""<Gamepad>/rightTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Controller"",
+                    ""action"": ""Speedup"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1029,6 +1060,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         m_Player_FlipDirection = m_Player.FindAction("FlipDirection", throwIfNotFound: true);
         m_Player_CheckOut = m_Player.FindAction("CheckOut", throwIfNotFound: true);
         m_Player_QuitCheckOut = m_Player.FindAction("QuitCheckOut", throwIfNotFound: true);
+        m_Player_Speedup = m_Player.FindAction("Speedup", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1127,6 +1159,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_FlipDirection;
     private readonly InputAction m_Player_CheckOut;
     private readonly InputAction m_Player_QuitCheckOut;
+    private readonly InputAction m_Player_Speedup;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -1158,6 +1191,10 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/QuitCheckOut".
         /// </summary>
         public InputAction @QuitCheckOut => m_Wrapper.m_Player_QuitCheckOut;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/Speedup".
+        /// </summary>
+        public InputAction @Speedup => m_Wrapper.m_Player_Speedup;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -1199,6 +1236,9 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @QuitCheckOut.started += instance.OnQuitCheckOut;
             @QuitCheckOut.performed += instance.OnQuitCheckOut;
             @QuitCheckOut.canceled += instance.OnQuitCheckOut;
+            @Speedup.started += instance.OnSpeedup;
+            @Speedup.performed += instance.OnSpeedup;
+            @Speedup.canceled += instance.OnSpeedup;
         }
 
         /// <summary>
@@ -1225,6 +1265,9 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @QuitCheckOut.started -= instance.OnQuitCheckOut;
             @QuitCheckOut.performed -= instance.OnQuitCheckOut;
             @QuitCheckOut.canceled -= instance.OnQuitCheckOut;
+            @Speedup.started -= instance.OnSpeedup;
+            @Speedup.performed -= instance.OnSpeedup;
+            @Speedup.canceled -= instance.OnSpeedup;
         }
 
         /// <summary>
@@ -1586,6 +1629,13 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnQuitCheckOut(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Speedup" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnSpeedup(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.

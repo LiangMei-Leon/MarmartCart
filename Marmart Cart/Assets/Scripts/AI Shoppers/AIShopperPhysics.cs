@@ -1,9 +1,13 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Transactions;
 
 public class AIShopperPhysics : MonoBehaviour
 {
+    [Header("Reward Settings")]
+    [SerializeField] private float rewardMeterAmount = 2f;
+
     [Header("Knockout Settings")]
     [SerializeField] private float knockbackForce = 10f;  // Base force applied to the AI
     [SerializeField] private float upwardForce = 5f;      // Upward force to make the AI "fly"
@@ -45,6 +49,17 @@ public class AIShopperPhysics : MonoBehaviour
 
         if (other.gameObject.CompareTag("Player1"))
         {
+            // Reward player speedup Meter
+            // Try if get can cartcontroller directly, meaning hiter is the leaidng cart
+            if (other.gameObject.GetComponentInChildren<CartControlScript>() != null)
+            {
+                other.gameObject.GetComponentInChildren<CartControlScript>().RefillSpeedUpMeter(rewardMeterAmount);
+            }
+            // If that fails then the hiter is a chained cart
+            else if(other.transform.parent.GetChild(0).GetComponentInChildren<CartControlScript>() != null)
+            {
+                other.transform.parent.GetChild(0).GetComponentInChildren<CartControlScript>().RefillSpeedUpMeter(rewardMeterAmount);
+            }
             // Play one of the two sound effects randomly
             if (Random.value < 0.5f) // Random.value gives a float between 0 and 1
             {

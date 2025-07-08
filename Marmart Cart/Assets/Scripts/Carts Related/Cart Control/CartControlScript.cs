@@ -18,6 +18,10 @@ public class CartControlScript : MonoBehaviour
     [SerializeField] private bool isInPit = false;
     [SerializeField] private GameEvent boostEvent; // raise this event when the player accelerates (boost)
     [SerializeField] private GameEvent resetCartEvent; // raise this event when the player wants to reset the cart (to solve stuck issues)
+    [SerializeField] private float speedUpMeter = 100f;
+    [SerializeField] private float speedUpConsumeRate = 10f;
+    private bool isSpeedingUp = false;
+    [SerializeField] private bool canSpeedup = true;
     [SerializeField] private bool canBoost = true;
     [SerializeField] private bool canFlip = false;
 
@@ -47,10 +51,25 @@ public class CartControlScript : MonoBehaviour
             if (ctx.control.device == device)
                 _inputVector = Vector2.zero;
         };
+        // for speed up
+        _inputActions.Player.Speedup.performed += ctx =>
+        {
+            if (ctx.control.device == device && speedUpMeter > speedUpConsumeRate && canSpeedup)
+                isSpeedingUp = true;
+        };
+        _inputActions.Player.Speedup.canceled += ctx =>
+        {
+            if (ctx.control.device == device)
+                isSpeedingUp = false;
+        };
+        // for powerful charged boost
         _inputActions.Player.Boost.performed += ctx =>
         {
-            if (ctx.control.device == device && canBoost)
+            if (ctx.control.device == device && canBoost && speedUpMeter >= 100f)
+            {
+                speedUpMeter = 0f;
                 boostEvent.Raise();
+            }
         };
         _inputActions.Player.FlipDirection.performed += ctx =>
         {
@@ -92,10 +111,25 @@ public class CartControlScript : MonoBehaviour
             if (ctx.control.device == Keyboard.current)
                 _inputVector = Vector2.zero;
         };
+        // for speed up
+        _inputActions.Player.Speedup.performed += ctx =>
+        {
+            if (ctx.control.device == Keyboard.current && speedUpMeter > speedUpConsumeRate && canSpeedup)
+                isSpeedingUp = true;
+        };
+        _inputActions.Player.Speedup.canceled += ctx =>
+        {
+            if (ctx.control.device == Keyboard.current)
+                isSpeedingUp = false;
+        };
+        // for powerful charged boost
         _inputActions.Player.Boost.performed += ctx =>
         {
-            if (ctx.control.device == Keyboard.current && canBoost)
+            if (ctx.control.device == Keyboard.current && canBoost && speedUpMeter >= 100f)
+            {
+                speedUpMeter = 0f;
                 boostEvent.Raise();
+            }
         };
         _inputActions.Player.FlipDirection.performed += ctx =>
         {
@@ -116,7 +150,7 @@ public class CartControlScript : MonoBehaviour
     }
     void Start()
     {
-
+        speedUpMeter = 100f;
     }
 
     // Update is called once per frame
@@ -125,6 +159,22 @@ public class CartControlScript : MonoBehaviour
         if (controllable && !isInPit)
         {
             GatherInput();
+        }
+
+        if (isSpeedingUp && speedUpMeter > 0f)
+        {
+            speedUpMeter -= speedUpConsumeRate * Time.deltaTime * 10f;
+
+            if (speedUpMeter <= 0f)
+            {
+                speedUpMeter = 0f;
+                isSpeedingUp = false;
+            }
+        }
+
+        if(UnityEngine.Input.GetKeyDown(KeyCode.T))
+        {
+            RefillSpeedUpMeter(100f);
         }
     }
 
@@ -156,6 +206,10 @@ public class CartControlScript : MonoBehaviour
     {
         canFlip = false;
     }
+    public bool GetCanFlip()
+    {
+        return canFlip;
+    }
     public void AllowBoost()
     {
         canBoost = true;
@@ -181,8 +235,28 @@ public class CartControlScript : MonoBehaviour
     {
         isInPit = false;
     }
+    public bool GetIsInPit()
+    {
+        return isInPit;
+    }
     public bool IsCharing()
     {
         return !controllable;
+    }
+    public bool IsSpeedingUp()
+    {
+        return isSpeedingUp;
+    }
+    public bool CanSpeedingUp()
+    {
+        return canSpeedup;
+    }
+    public float GetSpeedUpMeter()
+    {
+        return speedUpMeter;
+    }
+    public void RefillSpeedUpMeter(float amount)
+    {
+        speedUpMeter = Mathf.Clamp(speedUpMeter + amount, 0f, 100f);
     }
 }

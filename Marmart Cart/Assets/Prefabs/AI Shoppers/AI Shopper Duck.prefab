@@ -212,6 +212,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04cf26f8445cd6c47b49b14f56a41210, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rewardMeterAmount: 3
   knockbackForce: 30
   upwardForce: 50
   spinTorque: 10

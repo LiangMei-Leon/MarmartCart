@@ -14,6 +14,8 @@ public class CartPitZone : MonoBehaviour
     private LeadingCartRaycaster enteredCartRaycaster;
     private bool playerInPit = false;
     private bool isPlayer1 = false;
+    [SerializeField] private GameObject p1Prompt;
+    [SerializeField] private GameObject p2Prompt;
 
     private CheckOutManager checkOutManager;
     void Start()
@@ -46,10 +48,12 @@ public class CartPitZone : MonoBehaviour
                 if(other.gameObject.CompareTag("Player1"))
                 {
                     isPlayer1 = true;
+                    p1Prompt.SetActive(true);
                 }
                 else
                 {
                     isPlayer1 = false;
+                    p2Prompt.SetActive(true);
                 }
                 enteredCartController = other.GetComponentInChildren<CartControlScript>();
                 if(enteredCartController != null)
@@ -78,6 +82,16 @@ public class CartPitZone : MonoBehaviour
         }
     }
 
+    private void OnTriggerStay(Collider other)
+    {
+        enteredCartRaycaster = other.GetComponent<LeadingCartRaycaster>();
+        // if no player in pit and collider is a leading cart, check incoming direction
+        if (enteredCartRaycaster != null)
+        {
+            checkOutManager.EnableStation();
+        }
+    }
+
     public void ExitPitZone(LeadingCartRaycaster script)
     {
         if (playerInPit)
@@ -94,6 +108,9 @@ public class CartPitZone : MonoBehaviour
             Debug.Log("oUT");
             // reset input listener
             enteredCartController.SetActiveCheckoutHandler(null);
+            // reset prompot
+            p1Prompt.SetActive(false);
+            p2Prompt.SetActive(false);
         }
     }
 

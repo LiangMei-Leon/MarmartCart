@@ -17882,6 +17882,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Following Cart Cheap
       objectReference: {fileID: 0}
+    - target: {fileID: 6914780558269192623, guid: cc094b8fa5c360c419dc66086c996fc2, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7662453414008975933, guid: cc094b8fa5c360c419dc66086c996fc2, type: 3}
       propertyPath: m_Mesh
       value: 
