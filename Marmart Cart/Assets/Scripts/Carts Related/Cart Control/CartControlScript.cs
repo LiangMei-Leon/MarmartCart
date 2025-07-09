@@ -150,7 +150,7 @@ public class CartControlScript : MonoBehaviour
     }
     void Start()
     {
-        speedUpMeter = 100f;
+        speedUpMeter = 0f;
     }
 
     // Update is called once per frame

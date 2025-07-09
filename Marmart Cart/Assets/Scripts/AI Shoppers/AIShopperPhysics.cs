@@ -76,6 +76,15 @@ public class AIShopperPhysics : MonoBehaviour
         }
         else if (other.gameObject.CompareTag("Player2"))
         {
+            if (other.gameObject.GetComponentInChildren<CartControlScript>() != null)
+            {
+                other.gameObject.GetComponentInChildren<CartControlScript>().RefillSpeedUpMeter(rewardMeterAmount);
+            }
+            // If that fails then the hiter is a chained cart
+            else if (other.transform.parent.GetChild(0).GetComponentInChildren<CartControlScript>() != null)
+            {
+                other.transform.parent.GetChild(0).GetComponentInChildren<CartControlScript>().RefillSpeedUpMeter(rewardMeterAmount);
+            }
             // Play one of the two sound effects randomly
             if (Random.value < 0.5f) // Random.value gives a float between 0 and 1
             {

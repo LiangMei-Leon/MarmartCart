@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class PitsManager : MonoBehaviour
 {
@@ -30,6 +31,10 @@ public class PitsManager : MonoBehaviour
     private float activeDuration;
     private int pitsPerCycle;
 
+    [SerializeField] private TextMeshProUGUI timePrompt;
+    [SerializeField] private GameObject promptBG;
+    private bool hasShownCountdown = false;
+
     void Start()
     {
         GameObject[] pitObjects = GameObject.FindGameObjectsWithTag("CheckOutStation");
@@ -51,11 +56,19 @@ public class PitsManager : MonoBehaviour
     {
         elapsedGameTime += Time.deltaTime;
         UpdatePhase();
+        float timeUntilNext = nextToggleTime - Time.time;
+
+        if (!hasShownCountdown && timeUntilNext <= 5f)
+        {
+            StartCoroutine(ShowCountdown("Opening", 5));
+            hasShownCountdown = true;
+        }
 
         if (Time.time >= nextToggleTime)
         {
             ActivateRandomPits();
             nextToggleTime = Time.time + interval;
+            hasShownCountdown = false;
         }
     }
 
@@ -111,7 +124,24 @@ public class PitsManager : MonoBehaviour
 
     IEnumerator DisableAfterTime(CheckOutManager pit, float delay)
     {
-        yield return new WaitForSeconds(delay);
+        // Start countdown 5s before disabling
+        yield return new WaitForSeconds(delay - 5f);
+        StartCoroutine(ShowCountdown("Closing", 5));
+
+        yield return new WaitForSeconds(5f);
         pit.DisableStation();
+    }
+    IEnumerator ShowCountdown(string action, int seconds)
+    {
+        timePrompt.gameObject.SetActive(true);
+        promptBG.SetActive(true);
+        for (int i = seconds; i > 0; i--)
+        {
+            timePrompt.text = $"Lanes {action} in {i}!";
+            yield return new WaitForSeconds(1f);
+        }
+
+        timePrompt.gameObject.SetActive(false);
+        promptBG.SetActive(false);
     }
 }

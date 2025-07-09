@@ -46,7 +46,7 @@ public class LeadingCartRaycaster : MonoBehaviour
         {
             cartInGhostMode = false;
         }
-        if(cartControlInput.IsCharing())
+        if(cartControlInput.IsSpeedingUp())
         {
             chargingVFX.SetActive(true);
         }
