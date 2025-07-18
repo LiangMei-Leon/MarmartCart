@@ -5548,10 +5548,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 601234365}
-  - component: {fileID: 601234364}
   - component: {fileID: 601234363}
   m_Layer: 0
-  m_Name: Item Generation Manager P2
+  m_Name: 'AI Generation Manager '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5569,58 +5568,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d01b50e9ecce51409ef841b0d65a338, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isForPlayer1: 0
-  spawnCenter: {fileID: 0}
-  radius: 70
-  minDistanceFromCenter: 20
+  boxWidth: 91
+  boxLength: 90
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
   phase1Duration: 30
   phase1SpawnInterval: 8
-  phase1AIsPerWave: 4
+  phase1AIsPerWave: 8
   phase2Duration: 60
   phase2SpawnInterval: 7
-  phase2AIsPerWave: 4
+  phase2AIsPerWave: 8
   phase3SpawnInterval: 6
-  phase3AIsPerWave: 3
+  phase3AIsPerWave: 6
   aiPools:
   - {fileID: 11400000, guid: 0d8e17767b483314990dca3aeb27508e, type: 2}
   - {fileID: 11400000, guid: fd1cb1e9d1e25214880df2c2146dc8ac, type: 2}
   - {fileID: 11400000, guid: 487ae778133e7a143beb992fdf89bab9, type: 2}
   - {fileID: 11400000, guid: d3a113ee6ab4f4f4297c8f6fa6c9f262, type: 2}
---- !u!114 &601234364
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 601234362}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 19d7a50191a0ded48b7b262cbbac6a45, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  isForPlayer1: 0
-  spawnCenter: {fileID: 0}
-  radius: 70
-  minDistanceFromCenter: 20
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 64
-  phase1Duration: 30
-  phase1SpawnInterval: 10
-  phase1ItemsPerSpawn: 4
-  phase1NormalItemProbability: 100
-  phase2Duration: 80
-  phase2SpawnInterval: 10
-  phase2ItemsPerSpawn: 3
-  phase2NormalItemProbability: 90
-  phase3SpawnInterval: 10
-  phase3ItemsPerSpawn: 2
-  phase3NormalItemProbability: 75
-  normalItemPrefab: {fileID: 6914780558269192623, guid: cc094b8fa5c360c419dc66086c996fc2, type: 3}
-  bonusItemPrefab: {fileID: 5125540016162396937, guid: 6babe8a17500fa54787592962df13c24, type: 3}
 --- !u!4 &601234365
 Transform:
   m_ObjectHideFlags: 0
@@ -5630,7 +5595,7 @@ Transform:
   m_GameObject: {fileID: 601234362}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -21.5, y: 1, z: -491.1}
+  m_LocalPosition: {x: 44.5, y: 1, z: -455.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6077,9 +6042,8 @@ GameObject:
   m_Component:
   - component: {fileID: 707475391}
   - component: {fileID: 707475390}
-  - component: {fileID: 707475392}
   m_Layer: 0
-  m_Name: Item Generation Manager P1
+  m_Name: Item Generation Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6097,23 +6061,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19d7a50191a0ded48b7b262cbbac6a45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isForPlayer1: 1
-  spawnCenter: {fileID: 0}
-  radius: 70
-  minDistanceFromCenter: 20
+  boxWidth: 85
+  boxLength: 85
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
   phase1Duration: 30
   phase1SpawnInterval: 10
-  phase1ItemsPerSpawn: 4
+  phase1ItemsPerSpawn: 8
   phase1NormalItemProbability: 100
   phase2Duration: 80
   phase2SpawnInterval: 10
-  phase2ItemsPerSpawn: 3
+  phase2ItemsPerSpawn: 6
   phase2NormalItemProbability: 90
   phase3SpawnInterval: 10
-  phase3ItemsPerSpawn: 2
+  phase3ItemsPerSpawn: 4
   phase3NormalItemProbability: 75
   normalItemPrefab: {fileID: 6914780558269192623, guid: cc094b8fa5c360c419dc66086c996fc2, type: 3}
   bonusItemPrefab: {fileID: 5125540016162396937, guid: 6babe8a17500fa54787592962df13c24, type: 3}
@@ -6126,44 +6088,12 @@ Transform:
   m_GameObject: {fileID: 707475389}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -21.5, y: 1, z: -491.1}
+  m_LocalPosition: {x: 44.5, y: 1, z: -455.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &707475392
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 707475389}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3d01b50e9ecce51409ef841b0d65a338, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  isForPlayer1: 1
-  spawnCenter: {fileID: 0}
-  radius: 70
-  minDistanceFromCenter: 20
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 64
-  phase1Duration: 30
-  phase1SpawnInterval: 8
-  phase1AIsPerWave: 4
-  phase2Duration: 60
-  phase2SpawnInterval: 7
-  phase2AIsPerWave: 4
-  phase3SpawnInterval: 6
-  phase3AIsPerWave: 3
-  aiPools:
-  - {fileID: 11400000, guid: 0d8e17767b483314990dca3aeb27508e, type: 2}
-  - {fileID: 11400000, guid: fd1cb1e9d1e25214880df2c2146dc8ac, type: 2}
-  - {fileID: 11400000, guid: 487ae778133e7a143beb992fdf89bab9, type: 2}
-  - {fileID: 11400000, guid: d3a113ee6ab4f4f4297c8f6fa6c9f262, type: 2}
 --- !u!1 &720516776
 GameObject:
   m_ObjectHideFlags: 0

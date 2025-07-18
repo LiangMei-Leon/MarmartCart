@@ -2,13 +2,9 @@ using UnityEngine;
 
 public class AIGenerationScript : MonoBehaviour
 {
-    [Header("Spawn Settings")]
-    [SerializeField] private bool isForPlayer1 = true;
-    [SerializeField] private Transform spawnCenter;
-
-    [Header("Spawn Area Settings")]
-    [SerializeField] private float radius = 50f; // Radius for AI spawn around the player
-    [SerializeField] private float minDistanceFromCenter = 20f; // Minimum distance from the center to spawn AIs
+    [Header("Spawn Box Boundary Settings")]
+    [SerializeField] private float boxWidth = 40f;   // Total width of the spawn box
+    [SerializeField] private float boxLength = 30f;  // Total length of the spawn box
     [SerializeField] private LayerMask groundLayer; // Layer mask for ground detection
 
     [Header("Phase 1 Settings")]
@@ -43,17 +39,6 @@ public class AIGenerationScript : MonoBehaviour
         {
             pool.SpawnPool();
         }
-        // Find the spawn center (typically the player)
-        if (isForPlayer1)
-            spawnCenter = GameObject.FindGameObjectWithTag("Player1").transform;
-        else
-            spawnCenter = GameObject.FindGameObjectWithTag("Player2").transform;
-
-        if (spawnCenter == null)
-        {
-            Debug.LogError("Failed to locate the center of AI generation.");
-        }
-
         // Initialize the first phase
         UpdateGamePhase();
     }
@@ -131,32 +116,37 @@ public class AIGenerationScript : MonoBehaviour
 
         while (attempts < maxRetries)
         {
-            // Generate a random point within the radius, ensuring it’s beyond minDistanceFromCenter
-            Vector2 randomPoint = Random.insideUnitCircle * radius;
-            if (randomPoint.magnitude >= minDistanceFromCenter)
-            {
-                Vector3 spawnPosition = new Vector3(randomPoint.x, 20, randomPoint.y) + spawnCenter.position;
+            // Generate a random point within the box
+            float halfWidth = boxWidth * 0.5f;
+            float halfLength = boxLength * 0.5f;
 
-                // Raycast to detect any surface
-                if (Physics.Raycast(spawnPosition, Vector3.down, out RaycastHit hit, Mathf.Infinity))
+            float xOffset = Random.Range(-halfWidth, halfWidth);
+            float zOffset = Random.Range(-halfLength, halfLength);
+
+            Vector3 spawnPosition = this.transform.position + new Vector3(xOffset, 20f, zOffset); // height can be adjusted if needed
+
+            // Raycast to detect any surface
+            if (Physics.Raycast(spawnPosition, Vector3.down, out RaycastHit hit, Mathf.Infinity))
+            {
+                // Check if the hit object is on the ground layer
+                if (((1 << hit.collider.gameObject.layer) & groundLayer) != 0)
                 {
-                    // Check if the hit object is on the ground layer
-                    if (((1 << hit.collider.gameObject.layer) & groundLayer) != 0)
-                    {
-                        return hit.point; // Valid ground point
-                    }
+                    return hit.point; // Valid ground point
                 }
             }
-
             attempts++;
         }
-
+        
         return Vector3.zero; // Return an invalid position if no ground is found after retries
     }
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, radius);
+        Gizmos.color = Color.blue;
+
+        Vector3 center = this.transform.position;
+        Vector3 size = new Vector3(boxWidth, 20f, boxLength);
+
+        Gizmos.DrawWireCube(center, size);
     }
 }
