@@ -167,10 +167,10 @@ public class LeadingCartRaycaster : MonoBehaviour
                             }
                         }
                     }
-                    // If not charging, destory itself
+                    // If not charging, destory itself while that cart is not in ghost mode, if in, dont destory self
                     else
                     {
-                        if (cooldownTimer <= 0f)
+                        if (cooldownTimer <= 0f && !hit.transform.gameObject.GetComponent<LeadingCartRaycaster>().getIfInGhostMode())
                         {
                             DetachSelfCompletely();
                         }
