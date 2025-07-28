@@ -7,6 +7,8 @@ public class ChainedCartManager : MonoBehaviour
     [Header("Cart Info")]
     [field: SerializeField]
     public bool isBonusCart { get; private set; } = false;
+    [field: SerializeField]
+    public CartRarity CartType { get; private set; } = CartRarity.Common;
 
     [SerializeField] private ParticleSystem collectVFX;
     private SnakeCartManager snakeCartManager;
@@ -26,11 +28,29 @@ public class ChainedCartManager : MonoBehaviour
     private LeadingCartRaycaster p2Raycaster;
     private bool p2AllowCollect = true;
 
+    [Header("Visual Settings")]
+    [SerializeField] private Renderer cartRenderer; // Reference to mesh renderer that uses the material
+
+    [SerializeField] private Color commonColor = Color.white;
+    [SerializeField] private Color rareColor = Color.blue;
+    [SerializeField] private Color epicColor = Color.magenta;
+    [SerializeField] private Color legendaryColor = Color.yellow;
+
     [Header("Related Events")]
     [SerializeField] GameEvent p1collectNormalCartEvent;
     [SerializeField] GameEvent p1collectBonusCartEvent;
     [SerializeField] GameEvent p2collectNormalCartEvent;
     [SerializeField] GameEvent p2collectBonusCartEvent;
+
+    [Header("Cart Collect Events")]
+    [SerializeField] GameEvent p1collectCartEventCommon;
+    [SerializeField] GameEvent p1collectCartEventRare;
+    [SerializeField] GameEvent p1collectCartEventEpic;
+    [SerializeField] GameEvent p1collectCartEventLegendary;
+    [SerializeField] GameEvent p2collectCartEventCommon;
+    [SerializeField] GameEvent p2collectCartEventRare;
+    [SerializeField] GameEvent p2collectCartEventEpic;
+    [SerializeField] GameEvent p2collectCartEventLegendary;
 
     void Awake()
     {
@@ -132,6 +152,21 @@ public class ChainedCartManager : MonoBehaviour
             {
                 p1collectNormalCartEvent.Raise();
             }
+            switch (CartType)
+            {
+                case CartRarity.Common:
+                    p1collectCartEventCommon.Raise();
+                    break;
+                case CartRarity.Rare:
+                    p1collectCartEventRare.Raise();
+                    break;
+                case CartRarity.Epic:
+                    p1collectCartEventEpic.Raise();
+                    break;
+                case CartRarity.Legendary:
+                    p1collectCartEventLegendary.Raise();
+                    break;
+            }
             Destroy(this.gameObject);
         }
         if (other.CompareTag("Player2") && !isCollectedByPlayer && p2AllowCollect)
@@ -145,10 +180,52 @@ public class ChainedCartManager : MonoBehaviour
             {
                 p2collectNormalCartEvent.Raise();
             }
+            switch (CartType)
+            {
+                case CartRarity.Common:
+                    p2collectCartEventCommon.Raise();
+                    break;
+                case CartRarity.Rare:
+                    p2collectCartEventRare.Raise();
+                    break;
+                case CartRarity.Epic:
+                    p2collectCartEventEpic.Raise();
+                    break;
+                case CartRarity.Legendary:
+                    p2collectCartEventLegendary.Raise();
+                    break;
+            }
             Destroy(this.gameObject);
         }
     }
+    private void ApplyRarityColor()
+    {
+        if (cartRenderer == null) return;
 
+        Material[] materials = cartRenderer.materials;
+        if (materials.Length < 2 || materials[1] == null) return;
+
+        Color targetColor = commonColor;
+
+        switch (CartType)
+        {
+            case CartRarity.Common:
+                targetColor = commonColor;
+                break;
+            case CartRarity.Rare:
+                targetColor = rareColor;
+                break;
+            case CartRarity.Epic:
+                targetColor = epicColor;
+                break;
+            case CartRarity.Legendary:
+                targetColor = legendaryColor;
+                break;
+        }
+
+        materials[1].color = targetColor;
+        cartRenderer.materials = materials; // Apply the modified array back
+    }
     public void PlayVFX()
     {
         //Debug.Log("Attempt to play vfx on: " + gameObject.name);
@@ -157,7 +234,12 @@ public class ChainedCartManager : MonoBehaviour
         collectVFX.Play();
         //Debug.Log($"After Play: IsPlaying = {collectVFX.isPlaying}, IsEmitting = {collectVFX.isEmitting}");
     }
-
+    public void SetRarity(CartRarity rarity)
+    {
+        CartType = rarity;
+        // Apply the rarity color to the cart renderer
+        ApplyRarityColor();
+    }
     public void CollectByPlayer()
     {
         isCollectedByPlayer = true;

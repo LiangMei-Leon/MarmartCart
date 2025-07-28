@@ -39,6 +39,13 @@ public class ItemGenerationManager : MonoBehaviour
     [SerializeField] private GameObject normalItemPrefab; // Prefab for normal items
     [SerializeField] private GameObject bonusItemPrefab;  // Prefab for bonus items
 
+    [Header("Cart Prefabs")]
+    [SerializeField] private GameObject cartPrefab;
+    [SerializeField] private GameObject commonCartPrefab;
+    [SerializeField] private GameObject rareCartPrefab;
+    [SerializeField] private GameObject epicCartPrefab;
+    [SerializeField] private GameObject legendaryCartPrefab;
+
     private float nextSpawnTime;
 
     private void Start()
@@ -94,19 +101,61 @@ public class ItemGenerationManager : MonoBehaviour
     {
         for (int i = 0; i < itemsPerSpawn; i++)
         {
-            // Keep trying to find a valid spawn position
             Vector3 spawnPosition = GetValidSpawnPosition();
             if (spawnPosition != Vector3.zero)
             {
-                // Choose the item to spawn based on the probability
-                GameObject itemToSpawn = (Random.Range(0, 100) < normalItemProbability) ? normalItemPrefab : bonusItemPrefab;
-                Instantiate(itemToSpawn, spawnPosition + new Vector3(0, 10f, 0), Quaternion.identity);
+                // 1. Generate rarity using your static method
+                CartRarity rarity = GenerateRarity(0.3f, 0.2f, 0.1f); // Adjust rates as needed
+
+                GameObject prefabToSpawn = cartPrefab; // Default prefab
+                //// 2. Choose a prefab based on rarity (optional)
+                //GameObject prefabToSpawn = normalItemPrefab; // fallback
+                //switch(rarity)
+                //    {
+                //    case CartRarity.Common:
+                //        prefabToSpawn = commonCartPrefab;
+                //        break;
+                //    case CartRarity.Rare:
+                //        prefabToSpawn = rareCartPrefab;
+                //        break;
+                //    case CartRarity.Epic:
+                //        prefabToSpawn = epicCartPrefab;
+                //        break;
+                //    case CartRarity.Legendary:
+                //        prefabToSpawn = legendaryCartPrefab;
+                //        break;
+                //}
+
+                // 3. Instantiate the item
+                GameObject spawned = Instantiate(prefabToSpawn, spawnPosition + new Vector3(0, 10f, 0), Quaternion.identity);
+
+                // 4. Assign rarity to the spawned item
+                var cart = spawned.GetComponent<ChainedCartManager>();
+                if (cart != null)
+                {
+                    cart.SetRarity(rarity);
+                }
             }
             else
             {
                 Debug.LogWarning("Failed to find a valid spawn position after multiple attempts.");
             }
         }
+        //for (int i = 0; i < itemsPerSpawn; i++)
+        //{
+        //    // Keep trying to find a valid spawn position
+        //    Vector3 spawnPosition = GetValidSpawnPosition();
+        //    if (spawnPosition != Vector3.zero)
+        //    {
+        //        // Choose the item to spawn based on the probability
+        //        GameObject itemToSpawn = (Random.Range(0, 100) < normalItemProbability) ? normalItemPrefab : bonusItemPrefab;
+        //        Instantiate(itemToSpawn, spawnPosition + new Vector3(0, 10f, 0), Quaternion.identity);
+        //    }
+        //    else
+        //    {
+        //        Debug.LogWarning("Failed to find a valid spawn position after multiple attempts.");
+        //    }
+        //}
     }
 
     private Vector3 GetValidSpawnPosition()
@@ -144,6 +193,19 @@ public class ItemGenerationManager : MonoBehaviour
         }
 
         return Vector3.zero; // Return an invalid position if no ground is found after retries
+    }
+    public CartRarity GenerateRarity(float rareChance, float epicChance, float legendaryChance)
+    {
+        float roll = UnityEngine.Random.value;
+
+        if (roll < legendaryChance)
+            return CartRarity.Legendary;
+        else if (roll < legendaryChance + epicChance)
+            return CartRarity.Epic;
+        else if (roll < legendaryChance + epicChance + rareChance)
+            return CartRarity.Rare;
+        else
+            return CartRarity.Common;
     }
 
     private void OnDrawGizmos()

@@ -5245,18 +5245,6 @@ MonoBehaviour:
           m_StringArgument: CollectCart
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1981863288}
-        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
-        m_MethodName: TriggerAllPowerupsDelayed
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: CollectCart
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!114 &591100674
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5289,18 +5277,6 @@ MonoBehaviour:
         m_TargetAssemblyTypeName: SfxManager, Assembly-CSharp
         m_MethodName: PlaySFX
         m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: CollectCart
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 203355758}
-        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
-        m_MethodName: TriggerAllPowerupsDelayed
-        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -6079,6 +6055,11 @@ MonoBehaviour:
   phase3NormalItemProbability: 75
   normalItemPrefab: {fileID: 6914780558269192623, guid: cc094b8fa5c360c419dc66086c996fc2, type: 3}
   bonusItemPrefab: {fileID: 5125540016162396937, guid: 6babe8a17500fa54787592962df13c24, type: 3}
+  cartPrefab: {fileID: 6914780558269192623, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
+  commonCartPrefab: {fileID: 0}
+  rareCartPrefab: {fileID: 0}
+  epicCartPrefab: {fileID: 0}
+  legendaryCartPrefab: {fileID: 0}
 --- !u!4 &707475391
 Transform:
   m_ObjectHideFlags: 0
@@ -12386,7 +12367,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!54 &1432380825
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -16756,7 +16737,7 @@ PrefabInstance:
       objectReference: {fileID: 993783746}
     - target: {fileID: 6287979600128673227, guid: cc094b8fa5c360c419dc66086c996fc2, type: 3}
       propertyPath: m_VersionIndex
-      value: 4046
+      value: 4109
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: cc094b8fa5c360c419dc66086c996fc2, type: 3}
       propertyPath: p1Snake
@@ -16837,7 +16818,7 @@ PrefabInstance:
       objectReference: {fileID: 920119361}
     - target: {fileID: 1478538068427815336, guid: 6babe8a17500fa54787592962df13c24, type: 3}
       propertyPath: m_VersionIndex
-      value: 4193
+      value: 4199
       objectReference: {fileID: 0}
     - target: {fileID: 2413974099969063298, guid: 6babe8a17500fa54787592962df13c24, type: 3}
       propertyPath: m_LocalPosition.x
