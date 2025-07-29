@@ -9,13 +9,28 @@ public class AIShopperBehaviour : MonoBehaviour
     [SerializeField] private float wanderRange = 20f;   // Distance for random wandering
     [SerializeField] private float baseSpeed = 3.5f;
     [SerializeField] private float escapeSpeedMultiplier = 2f;
-    [Header("Carrying Items")]
-    [SerializeField] private GameObject normalItemVisual; // Visual for normal item
-    [SerializeField] private GameObject bonusItemVisual; // Visual for bonus item
-    [SerializeField] private GameEvent p1CollectNormalItemEvent; // Event for normal item p1
-    [SerializeField] private GameEvent p1CollectBonusItemEvent; // Event for bonus item p1
-    [SerializeField] private GameEvent p2CollectNormalItemEvent; // Event for normal item p2
-    [SerializeField] private GameEvent p2CollectBonusItemEvent; // Event for bonus item p2
+    private CartRarity carryingRarity = CartRarity.Common;
+    [Header("Carrying Cart Visuals")]
+    [SerializeField] private GameObject commonVisual;
+    [SerializeField] private GameObject rareVisual;
+    [SerializeField] private GameObject epicVisual;
+    [SerializeField] private GameObject legendaryVisual;
+    [Header("Cart Collect Events")]
+    [SerializeField] private GameEvent p1CollectCommonEvent;
+    [SerializeField] private GameEvent p1CollectRareEvent;
+    [SerializeField] private GameEvent p1CollectEpicEvent;
+    [SerializeField] private GameEvent p1CollectLegendaryEvent;
+
+    [SerializeField] private GameEvent p2CollectCommonEvent;
+    [SerializeField] private GameEvent p2CollectRareEvent;
+    [SerializeField] private GameEvent p2CollectEpicEvent;
+    [SerializeField] private GameEvent p2CollectLegendaryEvent;
+    //[SerializeField] private GameObject normalItemVisual; // Visual for normal item
+    //[SerializeField] private GameObject bonusItemVisual; // Visual for bonus item
+    //[SerializeField] private GameEvent p1CollectNormalItemEvent; // Event for normal item p1
+    //[SerializeField] private GameEvent p1CollectBonusItemEvent; // Event for bonus item p1
+    //[SerializeField] private GameEvent p2CollectNormalItemEvent; // Event for normal item p2
+    //[SerializeField] private GameEvent p2CollectBonusItemEvent; // Event for bonus item p2
 
     private NavMeshAgent agent;
     private Transform targetItem;
@@ -41,11 +56,10 @@ public class AIShopperBehaviour : MonoBehaviour
         hittingVFX = this.transform.GetChild(0).GetChild(1).gameObject;
         hittingVFX.SetActive(false);
 
-        // Disable item visuals initially
-        normalItemVisual = this.transform.GetChild(1).GetChild(0).gameObject;
-        normalItemVisual.SetActive(false);
-        bonusItemVisual = this.transform.GetChild(1).GetChild(1).gameObject;
-        bonusItemVisual.SetActive(false);
+        commonVisual.SetActive(false);
+        rareVisual.SetActive(false);
+        epicVisual.SetActive(false);
+        legendaryVisual.SetActive(false);
     }
 
     private void Update()
@@ -80,7 +94,7 @@ public class AIShopperBehaviour : MonoBehaviour
                 // If the item is no longer available, reset target and wander
                 targetItem = null;
                 currentState = AIState.Wandering;
-                Debug.Log("Target item is no longer available, switching to wandering.");
+                //Debug.Log("Target item is no longer available, switching to wandering.");
                 return;
             }
 
@@ -105,15 +119,22 @@ public class AIShopperBehaviour : MonoBehaviour
             if (itemManager != null)
             {
                 itemManager.CollectByAI(); // Mark as collected by AI
-                if(!itemManager.isBonusCart)
+                carryingRarity = itemManager.CartType;
+
+                switch (carryingRarity)
                 {
-                    itemIsBonus = false;
-                    normalItemVisual.SetActive(true);
-                }
-                else
-                {
-                    itemIsBonus = true;
-                    bonusItemVisual.SetActive(true);
+                    case CartRarity.Common:
+                        commonVisual.SetActive(true);
+                        break;
+                    case CartRarity.Rare:
+                        rareVisual.SetActive(true);
+                        break;
+                    case CartRarity.Epic:
+                        epicVisual.SetActive(true);
+                        break;
+                    case CartRarity.Legendary:
+                        legendaryVisual.SetActive(true);
+                        break;
                 }
             }
 
@@ -203,36 +224,32 @@ public class AIShopperBehaviour : MonoBehaviour
     public void OnKnockOut(int playerIndex)
     {
         hittingVFX.SetActive(true);
-        normalItemVisual.SetActive(false);
-        bonusItemVisual.SetActive(false);
+        commonVisual.SetActive(false);
+        rareVisual.SetActive(false);
+        epicVisual.SetActive(false);
+        legendaryVisual.SetActive(false);
         runningVFX.SetActive(false);
         if (currentState == AIState.Escaping)
         {
-            if(playerIndex == 1)
+            switch (carryingRarity)
             {
-                if (!itemIsBonus)
-                {
-                    p1CollectNormalItemEvent.Raise();
-                }
-                else
-                {
-                    p1CollectBonusItemEvent.Raise();
-                }
+                case CartRarity.Common:
+                    if (playerIndex == 1) p1CollectCommonEvent.Raise();
+                    else if (playerIndex == 2) p2CollectCommonEvent.Raise();
+                    break;
+                case CartRarity.Rare:
+                    if (playerIndex == 1) p1CollectRareEvent.Raise();
+                    else if (playerIndex == 2) p2CollectRareEvent.Raise();
+                    break;
+                case CartRarity.Epic:
+                    if (playerIndex == 1) p1CollectEpicEvent.Raise();
+                    else if (playerIndex == 2) p2CollectEpicEvent.Raise();
+                    break;
+                case CartRarity.Legendary:
+                    if (playerIndex == 1) p1CollectLegendaryEvent.Raise();
+                    else if (playerIndex == 2) p2CollectLegendaryEvent.Raise();
+                    break;
             }
-            else if (playerIndex == 2)
-            {
-
-                if (!itemIsBonus)
-                {
-                    p2CollectNormalItemEvent.Raise();
-                }
-                else
-                {
-                    p2CollectBonusItemEvent.Raise();
-                }
-            }
-
-    
         }
     }
     public void ResetState()

@@ -590,7 +590,7 @@ GameObject:
   - component: {fileID: 6471618177495573124}
   - component: {fileID: 4352900759099298663}
   m_Layer: 7
-  m_Name: FollowingCart
+  m_Name: FollowingCart Rare
   m_TagString: Item
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -986,7 +986,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <isBonusCart>k__BackingField: 0
-  <CartType>k__BackingField: 0
+  <CartType>k__BackingField: 1
   collectVFX: {fileID: 1106169482944890282}
   <isCollectedByPlayer>k__BackingField: 0
   <isCollectedByAI>k__BackingField: 0
@@ -994,9 +994,9 @@ MonoBehaviour:
   p2Snake: {fileID: 0}
   cartRenderer: {fileID: 5131415986485558397}
   commonColor: {r: 0.38364768, g: 0.38364768, b: 0.38364768, a: 1}
-  rareColor: {r: 0.054469083, g: 0.7169812, b: 0.029310422, a: 1}
-  epicColor: {r: 0.7951557, g: 0.15513617, b: 0.9308176, a: 1}
-  legendaryColor: {r: 0.9622642, g: 0.51515055, b: 0.09380547, a: 1}
+  rareColor: {r: 0.05490196, g: 0.7176471, b: 0.02745098, a: 1}
+  epicColor: {r: 0.71481436, g: 0.2005458, b: 0.9811321, a: 1}
+  legendaryColor: {r: 0.9607843, g: 0.5137255, b: 0.09411765, a: 1}
   p1collectNormalCartEvent: {fileID: 11400000, guid: e276d5233b388ba49a963275c3ade278, type: 2}
   p1collectBonusCartEvent: {fileID: 11400000, guid: 86cf779dca08a0a4497fc14537f5b9c9, type: 2}
   p2collectNormalCartEvent: {fileID: 11400000, guid: 5795e0b2d0274704bb75ba566dd756ab, type: 2}

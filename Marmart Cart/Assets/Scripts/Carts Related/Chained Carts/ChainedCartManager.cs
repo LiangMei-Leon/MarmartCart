@@ -59,6 +59,7 @@ public class ChainedCartManager : MonoBehaviour
         {
             Debug.Log("Fail to find the particle system");
         }
+        ApplyRarityColor();
     }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()

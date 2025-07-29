@@ -590,7 +590,7 @@ GameObject:
   - component: {fileID: 6471618177495573124}
   - component: {fileID: 4352900759099298663}
   m_Layer: 7
-  m_Name: FollowingCart
+  m_Name: VisualOnlyCart
   m_TagString: Item
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -932,7 +932,7 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 1
+  m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 80
@@ -954,7 +954,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 0.32, y: 0.19643794, z: 0.50670165}
   m_Center: {x: 0, y: -0.038015362, z: 0.033435058}
@@ -965,7 +965,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6914780558269192623}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: eeecd1f966599954fb81aa99cae17cb2, type: 3}
   m_Name: 
@@ -980,7 +980,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6914780558269192623}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 63c356503b84e9042858f7ab04289a7b, type: 3}
   m_Name: 
@@ -993,10 +993,10 @@ MonoBehaviour:
   p1Snake: {fileID: 0}
   p2Snake: {fileID: 0}
   cartRenderer: {fileID: 5131415986485558397}
-  commonColor: {r: 0.38364768, g: 0.38364768, b: 0.38364768, a: 1}
-  rareColor: {r: 0.054469083, g: 0.7169812, b: 0.029310422, a: 1}
-  epicColor: {r: 0.7951557, g: 0.15513617, b: 0.9308176, a: 1}
-  legendaryColor: {r: 0.9622642, g: 0.51515055, b: 0.09380547, a: 1}
+  commonColor: {r: 0.38431373, g: 0.38431373, b: 0.38431373, a: 1}
+  rareColor: {r: 0.09449724, g: 0.8742138, b: 0.063229226, a: 1}
+  epicColor: {r: 0.71481436, g: 0.2005458, b: 0.9811321, a: 1}
+  legendaryColor: {r: 1, g: 0.34542635, b: 0.015686274, a: 1}
   p1collectNormalCartEvent: {fileID: 11400000, guid: e276d5233b388ba49a963275c3ade278, type: 2}
   p1collectBonusCartEvent: {fileID: 11400000, guid: 86cf779dca08a0a4497fc14537f5b9c9, type: 2}
   p2collectNormalCartEvent: {fileID: 11400000, guid: 5795e0b2d0274704bb75ba566dd756ab, type: 2}
@@ -1026,7 +1026,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 1
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 0.6844517, y: 0.70425445, z: 0.83529073}
   m_Center: {x: -0.00018863678, y: 0.0060875895, z: -0.02556162}

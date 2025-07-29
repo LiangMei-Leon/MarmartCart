@@ -10,10 +10,10 @@ public class CheckOutManager : MonoBehaviour
     [SerializeField] private bool isCheckingOut = false;
     [SerializeField] private bool isStationAvailable = true;
 
-    [SerializeField] private GameObject pitBlockers;
+    [SerializeField] private GameObject pitInavailableIndictor;
     private void Start()
     {
-        if (pitBlockers == null)
+        if (pitInavailableIndictor == null)
         {
             Debug.LogError("pitBlocks not assigned");
         }
@@ -53,7 +53,7 @@ public class CheckOutManager : MonoBehaviour
     public void EnableStation()
     {
         isStationAvailable = true;
-        pitBlockers.SetActive(false);
+        pitInavailableIndictor.SetActive(false);
     }
     public void DisableStation()
     {
@@ -65,7 +65,7 @@ public class CheckOutManager : MonoBehaviour
         }
         else
         {
-            pitBlockers.SetActive(true);
+            pitInavailableIndictor.SetActive(true);
         }
     }
     public bool IsStationAvailable()

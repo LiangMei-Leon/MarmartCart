@@ -29,7 +29,7 @@ public class CartPitZone : MonoBehaviour
     {
         enteredCartRaycaster = other.GetComponent<LeadingCartRaycaster>();
         // if no player in pit and collider is a leading cart, check incoming direction
-        if (enteredCartRaycaster != null && !playerInPit && enteredCartRaycaster.GetmySnakeCartManager().GetSnakeBodyLength() >= 2)
+        if (checkOutManager.IsStationAvailable() && enteredCartRaycaster != null && !playerInPit && enteredCartRaycaster.GetmySnakeCartManager().GetSnakeBodyLength() >= 2)
         {
             Vector3 incomingDirection = other.transform.forward;
             Vector3 requiredDirNormalized = requiredEntryDirection.normalized;
@@ -84,12 +84,12 @@ public class CartPitZone : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        enteredCartRaycaster = other.GetComponent<LeadingCartRaycaster>();
-        // if no player in pit and collider is a leading cart, check incoming direction
-        if (enteredCartRaycaster != null)
-        {
-            checkOutManager.EnableStation();
-        }
+        //enteredCartRaycaster = other.GetComponent<LeadingCartRaycaster>();
+        //// if no player in pit and collider is a leading cart, check incoming direction
+        //if (enteredCartRaycaster != null)
+        //{
+        //    checkOutManager.EnableStation();
+        //}
     }
 
     public void ExitPitZone(LeadingCartRaycaster script)
@@ -105,7 +105,6 @@ public class CartPitZone : MonoBehaviour
             UnfreezeAllWheelBehavior(script);
             // temporarily enter ghost mode
             script.SetInGhostModeWithTime(ghostDurationAfterQuit);
-            Debug.Log("oUT");
             // reset input listener
             enteredCartController.SetActiveCheckoutHandler(null);
             // reset prompot
