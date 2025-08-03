@@ -14,7 +14,8 @@ public class GameTimeManager : MonoBehaviour
 
     [Header("UI References")]
     [SerializeField] private GameObject titleScreen; // Title screen object
-    [SerializeField] private TextMeshProUGUI timerText; // TMP for time display
+    [SerializeField] private TextMeshProUGUI timerTextP1; // TMP for time display p1
+    [SerializeField] private TextMeshProUGUI timerTextP2; // TMP for time display p2
     [SerializeField] private GameObject finalScoreScreen; // Final score screen object
 //     [SerializeField] private TextMeshProUGUI finalHitCountText; // TMP for hit count display
 //     [SerializeField] private TextMeshProUGUI finalScoreText; // TMP for final score display
@@ -135,7 +136,8 @@ public class GameTimeManager : MonoBehaviour
         float timeRemaining = Mathf.Max(0, totalGameDuration - elapsedTime);
         int minutes = Mathf.FloorToInt(timeRemaining / 60);
         int seconds = Mathf.FloorToInt(timeRemaining % 60);
-        timerText.text = $"{minutes:D2}:{seconds:D2}";
+        timerTextP1.text = $"{minutes:D2}:{seconds:D2}";
+        timerTextP2.text = $"{minutes:D2}:{seconds:D2}";
     }
 
     private void StartGame()
