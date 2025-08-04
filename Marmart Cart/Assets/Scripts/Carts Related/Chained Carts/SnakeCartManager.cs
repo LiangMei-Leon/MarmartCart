@@ -26,6 +26,7 @@ public class SnakeCartManager : MonoBehaviour
 
     [SerializeField] private DinoIndictor dinoIndictor;
     [SerializeField] private CashScoreManager cashScoreManager;
+    [SerializeField] private ComboDealsManager comboDealsManager;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -257,7 +258,25 @@ public class SnakeCartManager : MonoBehaviour
         {
             // Reward player points
             var cartManager = snakeBody[1].GetComponent<ChainedCartManager>();
-            if(cartManager != null)
+            if(comboDealsManager != null)
+            {
+                switch(cartManager.CartType)
+                {
+                    case CartRarity.Common:
+                        comboDealsManager.SubmitCartToCombos(CartRarity.Common);
+                        break;
+                    case CartRarity.Rare:
+                        comboDealsManager.SubmitCartToCombos(CartRarity.Rare);
+                        break;
+                    case CartRarity.Epic:
+                        comboDealsManager.SubmitCartToCombos(CartRarity.Epic);
+                        break;
+                    case CartRarity.Legendary:
+                        comboDealsManager.SubmitCartToCombos(CartRarity.Legendary);
+                        break;
+                }
+            }
+            if (cartManager != null)
             {
                 if(cartManager.isBonusCart)
                 {

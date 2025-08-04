@@ -13,9 +13,13 @@ public class ComboDeal : MonoBehaviour
     [SerializeField] private TextMeshProUGUI epicCartRemainingText;
     [SerializeField] private TextMeshProUGUI legendaryCartRemainingText;
     [SerializeField] private Slider timerSlider;
-    public int DealID { get; private set; }
+    public int DealID;
     public float RewardPoints { get; private set; }
 
+    [Header("UI Controller Management")]
+    public int stackIndex;
+    public float PanelWidth => GetComponent<RectTransform>().rect.width;
+    [SerializeField] public ComboDealUIController uiController;
     private Dictionary<CartRarity, int> requirements;
     private float duration;
     private float startTime;
@@ -29,7 +33,13 @@ public class ComboDeal : MonoBehaviour
         duration = durationSeconds;
         startTime = Time.time;
 
+        // Use controller to set start position
+        RectTransform rect = GetComponent<RectTransform>();
+        Vector2 startPos = uiController.GetSpawnStartPosition();
+        rect.anchoredPosition = startPos;
+
         UpdateUI();
+        uiController.Register(this);
     }
     void Update()
     {
@@ -40,6 +50,7 @@ public class ComboDeal : MonoBehaviour
 
         if (IsExpired)
         {
+            uiController.Unregister(this);
             comboDealUI.SetActive(false);
         }
     }
@@ -47,7 +58,27 @@ public class ComboDeal : MonoBehaviour
     public bool IsExpired => Time.time > startTime + duration;
     public bool IsCompleted => completed;
     public float TimeRemaining => Mathf.Max(0, (startTime + duration) - Time.time);
+    public void SetCoreData(float rewardPoints, Dictionary<CartRarity, int> reqs, float durationSeconds)
+    {
+        RewardPoints = rewardPoints;
+        requirements = new Dictionary<CartRarity, int>(reqs);
+        duration = durationSeconds;
+        startTime = Time.time;
+    }
+    public void InitializeFromLogic(ComboDeal source, Vector2 startPosition)
+    {
+        DealID = source.DealID;
+        RewardPoints = source.RewardPoints;
+        requirements = new Dictionary<CartRarity, int>(source.GetRemainingRequirements());
+        duration = source.duration;
+        startTime = Time.time;
 
+        RectTransform rect = GetComponent<RectTransform>();
+        rect.anchoredPosition = startPosition;
+
+        UpdateUI();
+        uiController.Register(this);
+    }
     public bool SubmitCart(CartRarity rarity)
     {
         if (completed || !requirements.ContainsKey(rarity) || requirements[rarity] <= 0)
@@ -74,6 +105,7 @@ public class ComboDeal : MonoBehaviour
     private void OnCompleted()
     {
         Debug.Log($"Combo Deal {DealID} completed! Reward: {RewardPoints} points");
+        uiController.Unregister(this);
         comboDealUI.SetActive(false);
     }
     private void UpdateUI()

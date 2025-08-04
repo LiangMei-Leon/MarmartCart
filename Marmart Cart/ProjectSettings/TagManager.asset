@@ -16,6 +16,7 @@ TagManager:
   - SnakeCartManagerP1
   - SnakeCartManagerP2
   - CheckOutStation
+  - ComboDealManager
   layers:
   - Default
   - TransparentFX
@@ -29,7 +30,7 @@ TagManager:
   - Obstacles
   - Walls
   - DinoTiles
-  - 
+  - ComboUI
   - 
   - 
   - 
