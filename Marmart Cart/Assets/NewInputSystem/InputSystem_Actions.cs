@@ -101,7 +101,16 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": true
                 },
                 {
-                    ""name"": ""Boost"",
+                    ""name"": ""Aim"",
+                    ""type"": ""Value"",
+                    ""id"": ""27a59100-86f4-4f02-acd7-64ac58ccd42c"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""ActivatePowerUp"",
                     ""type"": ""Button"",
                     ""id"": ""1f4c30ff-9322-43de-9332-12b45131fcee"",
                     ""expectedControlType"": """",
@@ -352,7 +361,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Keyboard_WASD"",
-                    ""action"": ""Boost"",
+                    ""action"": ""ActivatePowerUp"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -363,7 +372,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Controller"",
-                    ""action"": ""Boost"",
+                    ""action"": ""ActivatePowerUp"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -452,6 +461,28 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": "";Controller"",
                     ""action"": ""Speedup"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""830093b3-c9db-406a-842b-a07ff5e3e75f"",
+                    ""path"": ""<Gamepad>/rightStick"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Controller"",
+                    ""action"": ""Aim"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""0a54e5db-0ab9-4304-b56f-883857d5fe9c"",
+                    ""path"": ""<Mouse>/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard_WASD"",
+                    ""action"": ""Aim"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1025,11 +1056,6 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             ]
         },
         {
-            ""name"": ""Cart Control Schene"",
-            ""bindingGroup"": ""Cart Control Schene"",
-            ""devices"": []
-        },
-        {
             ""name"": ""Keyboard_WASD"",
             ""bindingGroup"": ""Keyboard_WASD"",
             ""devices"": [
@@ -1056,7 +1082,8 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         // Player
         m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
         m_Player_Move = m_Player.FindAction("Move", throwIfNotFound: true);
-        m_Player_Boost = m_Player.FindAction("Boost", throwIfNotFound: true);
+        m_Player_Aim = m_Player.FindAction("Aim", throwIfNotFound: true);
+        m_Player_ActivatePowerUp = m_Player.FindAction("ActivatePowerUp", throwIfNotFound: true);
         m_Player_FlipDirection = m_Player.FindAction("FlipDirection", throwIfNotFound: true);
         m_Player_CheckOut = m_Player.FindAction("CheckOut", throwIfNotFound: true);
         m_Player_QuitCheckOut = m_Player.FindAction("QuitCheckOut", throwIfNotFound: true);
@@ -1155,7 +1182,8 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_Player;
     private List<IPlayerActions> m_PlayerActionsCallbackInterfaces = new List<IPlayerActions>();
     private readonly InputAction m_Player_Move;
-    private readonly InputAction m_Player_Boost;
+    private readonly InputAction m_Player_Aim;
+    private readonly InputAction m_Player_ActivatePowerUp;
     private readonly InputAction m_Player_FlipDirection;
     private readonly InputAction m_Player_CheckOut;
     private readonly InputAction m_Player_QuitCheckOut;
@@ -1176,9 +1204,13 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// </summary>
         public InputAction @Move => m_Wrapper.m_Player_Move;
         /// <summary>
-        /// Provides access to the underlying input action "Player/Boost".
+        /// Provides access to the underlying input action "Player/Aim".
         /// </summary>
-        public InputAction @Boost => m_Wrapper.m_Player_Boost;
+        public InputAction @Aim => m_Wrapper.m_Player_Aim;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/ActivatePowerUp".
+        /// </summary>
+        public InputAction @ActivatePowerUp => m_Wrapper.m_Player_ActivatePowerUp;
         /// <summary>
         /// Provides access to the underlying input action "Player/FlipDirection".
         /// </summary>
@@ -1224,9 +1256,12 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @Move.started += instance.OnMove;
             @Move.performed += instance.OnMove;
             @Move.canceled += instance.OnMove;
-            @Boost.started += instance.OnBoost;
-            @Boost.performed += instance.OnBoost;
-            @Boost.canceled += instance.OnBoost;
+            @Aim.started += instance.OnAim;
+            @Aim.performed += instance.OnAim;
+            @Aim.canceled += instance.OnAim;
+            @ActivatePowerUp.started += instance.OnActivatePowerUp;
+            @ActivatePowerUp.performed += instance.OnActivatePowerUp;
+            @ActivatePowerUp.canceled += instance.OnActivatePowerUp;
             @FlipDirection.started += instance.OnFlipDirection;
             @FlipDirection.performed += instance.OnFlipDirection;
             @FlipDirection.canceled += instance.OnFlipDirection;
@@ -1253,9 +1288,12 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @Move.started -= instance.OnMove;
             @Move.performed -= instance.OnMove;
             @Move.canceled -= instance.OnMove;
-            @Boost.started -= instance.OnBoost;
-            @Boost.performed -= instance.OnBoost;
-            @Boost.canceled -= instance.OnBoost;
+            @Aim.started -= instance.OnAim;
+            @Aim.performed -= instance.OnAim;
+            @Aim.canceled -= instance.OnAim;
+            @ActivatePowerUp.started -= instance.OnActivatePowerUp;
+            @ActivatePowerUp.performed -= instance.OnActivatePowerUp;
+            @ActivatePowerUp.canceled -= instance.OnActivatePowerUp;
             @FlipDirection.started -= instance.OnFlipDirection;
             @FlipDirection.performed -= instance.OnFlipDirection;
             @FlipDirection.canceled -= instance.OnFlipDirection;
@@ -1548,19 +1586,6 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             return asset.controlSchemes[m_JoystickSchemeIndex];
         }
     }
-    private int m_CartControlScheneSchemeIndex = -1;
-    /// <summary>
-    /// Provides access to the input control scheme.
-    /// </summary>
-    /// <seealso cref="UnityEngine.InputSystem.InputControlScheme" />
-    public InputControlScheme CartControlScheneScheme
-    {
-        get
-        {
-            if (m_CartControlScheneSchemeIndex == -1) m_CartControlScheneSchemeIndex = asset.FindControlSchemeIndex("Cart Control Schene");
-            return asset.controlSchemes[m_CartControlScheneSchemeIndex];
-        }
-    }
     private int m_Keyboard_WASDSchemeIndex = -1;
     /// <summary>
     /// Provides access to the input control scheme.
@@ -1602,12 +1627,19 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnMove(InputAction.CallbackContext context);
         /// <summary>
-        /// Method invoked when associated input action "Boost" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// Method invoked when associated input action "Aim" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
         /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnBoost(InputAction.CallbackContext context);
+        void OnAim(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "ActivatePowerUp" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnActivatePowerUp(InputAction.CallbackContext context);
         /// <summary>
         /// Method invoked when associated input action "FlipDirection" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>

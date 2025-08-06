@@ -106,23 +106,41 @@ public class GameTimeManager : MonoBehaviour
         // Update timer display
         UpdateTimerDisplay();
         //Update Player1 Cart Count display and adjust camera
-        int currentCartCountP1 = snakeCartManagerP1.GetSnakeBodyLength();
-        if (currentCartCountP1 != cartCountP1)
+        (string rarityBreakdownP1, int countP1) = snakeCartManagerP1.GetCartRarityBreakdown();
+        if (countP1 != cartCountP1)
         {
-            cartCountP1 = currentCartCountP1;
-            cartCountP1Text.text = cartCountP1.ToString();
+            cartCountP1 = countP1;
+            cartCountP1Text.text = rarityBreakdownP1;
             StartCoroutine(AnimateText(cartCountP1Text, false));
             UpdateCameraZoomP1();
         }
+
+        //int currentCartCountP1 = snakeCartManagerP1.GetSnakeBodyLength();
+        //if (currentCartCountP1 != cartCountP1)
+        //{
+        //    cartCountP1 = currentCartCountP1;
+        //    cartCountP1Text.text = cartCountP1.ToString();
+        //    StartCoroutine(AnimateText(cartCountP1Text, false));
+        //    UpdateCameraZoomP1();
+        //}
+
         //Update Player2 Cart Count display and adjust camera
-        int currentCartCountP2 = snakeCartManagerP2.GetSnakeBodyLength();
-        if (currentCartCountP2 != cartCountP2)
+        (string rarityBreakdownP2, int countP2) = snakeCartManagerP2.GetCartRarityBreakdown();
+        if (countP2 != cartCountP2)
         {
-            cartCountP2 = currentCartCountP2;
-            cartCountP2Text.text = cartCountP2.ToString();
+            cartCountP2 = countP2;
+            cartCountP2Text.text = rarityBreakdownP2;
             StartCoroutine(AnimateText(cartCountP2Text, false));
             UpdateCameraZoomP2();
         }
+        //int currentCartCountP2 = snakeCartManagerP2.GetSnakeBodyLength();
+        //if (currentCartCountP2 != cartCountP2)
+        //{
+        //    cartCountP2 = currentCartCountP2;
+        //    cartCountP2Text.text = cartCountP2.ToString();
+        //    StartCoroutine(AnimateText(cartCountP2Text, false));
+        //    UpdateCameraZoomP2();
+        //}
 
         // Check if game time has ended
         if (elapsedTime >= totalGameDuration)

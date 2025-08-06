@@ -1,10 +1,11 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 
 public class ComboDeal : MonoBehaviour
 {
+    public enum ComboRewardType { Points, Powerup }
     [Header("Combo Deal UIs")]
     [SerializeField] private GameObject comboDealUI;
     [SerializeField] private TextMeshProUGUI dealReward;
@@ -15,6 +16,8 @@ public class ComboDeal : MonoBehaviour
     [SerializeField] private Slider timerSlider;
     public int DealID;
     public float RewardPoints { get; private set; }
+    public ComboRewardType rewardType;
+    public bool rewardIsPowerup;
 
     [Header("UI Controller Management")]
     public int stackIndex;
@@ -24,6 +27,7 @@ public class ComboDeal : MonoBehaviour
     private float duration;
     private float startTime;
     private bool completed = false;
+    private int finalContributorIndex = 0;
 
     public void Initialize(int id, float rewardPoints, Dictionary<CartRarity, int> reqs, float durationSeconds)
     {
@@ -37,6 +41,10 @@ public class ComboDeal : MonoBehaviour
         RectTransform rect = GetComponent<RectTransform>();
         Vector2 startPos = uiController.GetSpawnStartPosition();
         rect.anchoredPosition = startPos;
+
+        rewardType = (Random.value < 0.5f) ? ComboRewardType.Points : ComboRewardType.Powerup;
+        rewardPoints = rewardType == ComboRewardType.Points ? rewardPoints : 0f;
+        rewardIsPowerup = rewardType == ComboRewardType.Powerup;
 
         UpdateUI();
         uiController.Register(this);
@@ -79,12 +87,14 @@ public class ComboDeal : MonoBehaviour
         UpdateUI();
         uiController.Register(this);
     }
-    public bool SubmitCart(CartRarity rarity)
+    public bool SubmitCart(CartRarity rarity, int playerIndex)
     {
         if (completed || !requirements.ContainsKey(rarity) || requirements[rarity] <= 0)
             return false;
 
         requirements[rarity]--;
+        finalContributorIndex = playerIndex; // store the latest contributor
+
         UpdateUI();
         CheckCompletion();
         return true;
@@ -104,14 +114,40 @@ public class ComboDeal : MonoBehaviour
 
     private void OnCompleted()
     {
-        Debug.Log($"Combo Deal {DealID} completed! Reward: {RewardPoints} points");
+
+        if (finalContributorIndex != 0)
+        {
+            if (rewardType == ComboRewardType.Powerup)
+            {
+                if(finalContributorIndex ==1)
+                {
+                    PowerupsManager p1PowerupManager = GameObject.FindGameObjectWithTag("Player1").GetComponentInChildren<PowerupsManager>();
+                    p1PowerupManager.RollRandomPowerup();
+                }
+                else if(finalContributorIndex ==2)
+                {
+                    PowerupsManager p2PowerupManager = GameObject.FindGameObjectWithTag("Player2").GetComponentInChildren<PowerupsManager>();
+                    p2PowerupManager.RollRandomPowerup();
+                }
+            }
+            CashScoreManager scoreManager = FindFirstObjectByType<CashScoreManager>();
+            if (scoreManager != null)
+            {
+                Debug.Log($"Combo Deal {DealID} completed by Player {finalContributorIndex}! Reward: {RewardPoints} points");
+                scoreManager.AddComboRewardToPlayer(RewardPoints, finalContributorIndex);
+            }
+            else
+            {
+                Debug.LogError("CashScoreManager not found in the scene.");
+            }
+        }
         uiController.Unregister(this);
         comboDealUI.SetActive(false);
     }
     private void UpdateUI()
     {
         if (dealReward != null)
-            dealReward.text = RewardPoints.ToString() + " PTS";
+            dealReward.text = rewardIsPowerup ? "POWERUP" : $"{RewardPoints}" + " PTS";
 
         if (commonCartRemainingText != null && requirements.ContainsKey(CartRarity.Common))
             commonCartRemainingText.text = requirements[CartRarity.Common].ToString();

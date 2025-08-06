@@ -46,7 +46,7 @@ public class LeadingCartRaycaster : MonoBehaviour
         {
             cartInGhostMode = false;
         }
-        if(cartControlInput.IsSpeedingUp())
+        if(cartControlInput.IsSpeedingUp() || cartControlInput.IsCharing())
         {
             chargingVFX.SetActive(true);
         }
@@ -195,10 +195,10 @@ public class LeadingCartRaycaster : MonoBehaviour
     {
         cooldownTimer = time;
     }
-    private void DetachSelfCompletely()
+    public void DetachSelfCompletely()
     {
         cooldownTimer = 4f;
-        cartControlInput.DisallowBoost();
+        cartControlInput.DisallowActivatePowerUp();
 
         if (snakeCartManager.GetSnakeBody().Count >= 2)
         {

@@ -15,7 +15,16 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Boost",
+                    "name": "Aim",
+                    "type": "Value",
+                    "id": "27a59100-86f4-4f02-acd7-64ac58ccd42c",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "ActivatePowerUp",
                     "type": "Button",
                     "id": "1f4c30ff-9322-43de-9332-12b45131fcee",
                     "expectedControlType": "",
@@ -266,7 +275,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard_WASD",
-                    "action": "Boost",
+                    "action": "ActivatePowerUp",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -277,7 +286,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Controller",
-                    "action": "Boost",
+                    "action": "ActivatePowerUp",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -366,6 +375,28 @@
                     "processors": "",
                     "groups": ";Controller",
                     "action": "Speedup",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "830093b3-c9db-406a-842b-a07ff5e3e75f",
+                    "path": "<Gamepad>/rightStick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Controller",
+                    "action": "Aim",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0a54e5db-0ab9-4304-b56f-883857d5fe9c",
+                    "path": "<Mouse>/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard_WASD",
+                    "action": "Aim",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
@@ -937,11 +968,6 @@
                     "isOR": false
                 }
             ]
-        },
-        {
-            "name": "Cart Control Schene",
-            "bindingGroup": "Cart Control Schene",
-            "devices": []
         },
         {
             "name": "Keyboard_WASD",

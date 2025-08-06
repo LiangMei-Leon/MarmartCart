@@ -31,8 +31,10 @@ public class PitsManager : MonoBehaviour
     private float activeDuration;
     private int pitsPerCycle;
 
-    [SerializeField] private TextMeshProUGUI timePrompt;
-    [SerializeField] private GameObject promptBG;
+    [SerializeField] private TextMeshProUGUI timePromptP1;
+    [SerializeField] private TextMeshProUGUI timePromptP2;
+    [SerializeField] private GameObject promptBGP1;
+    [SerializeField] private GameObject promptBGP2;
     private bool hasShownCountdown = false;
 
     void Start()
@@ -133,15 +135,26 @@ public class PitsManager : MonoBehaviour
     }
     IEnumerator ShowCountdown(string action, int seconds)
     {
-        timePrompt.gameObject.SetActive(true);
-        promptBG.SetActive(true);
+        timePromptP1.gameObject.SetActive(true);
+        promptBGP1.SetActive(true);
         for (int i = seconds; i > 0; i--)
         {
-            timePrompt.text = $"Lanes {action} in {i}!";
+            timePromptP1.text = $"Lanes {action} in {i}!";
             yield return new WaitForSeconds(1f);
         }
 
-        timePrompt.gameObject.SetActive(false);
-        promptBG.SetActive(false);
+        timePromptP1.gameObject.SetActive(false);
+        promptBGP1.SetActive(false);
+
+        timePromptP2.gameObject.SetActive(true);
+        promptBGP2.SetActive(true);
+        for (int i = seconds; i > 0; i--)
+        {
+            timePromptP2.text = $"Lanes {action} in {i}!";
+            yield return new WaitForSeconds(1f);
+        }
+
+        timePromptP2.gameObject.SetActive(false);
+        promptBGP2.SetActive(false);
     }
 }

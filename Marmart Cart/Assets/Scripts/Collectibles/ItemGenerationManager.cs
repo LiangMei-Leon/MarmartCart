@@ -105,7 +105,7 @@ public class ItemGenerationManager : MonoBehaviour
             if (spawnPosition != Vector3.zero)
             {
                 // 1. Generate rarity using your static method
-                CartRarity rarity = GenerateRarity(0.3f, 0.2f, 0.1f); // Adjust rates as needed
+                CartRarity rarity = GenerateRarity(0.25f, 0.10f, 0.05f); // Adjust rates as needed
 
                 GameObject prefabToSpawn = cartPrefab; // Default prefab
                 //// 2. Choose a prefab based on rarity (optional)

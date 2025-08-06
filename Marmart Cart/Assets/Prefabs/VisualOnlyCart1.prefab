@@ -160,7 +160,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1060091800787100873}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c56f61f9db4ba0d4999ba87cb8442dc7, type: 3}
   m_Name: 
@@ -247,7 +247,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3334329670287858708}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c56f61f9db4ba0d4999ba87cb8442dc7, type: 3}
   m_Name: 
@@ -299,7 +299,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5133350642984051591}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c56f61f9db4ba0d4999ba87cb8442dc7, type: 3}
   m_Name: 
@@ -541,7 +541,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 365e042ac10c54f0196f6669c98db252, type: 2}
-  - {fileID: 2100000, guid: 91cb86f25e14b0244b946633f20e873a, type: 2}
+  - {fileID: 2100000, guid: e3e92c47cf2fbfc428a6d8e50545193d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -586,11 +586,9 @@ GameObject:
   - component: {fileID: 5340151306066624053}
   - component: {fileID: 62603883547072747}
   - component: {fileID: 3093587261940331399}
-  - component: {fileID: 1604046231476588783}
-  - component: {fileID: 6471618177495573124}
   - component: {fileID: 4352900759099298663}
   m_Layer: 7
-  m_Name: VisualOnlyCart
+  m_Name: VisualOnlyCart1
   m_TagString: Item
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -958,57 +956,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.32, y: 0.19643794, z: 0.50670165}
   m_Center: {x: 0, y: -0.038015362, z: 0.033435058}
---- !u!114 &1604046231476588783
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6914780558269192623}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eeecd1f966599954fb81aa99cae17cb2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  offsetValueCurve: {fileID: 0}
-  cartMaxSpeed: 30
-  offsetValue: 0
---- !u!114 &6471618177495573124
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6914780558269192623}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 63c356503b84e9042858f7ab04289a7b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  <isBonusCart>k__BackingField: 0
-  <CartType>k__BackingField: 0
-  collectVFX: {fileID: 1106169482944890282}
-  <isCollectedByPlayer>k__BackingField: 0
-  <isCollectedByAI>k__BackingField: 0
-  p1Snake: {fileID: 0}
-  p2Snake: {fileID: 0}
-  cartRenderer: {fileID: 5131415986485558397}
-  commonColor: {r: 0.38431373, g: 0.38431373, b: 0.38431373, a: 1}
-  rareColor: {r: 0.09449724, g: 0.8742138, b: 0.063229226, a: 1}
-  epicColor: {r: 0.71481436, g: 0.2005458, b: 0.9811321, a: 1}
-  legendaryColor: {r: 1, g: 0.34542635, b: 0.015686274, a: 1}
-  p1collectNormalCartEvent: {fileID: 11400000, guid: e276d5233b388ba49a963275c3ade278, type: 2}
-  p1collectBonusCartEvent: {fileID: 11400000, guid: 86cf779dca08a0a4497fc14537f5b9c9, type: 2}
-  p2collectNormalCartEvent: {fileID: 11400000, guid: 5795e0b2d0274704bb75ba566dd756ab, type: 2}
-  p2collectBonusCartEvent: {fileID: 11400000, guid: 7a39b94ec0dfa3644a1780908cec255c, type: 2}
-  p1collectCartEventCommon: {fileID: 11400000, guid: 3b4ead65526027847896f815ba35cc19, type: 2}
-  p1collectCartEventRare: {fileID: 11400000, guid: b0b5ecfdb80c3c0489c3d8a4b31157fa, type: 2}
-  p1collectCartEventEpic: {fileID: 11400000, guid: 783b978c61c8b654687a1d173bfcc9f9, type: 2}
-  p1collectCartEventLegendary: {fileID: 11400000, guid: 2bad864c35a403240b1ba42a84ff890a, type: 2}
-  p2collectCartEventCommon: {fileID: 11400000, guid: 4bb2e60a7016149459e25d00136555dd, type: 2}
-  p2collectCartEventRare: {fileID: 11400000, guid: 39df01c269cc3bd499e34210376acb05, type: 2}
-  p2collectCartEventEpic: {fileID: 11400000, guid: 05b5424568d8f9d4eb0c00f6c30ef5cf, type: 2}
-  p2collectCartEventLegendary: {fileID: 11400000, guid: a9f2e32c7934e7348b5a72b899e9336b, type: 2}
 --- !u!65 &4352900759099298663
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1155,7 +1102,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7303124339212398370}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c56f61f9db4ba0d4999ba87cb8442dc7, type: 3}
   m_Name: 
@@ -1304,11 +1251,6 @@ PrefabInstance:
 --- !u!4 &979238190581945948 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4142590970830686, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
-  m_PrefabInstance: {fileID: 979608064429000962}
-  m_PrefabAsset: {fileID: 0}
---- !u!198 &1106169482944890282 stripped
-ParticleSystem:
-  m_CorrespondingSourceObject: {fileID: 198619150366067880, guid: dbc3a9490497a0f4fb6853c2844fa534, type: 3}
   m_PrefabInstance: {fileID: 979608064429000962}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1235743061220913150

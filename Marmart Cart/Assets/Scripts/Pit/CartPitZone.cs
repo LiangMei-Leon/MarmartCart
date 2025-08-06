@@ -60,7 +60,7 @@ public class CartPitZone : MonoBehaviour
                 {
                     // Disable player input for turn and boost
                     enteredCartController.SetInPit();
-                    enteredCartController.DisallowBoost();
+                    enteredCartController.DisallowActivatePowerUp();
                     // Setup events
                     enteredCartController.SetActiveCheckoutHandler(checkOutManager);
                     checkOutManager.SetSnakeCartManager(enteredCartRaycaster.GetmySnakeCartManager());
@@ -100,7 +100,7 @@ public class CartPitZone : MonoBehaviour
             playerInPit = false;
             // give players control
             enteredCartController.SetOutPit();
-            enteredCartController.AllowBoost();
+            //enteredCartController.AllowBoost();
             // reset speed
             UnfreezeAllWheelBehavior(script);
             // temporarily enter ghost mode

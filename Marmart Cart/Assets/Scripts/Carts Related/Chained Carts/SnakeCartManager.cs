@@ -27,6 +27,9 @@ public class SnakeCartManager : MonoBehaviour
     [SerializeField] private DinoIndictor dinoIndictor;
     [SerializeField] private CashScoreManager cashScoreManager;
     [SerializeField] private ComboDealsManager comboDealsManager;
+
+    public bool needScaleup = false;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -160,6 +163,7 @@ public class SnakeCartManager : MonoBehaviour
                 // Detach this cart and all subsequent carts
                 for (int j = i; j < snakeBody.Count; j++)
                 {
+                    snakeBody[j].transform.localScale = new Vector3(5f, 5f, 5f);
                     snakeBody[j].transform.SetParent(null); // Detach from parent
                     snakeBody[j].GetComponent<ChainedCartManager>().OnDetach();
                 }
@@ -180,8 +184,12 @@ public class SnakeCartManager : MonoBehaviour
 
     public void AddBodyParts(GameObject addedObj)
     {
-        bodyParts.Add(addedObj);
+        if(needScaleup)
+            addedObj.transform.localScale = new Vector3(10f, 10f, 10f); // Apply scale multiplier to the new cart
+        else
+            addedObj.transform.localScale = new Vector3(5f, 5f, 5f);
 
+        bodyParts.Add(addedObj);
         StartCoroutine(DelayedPlayVFX());
         
     }
@@ -256,59 +264,51 @@ public class SnakeCartManager : MonoBehaviour
     {
         if (snakeBody.Count > 1)
         {
-            // Reward player points
+            // Get cart rarity
             var cartManager = snakeBody[1].GetComponent<ChainedCartManager>();
-            if(comboDealsManager != null)
+            CartRarity cartRarity = cartManager.CartType;
+            int playerIndex = isPlayer1 ? 1 : 2;
+
+            // Submit to combo deal system
+            if (comboDealsManager != null)
             {
-                switch(cartManager.CartType)
-                {
-                    case CartRarity.Common:
-                        comboDealsManager.SubmitCartToCombos(CartRarity.Common);
-                        break;
-                    case CartRarity.Rare:
-                        comboDealsManager.SubmitCartToCombos(CartRarity.Rare);
-                        break;
-                    case CartRarity.Epic:
-                        comboDealsManager.SubmitCartToCombos(CartRarity.Epic);
-                        break;
-                    case CartRarity.Legendary:
-                        comboDealsManager.SubmitCartToCombos(CartRarity.Legendary);
-                        break;
-                }
+                comboDealsManager.SubmitCartToCombos(cartRarity, playerIndex);
             }
-            if (cartManager != null)
-            {
-                if(cartManager.isBonusCart)
-                {
-                    if (isPlayer1)
-                    {
-                        cashScoreManager.IncreaseP1CheckedoutBonusCartCount();
-                    }
-                    else
-                    {
-                        cashScoreManager.IncreaseP2CheckedoutBonusCartCount();
-                    }
-                }
-                else
-                {
-                    if(isPlayer1)
-                    {
-                        cashScoreManager.IncreaseP1CheckedoutNormalCartCount();
-                    }
-                    else
-                    {
-                        cashScoreManager.IncreaseP2CheckedoutNormalCartCount();
-                    }
-                }
-            }
-            // Remove cart from list and from the player
+
+            // Update score
+            cashScoreManager.AddCartToPlayer(cartRarity, playerIndex);
+
+            // Remove cart from list and destroy
             GameObject removed = snakeBody[1];
             snakeBody.RemoveAt(1);
             Destroy(removed);
 
             return snakeBody.Count;
         }
+
         return snakeBody.Count;
+    }
+    public (string, int) GetCartRarityBreakdown()
+    {
+        int common = 0, rare = 0, epic = 0, legendary = 0;
+
+        for (int i = 1; i < snakeBody.Count; i++) // skip the leading cart
+        {
+            var cm = snakeBody[i].GetComponent<ChainedCartManager>();
+            if (cm == null) continue;
+
+            switch (cm.CartType)
+            {
+                case CartRarity.Common: common++; break;
+                case CartRarity.Rare: rare++; break;
+                case CartRarity.Epic: epic++; break;
+                case CartRarity.Legendary: legendary++; break;
+            }
+        }
+
+        string breakdown = $"{common},{rare},{epic},{legendary}";
+        int total = common + rare + epic + legendary;
+        return (breakdown, total);
     }
     //public void SpeedUpPowerUp()
     //{

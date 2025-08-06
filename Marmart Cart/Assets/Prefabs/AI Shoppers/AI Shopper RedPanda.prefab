@@ -228,6 +228,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Carrying Carts Visual
       objectReference: {fileID: 0}
+    - target: {fileID: 2372804081702130375, guid: 13443b58731ed4f49be8f80299bdec0f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4963443269047769443, guid: 13443b58731ed4f49be8f80299bdec0f, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

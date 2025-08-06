@@ -13,6 +13,11 @@ public class CartControlScript : MonoBehaviour
     private InputDevice assignedDevice;
 
     public Vector3 desiredDirection { get; private set; } // Public property to provide desired direction
+    // Aiming input
+    private Vector2 _aimInputVector;
+    private Vector3 _aimDirection;
+    private bool canAim = false;
+    public Vector3 AimDirection => _aimDirection;
 
     [SerializeField] private bool controllable = true; // variable that controls if the system gonna read input
     [SerializeField] private bool isInPit = false;
@@ -22,8 +27,10 @@ public class CartControlScript : MonoBehaviour
     [SerializeField] private float speedUpConsumeRate = 10f;
     private bool isSpeedingUp = false;
     [SerializeField] private bool canSpeedup = true;
-    [SerializeField] private bool canBoost = true;
+    [SerializeField] private bool canActivatePowerUp = false;
     [SerializeField] private bool canFlip = false;
+
+    [SerializeField] private PowerupsManager powerupsManager; // Reference to the PowerupsManager script
 
     // fro cart pit check out actions
     private CheckOutManager activeCheckoutManager;
@@ -40,7 +47,7 @@ public class CartControlScript : MonoBehaviour
 
         _inputActions.Enable();
 
-        // Hook up filtered actions
+        // Hook up filtered actions for controller only, left stick for movement
         _inputActions.Player.Move.performed += ctx =>
         {
             if (ctx.control.device == device)
@@ -50,6 +57,23 @@ public class CartControlScript : MonoBehaviour
         {
             if (ctx.control.device == device)
                 _inputVector = Vector2.zero;
+        };
+        // Aim input for controller (right stick)
+        _inputActions.Player.Aim.performed += ctx =>
+        {
+            if (ctx.control.device == device && canAim)
+            {
+                _aimInputVector = ctx.ReadValue<Vector2>();
+                _aimDirection = new Vector3(_aimInputVector.x, 0, _aimInputVector.y).ToIso();
+            }
+        };
+        _inputActions.Player.Aim.canceled += ctx =>
+        {
+            if (ctx.control.device == device)
+            {
+                _aimInputVector = Vector2.zero;
+                _aimDirection = Vector3.zero;
+            }
         };
         // for speed up
         _inputActions.Player.Speedup.performed += ctx =>
@@ -63,12 +87,11 @@ public class CartControlScript : MonoBehaviour
                 isSpeedingUp = false;
         };
         // for powerful charged boost
-        _inputActions.Player.Boost.performed += ctx =>
+        _inputActions.Player.ActivatePowerUp.performed += ctx =>
         {
-            if (ctx.control.device == device && canBoost && speedUpMeter >= 100f)
+            if (ctx.control.device == device && canActivatePowerUp)
             {
-                speedUpMeter = 0f;
-                boostEvent.Raise();
+                ActivatePowerUp();
             }
         };
         _inputActions.Player.FlipDirection.performed += ctx =>
@@ -101,6 +124,7 @@ public class CartControlScript : MonoBehaviour
 
         _inputActions.Enable();
 
+        // Hook up filtered actions for keyboard, WASD for movement, mouse for aim
         _inputActions.Player.Move.performed += ctx =>
         {
             if (ctx.control.device == Keyboard.current)
@@ -110,6 +134,26 @@ public class CartControlScript : MonoBehaviour
         {
             if (ctx.control.device == Keyboard.current)
                 _inputVector = Vector2.zero;
+        };
+        // Aim input for controller (mouse position)
+        _inputActions.Player.Aim.performed += ctx =>
+        {
+            if (ctx.control.device == Keyboard.current && canAim)
+            {
+                Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
+                Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
+                Vector2 offset = mouseScreenPos - screenCenter;
+                _aimInputVector = offset.normalized;
+                _aimDirection = new Vector3(_aimInputVector.x, 0, _aimInputVector.y).ToIso();
+            }
+        };
+        _inputActions.Player.Aim.canceled += ctx =>
+        {
+            if (ctx.control.device == Keyboard.current)
+            {
+                _aimInputVector = Vector2.zero;
+                _aimDirection = Vector3.zero;
+            }
         };
         // for speed up
         _inputActions.Player.Speedup.performed += ctx =>
@@ -123,12 +167,11 @@ public class CartControlScript : MonoBehaviour
                 isSpeedingUp = false;
         };
         // for powerful charged boost
-        _inputActions.Player.Boost.performed += ctx =>
+        _inputActions.Player.ActivatePowerUp.performed += ctx =>
         {
-            if (ctx.control.device == Keyboard.current && canBoost && speedUpMeter >= 100f)
+            if (ctx.control.device == Keyboard.current && canActivatePowerUp)
             {
-                speedUpMeter = 0f;
-                boostEvent.Raise();
+                ActivatePowerUp();
             }
         };
         _inputActions.Player.FlipDirection.performed += ctx =>
@@ -156,6 +199,7 @@ public class CartControlScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        Debug.DrawRay(transform.position + Vector3.up * 0.5f, AimDirection * 30f, Color.red);
         if (controllable && !isInPit)
         {
             GatherInput();
@@ -197,7 +241,10 @@ public class CartControlScript : MonoBehaviour
     {
         activeCheckoutManager = currenetCheckoutManager;
     }
-
+    public void SetPowerupsManager(PowerupsManager manager)
+    {
+        powerupsManager = manager;
+    }
     public void AllowFlip()
     {
         canFlip = true;
@@ -210,19 +257,26 @@ public class CartControlScript : MonoBehaviour
     {
         return canFlip;
     }
-    public void AllowBoost()
+    public bool GetCanActivatePowerUp()
     {
-        canBoost = true;
+        return canActivatePowerUp;
     }
-    public void DisallowBoost()
+    public void AllowActivatePowerUp()
     {
-        canBoost = false;
+        canActivatePowerUp = true;
+    }
+    public void DisallowActivatePowerUp()
+    {
+        canActivatePowerUp = false;
     }
     public void DisableControl()
     {
         controllable = false;
     }
-
+    public bool GetCanAim()
+    {
+        return canAim;
+    }
     public void EnableControl()
     {
         controllable = true;
@@ -259,4 +313,13 @@ public class CartControlScript : MonoBehaviour
     {
         speedUpMeter = Mathf.Clamp(speedUpMeter + amount, 0f, 100f);
     }
+    public void ActivatePowerUp()
+    {
+        if (!canActivatePowerUp)
+            return;
+
+        powerupsManager.ActivateStoredPowerup(); // Call the method in PowerupsManager to handle the power-up logic
+    }
+    public void AllowAim() => canAim = true;
+    public void DisallowAim() => canAim = false;
 }

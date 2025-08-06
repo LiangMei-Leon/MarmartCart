@@ -38,33 +38,43 @@ public class ComboDealsManager : MonoBehaviour
     {
         var reqs = new Dictionary<CartRarity, int>
         {
-            { CartRarity.Common, Random.Range(0, 3) },
-            { CartRarity.Rare, Random.Range(0, 3) },
-            { CartRarity.Epic, Random.Range(0, 2) },
-            { CartRarity.Legendary, Random.Range(0, 2) }
+            { CartRarity.Common,     (Random.value < 0.9f) ? Random.Range(2, 10) : 0 },  // 90% chance to appear
+            { CartRarity.Rare,       (Random.value < 0.6f) ? Random.Range(1, 6) : 0 },  // 60% chance
+            { CartRarity.Epic,       (Random.value < 0.25f) ? Random.Range(1, 3) : 0 }, // 25% chance
+            { CartRarity.Legendary,  (Random.value < 0.05f) ? 1 : 0 }                  // 5% chance for 1 only
         };
 
         // Ensure at least one cart is required
         if (reqs.Values.All(v => v == 0))
-            reqs[CartRarity.Common] = 1;
+        {
+            reqs[CartRarity.Common] = Random.Range(2, 5);
+        }
+
+        // Calculate scaled reward
+        float scaledReward =
+            baseReward +
+            (reqs[CartRarity.Common] * 5f) +
+            (reqs[CartRarity.Rare] * 10f) +
+            (reqs[CartRarity.Epic] * 50f) +
+            (reqs[CartRarity.Legendary] * 250f);
 
         //old code for single ui controller
         GameObject dealGO = Instantiate(comboDealPrefab, comboUIParent);
         dealGO.GetComponent<ComboDeal>().uiController = uiController;
         ComboDeal deal = dealGO.GetComponent<ComboDeal>();
-        deal.Initialize(dealIndex++, baseReward, reqs, comboDuration);
+        deal.Initialize(dealIndex++, scaledReward, reqs, comboDuration);
         activeDeals.Add(deal);
 
     }
 
-    public void SubmitCartToCombos(CartRarity rarity)
+    public void SubmitCartToCombos(CartRarity rarity, int playerIndex)
     {
         foreach (var deal in activeDeals)
         {
-            if (deal.SubmitCart(rarity))
+            if (deal.SubmitCart(rarity, playerIndex))
             {
-                Debug.Log($"Cart of rarity {rarity} submitted to Deal {deal.DealID}");
-                return; // submit to first (oldest) match only
+                Debug.Log($"Player {playerIndex} submitted {rarity} to Deal {deal.DealID}");
+                return;
             }
         }
     }

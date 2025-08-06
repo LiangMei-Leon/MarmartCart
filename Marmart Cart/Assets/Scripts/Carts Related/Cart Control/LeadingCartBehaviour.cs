@@ -293,7 +293,7 @@ public class LeadingCartBehaviour : MonoBehaviour
         isStopping = false;
         //Debug.Log("ResetSpeed executed");
         targetSpeed = 20f;
-        cartControlInput.AllowBoost();
+        //cartControlInput.AllowBoost();
     }
     void OnDrawGizmos()
     {
