@@ -74,8 +74,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278246655
-  m_fontColor: {r: 1, g: 0.86194915, b: 0, a: 1}
+    rgba: 4278190080
+  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -346,8 +346,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278246655
-  m_fontColor: {r: 1, g: 0.86194915, b: 0, a: 1}
+    rgba: 4279655109
+  m_fontColor: {r: 0.7725491, g: 0.3529412, b: 0.08627451, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -634,6 +634,9 @@ MonoBehaviour:
   epicCartRemainingText: {fileID: 741353389598515783}
   legendaryCartRemainingText: {fileID: 6012907299206405390}
   timerSlider: {fileID: 6525271930372620214}
+  DealID: 0
+  rewardType: 0
+  rewardIsPowerup: 0
   stackIndex: 0
   uiController: {fileID: 0}
 --- !u!1 &4188503672023581369
@@ -1299,8 +1302,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278246655
-  m_fontColor: {r: 1, g: 0.86194915, b: 0, a: 1}
+    rgba: 4279613772
+  m_fontColor: {r: 0.29803923, g: 0.7254902, b: 0.08235294, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1646,8 +1649,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278246655
-  m_fontColor: {r: 1, g: 0.86194915, b: 0, a: 1}
+    rgba: 4291826357
+  m_fontColor: {r: 0.70980394, g: 0.07058824, b: 0.81568635, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:

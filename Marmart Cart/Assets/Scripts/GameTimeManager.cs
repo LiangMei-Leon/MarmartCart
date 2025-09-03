@@ -44,14 +44,20 @@ public class GameTimeManager : MonoBehaviour
     private int hitCountP1 = 0;
     [SerializeField] private TextMeshProUGUI hitCountP1Text; // TMP for hit count display
     private int cartCountP1 = 0;
-    [SerializeField] private TextMeshProUGUI cartCountP1Text; // TMP for hit count display
+    [SerializeField] private TextMeshProUGUI cartCountCommonP1;
+    [SerializeField] private TextMeshProUGUI cartCountRareP1;
+    [SerializeField] private TextMeshProUGUI cartCountEpicP1;
+    [SerializeField] private TextMeshProUGUI cartCountLegendaryP1;
 
     //Player 2
     [SerializeField] private SnakeCartManager snakeCartManagerP2;
     private int hitCountP2 = 0;
     [SerializeField] private TextMeshProUGUI hitCountP2Text; // TMP for hit count display
     private int cartCountP2 = 0;
-    [SerializeField] private TextMeshProUGUI cartCountP2Text; // TMP for hit count display
+    [SerializeField] private TextMeshProUGUI cartCountCommonP2;
+    [SerializeField] private TextMeshProUGUI cartCountRareP2;
+    [SerializeField] private TextMeshProUGUI cartCountEpicP2;
+    [SerializeField] private TextMeshProUGUI cartCountLegendaryP2;
 
     private bool isAnimatingHitCount = false; // Flag for hit count text animation
     private bool isAnimatingCartCount = false; // Flag for cart count text animation
@@ -73,9 +79,16 @@ public class GameTimeManager : MonoBehaviour
         PauseGame();
         titleScreen.SetActive(true);
         hitCountP1Text.text = "0";
-        cartCountP1Text.text = "0";
         hitCountP2Text.text = "0";
-        cartCountP2Text.text = "0";
+        cartCountCommonP1.text = "0";
+        cartCountCommonP2.text = "0";
+        cartCountRareP1.text = "0";
+        cartCountRareP2.text = "0";
+        cartCountEpicP1.text = "0";
+        cartCountEpicP2.text = "0";
+        cartCountLegendaryP1.text = "0";
+        cartCountLegendaryP2.text = "0";
+
         // Initialize camera zoom
         if (cinemachineCameraP1 != null)
         {
@@ -106,31 +119,46 @@ public class GameTimeManager : MonoBehaviour
         // Update timer display
         UpdateTimerDisplay();
         //Update Player1 Cart Count display and adjust camera
-        (string rarityBreakdownP1, int countP1) = snakeCartManagerP1.GetCartRarityBreakdown();
-        if (countP1 != cartCountP1)
+        // Player 1
+        var (commonP1, rareP1, epicP1, legendaryP1) = snakeCartManagerP1.GetCartRarityBreakdown();
+        int newTotalP1 = commonP1 + rareP1 + epicP1 + legendaryP1;
+
+        if (newTotalP1 != cartCountP1)
         {
-            cartCountP1 = countP1;
-            cartCountP1Text.text = rarityBreakdownP1;
-            StartCoroutine(AnimateText(cartCountP1Text, false));
+            cartCountP1 = newTotalP1;
+
+            cartCountCommonP1.text = commonP1.ToString();
+            cartCountRareP1.text = rareP1.ToString();
+            cartCountEpicP1.text = epicP1.ToString();
+            cartCountLegendaryP1.text = legendaryP1.ToString();
+
+            StartCoroutine(AnimateText(cartCountCommonP1, false));
+            StartCoroutine(AnimateText(cartCountRareP1, false));
+            StartCoroutine(AnimateText(cartCountEpicP1, false));
+            StartCoroutine(AnimateText(cartCountLegendaryP1, false));
+
             UpdateCameraZoomP1();
         }
 
-        //int currentCartCountP1 = snakeCartManagerP1.GetSnakeBodyLength();
-        //if (currentCartCountP1 != cartCountP1)
-        //{
-        //    cartCountP1 = currentCartCountP1;
-        //    cartCountP1Text.text = cartCountP1.ToString();
-        //    StartCoroutine(AnimateText(cartCountP1Text, false));
-        //    UpdateCameraZoomP1();
-        //}
-
         //Update Player2 Cart Count display and adjust camera
-        (string rarityBreakdownP2, int countP2) = snakeCartManagerP2.GetCartRarityBreakdown();
-        if (countP2 != cartCountP2)
+        // Player 1
+        var (commonP2, rareP2, epicP2, legendaryP2) = snakeCartManagerP2.GetCartRarityBreakdown();
+        int newTotalP2 = commonP2 + rareP2 + epicP2 + legendaryP2;
+
+        if (newTotalP2 != cartCountP2)
         {
-            cartCountP2 = countP2;
-            cartCountP2Text.text = rarityBreakdownP2;
-            StartCoroutine(AnimateText(cartCountP2Text, false));
+            cartCountP2 = newTotalP2;
+
+            cartCountCommonP2.text = commonP2.ToString();
+            cartCountRareP2.text = rareP2.ToString();
+            cartCountEpicP2.text = epicP2.ToString();
+            cartCountLegendaryP2.text = legendaryP2.ToString();
+
+            StartCoroutine(AnimateText(cartCountCommonP2, false));
+            StartCoroutine(AnimateText(cartCountRareP2, false));
+            StartCoroutine(AnimateText(cartCountEpicP2, false));
+            StartCoroutine(AnimateText(cartCountLegendaryP2, false));
+
             UpdateCameraZoomP2();
         }
         //int currentCartCountP2 = snakeCartManagerP2.GetSnakeBodyLength();

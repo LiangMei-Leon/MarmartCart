@@ -288,7 +288,7 @@ public class SnakeCartManager : MonoBehaviour
 
         return snakeBody.Count;
     }
-    public (string, int) GetCartRarityBreakdown()
+    public (int common, int rare, int epic, int legendary) GetCartRarityBreakdown()
     {
         int common = 0, rare = 0, epic = 0, legendary = 0;
 
@@ -306,9 +306,7 @@ public class SnakeCartManager : MonoBehaviour
             }
         }
 
-        string breakdown = $"{common},{rare},{epic},{legendary}";
-        int total = common + rare + epic + legendary;
-        return (breakdown, total);
+        return (common, rare, epic, legendary);
     }
     //public void SpeedUpPowerUp()
     //{

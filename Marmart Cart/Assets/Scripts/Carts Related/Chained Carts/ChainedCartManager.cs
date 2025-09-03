@@ -28,6 +28,11 @@ public class ChainedCartManager : MonoBehaviour
     private LeadingCartRaycaster p2Raycaster;
     private bool p2AllowCollect = true;
 
+    [Header("Self-destory timer")]
+    [Tooltip("A timer that only ticks when it is not being collected by player, if the time is up, remove this cart from the scene")]
+    [SerializeField] private float disappearTime = 30f;
+    [SerializeField] private float countTimer = 0f;
+
     [Header("Visual Settings")]
     [SerializeField] private Renderer cartRenderer; // Reference to mesh renderer that uses the material
 
@@ -83,6 +88,24 @@ public class ChainedCartManager : MonoBehaviour
     {
         p1AllowCollect = !p1Raycaster.getIfInGhostMode();
         p2AllowCollect = !p2Raycaster.getIfInGhostMode();
+
+        if(isAvailable)
+        {
+            countTimer += Time.deltaTime;
+        }
+        else
+        {
+            countTimer = 0;
+        }
+        if (countTimer - (disappearTime - 3f) <= 0.1f && countTimer - (disappearTime - 3f) > 0f)
+        {
+            this.gameObject.GetComponent<CartMaterialManager>()?.SetCooldown(3f);
+            Debug.Log("enter ghost mode");
+        }else if (countTimer >= disappearTime)
+        {
+            Destroy(this.gameObject);
+        }
+        
     }
 
     public void OnDetach()
@@ -249,5 +272,10 @@ public class ChainedCartManager : MonoBehaviour
     public void CollectByAI()
     {
         isCollectedByAI = true;
+    }
+
+    public void ResetDisappearCountDown()
+    {
+        countTimer = 0f;
     }
 }

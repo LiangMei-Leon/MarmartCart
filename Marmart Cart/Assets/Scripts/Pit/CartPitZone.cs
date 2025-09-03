@@ -60,7 +60,7 @@ public class CartPitZone : MonoBehaviour
                 {
                     // Disable player input for turn and boost
                     enteredCartController.SetInPit();
-                    enteredCartController.DisallowActivatePowerUp();
+                    // enteredCartController.DisallowActivatePowerUp();
                     // Setup events
                     enteredCartController.SetActiveCheckoutHandler(checkOutManager);
                     checkOutManager.SetSnakeCartManager(enteredCartRaycaster.GetmySnakeCartManager());

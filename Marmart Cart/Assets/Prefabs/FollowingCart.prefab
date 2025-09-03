@@ -589,6 +589,7 @@ GameObject:
   - component: {fileID: 1604046231476588783}
   - component: {fileID: 6471618177495573124}
   - component: {fileID: 4352900759099298663}
+  - component: {fileID: 2029535004146302134}
   m_Layer: 7
   m_Name: FollowingCart
   m_TagString: Item
@@ -992,6 +993,8 @@ MonoBehaviour:
   <isCollectedByAI>k__BackingField: 0
   p1Snake: {fileID: 0}
   p2Snake: {fileID: 0}
+  disappearTime: 20
+  countTimer: 0
   cartRenderer: {fileID: 5131415986485558397}
   commonColor: {r: 0.38364768, g: 0.38364768, b: 0.38364768, a: 1}
   rareColor: {r: 0.054469083, g: 0.7169812, b: 0.029310422, a: 1}
@@ -1030,6 +1033,23 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.6844517, y: 0.70425445, z: 0.83529073}
   m_Center: {x: -0.00018863678, y: 0.0060875895, z: -0.02556162}
+--- !u!114 &2029535004146302134
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6914780558269192623}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef9636a670c2c4c4a8dc0816d2eb6151, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ghostMaterial: {fileID: 2100000, guid: bc4f318dd8cc3e64ab0a5b2490469e51, type: 2}
+  blinkStartTime: 1
+  minBlinkRate: 2
+  maxBlinkRate: 10
+  cartModel: {fileID: 6704257294683854989}
 --- !u!1 &7168617494978913835
 GameObject:
   m_ObjectHideFlags: 0
