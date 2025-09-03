@@ -13,6 +13,11 @@ public class ComboDeal : MonoBehaviour
     [SerializeField] private TextMeshProUGUI rareCartRemainingText;
     [SerializeField] private TextMeshProUGUI epicCartRemainingText;
     [SerializeField] private TextMeshProUGUI legendaryCartRemainingText;
+
+    [SerializeField] private GameObject commonCartCompleteMark;
+    [SerializeField] private GameObject rareCartCompleteMark;
+    [SerializeField] private GameObject epicCartRCompleteMark;
+    [SerializeField] private GameObject legendaryCartCompleteMark;
     [SerializeField] private Slider timerSlider;
     public int DealID;
     public float RewardPoints { get; private set; }
@@ -42,12 +47,18 @@ public class ComboDeal : MonoBehaviour
         Vector2 startPos = uiController.GetSpawnStartPosition();
         rect.anchoredPosition = startPos;
 
-        rewardType = (Random.value < 0.5f) ? ComboRewardType.Points : ComboRewardType.Powerup;
+        rewardType = ComboRewardType.Points; // default to points
+        //rewardType = (Random.value < 0.5f) ? ComboRewardType.Points : ComboRewardType.Powerup;
         rewardPoints = rewardType == ComboRewardType.Points ? rewardPoints : 0f;
-        rewardIsPowerup = rewardType == ComboRewardType.Powerup;
+        //rewardIsPowerup = rewardType == ComboRewardType.Powerup;
 
         UpdateUI();
         uiController.Register(this);
+
+        commonCartCompleteMark.SetActive(false);
+        rareCartCompleteMark.SetActive(false);
+        epicCartRCompleteMark.SetActive(false);
+        legendaryCartCompleteMark.SetActive(false);
     }
     void Update()
     {
@@ -61,6 +72,28 @@ public class ComboDeal : MonoBehaviour
             uiController.Unregister(this);
             comboDealUI.SetActive(false);
         }
+
+        if(requirements[CartRarity.Common] == 0 && commonCartCompleteMark != null)
+        {
+            commonCartRemainingText.text = "";
+            commonCartCompleteMark.SetActive(true);
+        }
+        if (requirements[CartRarity.Rare] == 0 && rareCartCompleteMark != null)
+        {
+            rareCartRemainingText.text = "";
+            rareCartCompleteMark.SetActive(true);
+        }
+        if (requirements[CartRarity.Epic] == 0 && epicCartRCompleteMark != null)
+        {
+            epicCartRemainingText.text = "";
+            epicCartRCompleteMark.SetActive(true);
+        }
+        if (requirements[CartRarity.Legendary] == 0 && legendaryCartCompleteMark != null)
+        {
+            legendaryCartRemainingText.text = "";
+            legendaryCartCompleteMark.SetActive(true);
+        }
+
     }
 
     public bool IsExpired => Time.time > startTime + duration;
