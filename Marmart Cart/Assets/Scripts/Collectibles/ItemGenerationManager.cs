@@ -174,7 +174,7 @@ public class ItemGenerationManager : MonoBehaviour
             float xOffset = Random.Range(-halfWidth, halfWidth);
             float zOffset = Random.Range(-halfLength, halfLength);
 
-            Vector3 spawnPosition = this.transform.position + new Vector3(xOffset, yOffset, zOffset); // height can be adjusted if needed
+            Vector3 spawnPosition = this.transform.position + new Vector3(xOffset, 20f, zOffset); // height can be adjusted if needed
 
             // Raycast to detect any surface
             if (Physics.Raycast(spawnPosition, Vector3.down, out RaycastHit hit, Mathf.Infinity))

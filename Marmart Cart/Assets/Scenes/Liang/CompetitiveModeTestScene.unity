@@ -13976,8 +13976,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd11377c74447d84c84644eb8c915b15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  generationFrequency: 20
-  comboDuration: 80
+  generationFrequency: 30
+  comboDuration: 60
   baseReward: 100
   comboDealPrefab: {fileID: 2831050903748519601, guid: 39a2c95766419e34d9f4d2a3215a4896, type: 3}
   comboUIParent: {fileID: 1570036029}
@@ -19839,7 +19839,7 @@ MonoBehaviour:
   rareCartPrefab: {fileID: 0}
   epicCartPrefab: {fileID: 0}
   legendaryCartPrefab: {fileID: 0}
-  yOffset: 0
+  yOffset: 20
 --- !u!4 &1866954924
 Transform:
   m_ObjectHideFlags: 0
@@ -22828,6 +22828,10 @@ PrefabInstance:
     - target: {fileID: 4928861809367301561, guid: 3374e2a8a19c75c43814510f2f13761d, type: 3}
       propertyPath: m_Name
       value: Question Mark Block
+      objectReference: {fileID: 0}
+    - target: {fileID: 4928861809367301561, guid: 3374e2a8a19c75c43814510f2f13761d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5705221934000891651, guid: 3374e2a8a19c75c43814510f2f13761d, type: 3}
       propertyPath: m_LocalPosition.x
