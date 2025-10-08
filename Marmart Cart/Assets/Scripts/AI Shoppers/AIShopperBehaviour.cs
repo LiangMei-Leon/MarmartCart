@@ -15,12 +15,15 @@ public class AIShopperBehaviour : MonoBehaviour
     [SerializeField] private GameObject rareVisual;
     [SerializeField] private GameObject epicVisual;
     [SerializeField] private GameObject legendaryVisual;
+    [SerializeField] private GameObject emptyCartVisual;
+    [SerializeField] private GameObject itemCartVisual;
     [Header("Cart Collect Events")]
+    [SerializeField] private GameEvent p1CollectItemCartEvent;
     [SerializeField] private GameEvent p1CollectCommonEvent;
     [SerializeField] private GameEvent p1CollectRareEvent;
     [SerializeField] private GameEvent p1CollectEpicEvent;
     [SerializeField] private GameEvent p1CollectLegendaryEvent;
-
+    [SerializeField] private GameEvent p2CollectItemCartEvent;
     [SerializeField] private GameEvent p2CollectCommonEvent;
     [SerializeField] private GameEvent p2CollectRareEvent;
     [SerializeField] private GameEvent p2CollectEpicEvent;
@@ -39,6 +42,7 @@ public class AIShopperBehaviour : MonoBehaviour
 
     private GameObject runningVFX;
     private GameObject hittingVFX;
+    private bool carryingItem = false;
 
     [SerializeField] GameObjectPool targetPool;
 
@@ -56,6 +60,8 @@ public class AIShopperBehaviour : MonoBehaviour
         hittingVFX = this.transform.GetChild(0).GetChild(1).gameObject;
         hittingVFX.SetActive(false);
 
+        emptyCartVisual.SetActive(false);
+        itemCartVisual.SetActive(false);
         commonVisual.SetActive(false);
         rareVisual.SetActive(false);
         epicVisual.SetActive(false);
@@ -119,23 +125,33 @@ public class AIShopperBehaviour : MonoBehaviour
             if (itemManager != null)
             {
                 itemManager.CollectByAI(); // Mark as collected by AI
-                carryingRarity = itemManager.CartType;
-
-                switch (carryingRarity)
+                if(itemManager.HasGroceryItem())
                 {
-                    case CartRarity.Common:
-                        commonVisual.SetActive(true);
-                        break;
-                    case CartRarity.Rare:
-                        rareVisual.SetActive(true);
-                        break;
-                    case CartRarity.Epic:
-                        epicVisual.SetActive(true);
-                        break;
-                    case CartRarity.Legendary:
-                        legendaryVisual.SetActive(true);
-                        break;
+                    carryingItem = true;
+                    itemCartVisual.SetActive(true);
                 }
+                else
+                {
+                    carryingItem = false;
+                    emptyCartVisual.SetActive(true);
+                }
+                //carryingRarity = itemManager.CartType;
+
+                //switch (carryingRarity)
+                //{
+                //    case CartRarity.Common:
+                //        commonVisual.SetActive(true);
+                //        break;
+                //    case CartRarity.Rare:
+                //        rareVisual.SetActive(true);
+                //        break;
+                //    case CartRarity.Epic:
+                //        epicVisual.SetActive(true);
+                //        break;
+                //    case CartRarity.Legendary:
+                //        legendaryVisual.SetActive(true);
+                //        break;
+                //}
             }
 
             Destroy(targetItem.gameObject); // Assume item is collected
@@ -231,25 +247,35 @@ public class AIShopperBehaviour : MonoBehaviour
         runningVFX.SetActive(false);
         if (currentState == AIState.Escaping)
         {
-            switch (carryingRarity)
-            {
-                case CartRarity.Common:
-                    if (playerIndex == 1) p1CollectCommonEvent.Raise();
-                    else if (playerIndex == 2) p2CollectCommonEvent.Raise();
-                    break;
-                case CartRarity.Rare:
-                    if (playerIndex == 1) p1CollectRareEvent.Raise();
-                    else if (playerIndex == 2) p2CollectRareEvent.Raise();
-                    break;
-                case CartRarity.Epic:
-                    if (playerIndex == 1) p1CollectEpicEvent.Raise();
-                    else if (playerIndex == 2) p2CollectEpicEvent.Raise();
-                    break;
-                case CartRarity.Legendary:
-                    if (playerIndex == 1) p1CollectLegendaryEvent.Raise();
-                    else if (playerIndex == 2) p2CollectLegendaryEvent.Raise();
-                    break;
+            if(carryingItem)
+            {                 
+                if (playerIndex == 1) p1CollectItemCartEvent.Raise();
+                else if (playerIndex == 2) p2CollectItemCartEvent.Raise();
             }
+            else
+            {
+                if(playerIndex == 1) p1CollectCommonEvent.Raise();
+                else if (playerIndex == 2) p2CollectCommonEvent.Raise();
+            }
+                //switch (carryingRarity)
+                //{
+                //    case CartRarity.Common:
+                //        if (playerIndex == 1) p1CollectCommonEvent.Raise();
+                //        else if (playerIndex == 2) p2CollectCommonEvent.Raise();
+                //        break;
+                //    case CartRarity.Rare:
+                //        if (playerIndex == 1) p1CollectRareEvent.Raise();
+                //        else if (playerIndex == 2) p2CollectRareEvent.Raise();
+                //        break;
+                //    case CartRarity.Epic:
+                //        if (playerIndex == 1) p1CollectEpicEvent.Raise();
+                //        else if (playerIndex == 2) p2CollectEpicEvent.Raise();
+                //        break;
+                //    case CartRarity.Legendary:
+                //        if (playerIndex == 1) p1CollectLegendaryEvent.Raise();
+                //        else if (playerIndex == 2) p2CollectLegendaryEvent.Raise();
+                //        break;
+                //}
         }
     }
     public void ResetState()

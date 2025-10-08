@@ -55,7 +55,7 @@ public class PowerupsManager : MonoBehaviour
         {
             cartControlScript.AllowAim();
         }
-        Debug.LogError($"Player {(isPlayer1 ? 1 : 2)} rolled powerup: {currentPowerup}");
+        Debug.Log($"Player {(isPlayer1 ? 1 : 2)} rolled powerup: {currentPowerup}");
     }
 
     public void ActivateStoredPowerup()

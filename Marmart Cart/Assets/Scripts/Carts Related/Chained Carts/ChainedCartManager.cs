@@ -42,20 +42,28 @@ public class ChainedCartManager : MonoBehaviour
     [SerializeField] private Color legendaryColor = Color.yellow;
 
     [Header("Related Events")]
-    [SerializeField] GameEvent p1collectNormalCartEvent;
-    [SerializeField] GameEvent p1collectBonusCartEvent;
-    [SerializeField] GameEvent p2collectNormalCartEvent;
-    [SerializeField] GameEvent p2collectBonusCartEvent;
+    //[SerializeField] GameEvent p1collectNormalCartEvent;
+    //[SerializeField] GameEvent p1collectBonusCartEvent;
+    //[SerializeField] GameEvent p2collectNormalCartEvent;
+    //[SerializeField] GameEvent p2collectBonusCartEvent;
+    [SerializeField] GameEvent p1CollectGroceryItemCartEvent;
+    [SerializeField] GameEvent p2CollectGroceryItemCartEvent;
+    [SerializeField] GameEvent p1CollectEmptyCartEvent;
+    [SerializeField] GameEvent p2CollectEmptyCartEvent;
 
-    [Header("Cart Collect Events")]
-    [SerializeField] GameEvent p1collectCartEventCommon;
-    [SerializeField] GameEvent p1collectCartEventRare;
-    [SerializeField] GameEvent p1collectCartEventEpic;
-    [SerializeField] GameEvent p1collectCartEventLegendary;
-    [SerializeField] GameEvent p2collectCartEventCommon;
-    [SerializeField] GameEvent p2collectCartEventRare;
-    [SerializeField] GameEvent p2collectCartEventEpic;
-    [SerializeField] GameEvent p2collectCartEventLegendary;
+    //[Header("Cart Collect Events")]
+    //[SerializeField] GameEvent p1collectCartEventCommon;
+    //[SerializeField] GameEvent p1collectCartEventRare;
+    //[SerializeField] GameEvent p1collectCartEventEpic;
+    //[SerializeField] GameEvent p1collectCartEventLegendary;
+    //[SerializeField] GameEvent p2collectCartEventCommon;
+    //[SerializeField] GameEvent p2collectCartEventRare;
+    //[SerializeField] GameEvent p2collectCartEventEpic;
+    //[SerializeField] GameEvent p2collectCartEventLegendary;
+
+    [Header("Grocery Item Setting")]
+    [SerializeField] private bool hasGroceryItem = false;
+    [SerializeField] private GameObject groceryItemVisual;
 
     void Awake()
     {
@@ -89,7 +97,16 @@ public class ChainedCartManager : MonoBehaviour
         p1AllowCollect = !p1Raycaster.getIfInGhostMode();
         p2AllowCollect = !p2Raycaster.getIfInGhostMode();
 
-        if(isAvailable)
+        if(hasGroceryItem)
+        {
+            groceryItemVisual.SetActive(true);
+        }
+        else
+        {
+            groceryItemVisual.SetActive(false);
+        }
+
+        if (isAvailable)
         {
             countTimer += Time.deltaTime;
         }
@@ -168,57 +185,76 @@ public class ChainedCartManager : MonoBehaviour
         if (other.CompareTag("Player1") && !isCollectedByPlayer && p1AllowCollect)
         {
             // isCollectedByPlayer = true;
-            if(isBonusCart)
+            //if(isBonusCart)
+            //{
+            //    p1collectBonusCartEvent.Raise();
+            //}
+            //else
+            //{
+            //    p1collectNormalCartEvent.Raise();
+            //}
+            if(hasGroceryItem)
             {
-                p1collectBonusCartEvent.Raise();
+                p1CollectGroceryItemCartEvent.Raise();
             }
             else
             {
-                p1collectNormalCartEvent.Raise();
+                p1CollectEmptyCartEvent.Raise();
             }
-            switch (CartType)
-            {
-                case CartRarity.Common:
-                    p1collectCartEventCommon.Raise();
-                    break;
-                case CartRarity.Rare:
-                    p1collectCartEventRare.Raise();
-                    break;
-                case CartRarity.Epic:
-                    p1collectCartEventEpic.Raise();
-                    break;
-                case CartRarity.Legendary:
-                    p1collectCartEventLegendary.Raise();
-                    break;
-            }
+
+            //switch (CartType)
+            //{
+            //    case CartRarity.Common:
+            //        p1collectCartEventCommon.Raise();
+            //        break;
+            //    case CartRarity.Rare:
+            //        p1collectCartEventRare.Raise();
+            //        break;
+            //    case CartRarity.Epic:
+            //        p1collectCartEventEpic.Raise();
+            //        break;
+            //    case CartRarity.Legendary:
+            //        p1collectCartEventLegendary.Raise();
+            //        break;
+            //}
             Destroy(this.gameObject);
         }
         if (other.CompareTag("Player2") && !isCollectedByPlayer && p2AllowCollect)
         {
             // isCollectedByPlayer = true;
-            if (isBonusCart)
+            // isCollectedByPlayer = true;
+            //if(isBonusCart)
+            //{
+            //    p1collectBonusCartEvent.Raise();
+            //}
+            //else
+            //{
+            //    p1collectNormalCartEvent.Raise();
+            //}
+            if (hasGroceryItem)
             {
-                p2collectBonusCartEvent.Raise();
+                p2CollectGroceryItemCartEvent.Raise();
             }
             else
             {
-                p2collectNormalCartEvent.Raise();
+                p2CollectEmptyCartEvent.Raise();
             }
-            switch (CartType)
-            {
-                case CartRarity.Common:
-                    p2collectCartEventCommon.Raise();
-                    break;
-                case CartRarity.Rare:
-                    p2collectCartEventRare.Raise();
-                    break;
-                case CartRarity.Epic:
-                    p2collectCartEventEpic.Raise();
-                    break;
-                case CartRarity.Legendary:
-                    p2collectCartEventLegendary.Raise();
-                    break;
-            }
+
+            //switch (CartType)
+            //{
+            //    case CartRarity.Common:
+            //        p1collectCartEventCommon.Raise();
+            //        break;
+            //    case CartRarity.Rare:
+            //        p1collectCartEventRare.Raise();
+            //        break;
+            //    case CartRarity.Epic:
+            //        p1collectCartEventEpic.Raise();
+            //        break;
+            //    case CartRarity.Legendary:
+            //        p1collectCartEventLegendary.Raise();
+            //        break;
+            //}
             Destroy(this.gameObject);
         }
     }
@@ -277,5 +313,22 @@ public class ChainedCartManager : MonoBehaviour
     public void ResetDisappearCountDown()
     {
         countTimer = 0f;
+    }
+
+    public void EnableGroveryItem()
+    {
+        hasGroceryItem = true;
+        if (groceryItemVisual != null)
+        {
+            groceryItemVisual.SetActive(true);
+        }
+        else
+        {
+            Debug.LogWarning("Grocery item visual is not assigned.");
+        }
+    }
+    public bool HasGroceryItem()
+    {
+        return hasGroceryItem;
     }
 }

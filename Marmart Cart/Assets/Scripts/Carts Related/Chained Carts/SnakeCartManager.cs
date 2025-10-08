@@ -12,6 +12,7 @@ public class SnakeCartManager : MonoBehaviour
 
     [SerializeField] List<GameObject> bodyParts = new List<GameObject>();
     [SerializeField] List<GameObject> snakeBody = new List<GameObject>();
+    [SerializeField] List<GameObject> cartsWithOutItem = new List<GameObject>();
 
     LeadingCartRaycaster LeadingCartRaycaster;
     [SerializeField] bool isPlayer1 = true;
@@ -29,6 +30,9 @@ public class SnakeCartManager : MonoBehaviour
     [SerializeField] private ComboDealsManager comboDealsManager;
 
     public bool needScaleup = false;
+
+    [SerializeField] private int numOfCartsWithGroceryItem = 0;
+    [SerializeField] private SfxManager sfxManager;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -129,6 +133,10 @@ public class SnakeCartManager : MonoBehaviour
             }
 
             snakeBody.Add(temp);
+            if(!temp.GetComponent<ChainedCartManager>().HasGroceryItem())
+            {
+                cartsWithOutItem.Add(temp);
+            }
             bodyParts.RemoveAt(0);
             temp.GetComponent<MarkerManager>().ClearMarkerList();
             countUp = 0;
@@ -163,9 +171,15 @@ public class SnakeCartManager : MonoBehaviour
                 // Detach this cart and all subsequent carts
                 for (int j = i; j < snakeBody.Count; j++)
                 {
+                    if(snakeBody[j].GetComponent<ChainedCartManager>().HasGroceryItem())
+                    {
+                        numOfCartsWithGroceryItem--;
+                   
+                    }
                     snakeBody[j].transform.localScale = new Vector3(5f, 5f, 5f);
                     snakeBody[j].transform.SetParent(null); // Detach from parent
                     snakeBody[j].GetComponent<ChainedCartManager>().OnDetach();
+                    cartsWithOutItem.Remove(snakeBody[j]);
                 }
 
                 // Remove all subsequent carts from the list
@@ -307,6 +321,55 @@ public class SnakeCartManager : MonoBehaviour
         }
 
         return (common, rare, epic, legendary);
+    }
+
+    public void CollectGroceryItem()
+    {
+        if (cartsWithOutItem.Count >= 1)
+        {
+            numOfCartsWithGroceryItem++;
+            // Give a random cart (excluding leading cart) a grocery item
+            int cartIndex = Random.Range(0, cartsWithOutItem.Count);
+            ChainedCartManager cartManager = cartsWithOutItem[cartIndex].GetComponent<ChainedCartManager>();
+            cartManager.EnableGroveryItem();
+            cartsWithOutItem.RemoveAt(cartIndex); // Remove from list to avoid duplicate assignment
+        }
+        else
+        {
+            // All carts already have grocery items.
+            Debug.Log("All carts already have grocery items.");
+        }
+    }
+
+    public void IncreaseNumOfCartsWithItem()
+    {
+        numOfCartsWithGroceryItem++;
+    }
+    public int GetCurrentNumOfCartsWithItem()
+    {
+        return numOfCartsWithGroceryItem;
+    }
+    public bool HasEmptyCartForGroceryItem()
+    {
+        return cartsWithOutItem.Count > 0;
+    }
+    public void RemoveAllCartsWithItem()
+    {
+        sfxManager.PlaySFX("CheckoutCarts");
+        for (int i = snakeBody.Count - 1; i >= 1; i--) // iterate backward, skip leading cart
+        {
+            var cartManager = snakeBody[i].GetComponent<ChainedCartManager>();
+            if (cartManager != null && cartManager.HasGroceryItem())
+            {
+                numOfCartsWithGroceryItem--;
+                int playerIndex = isPlayer1 ? 1 : 2;
+                cashScoreManager.AddCartToPlayer(CartRarity.Common, playerIndex);
+                GameObject removed = snakeBody[i];
+                snakeBody.RemoveAt(i); // use RemoveAt for clarity
+                Destroy(removed);
+            }
+        }
+        
     }
     //public void SpeedUpPowerUp()
     //{

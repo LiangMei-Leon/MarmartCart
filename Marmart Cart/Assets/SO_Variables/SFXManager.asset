@@ -28,3 +28,9 @@ MonoBehaviour:
   - name: CollectCart
     clip: {fileID: 8300000, guid: f4e6e3307a2daa94fb48ac855f47fa3c, type: 3}
     volume: 1
+  - name: CheckoutCarts
+    clip: {fileID: 8300000, guid: 8878a4cf636125f46bbab41533d0da49, type: 3}
+    volume: 1
+  - name: CollectGroceryItem
+    clip: {fileID: 8300000, guid: e2a4bfd1e04163d43be6fdd5bb8f5b7b, type: 3}
+    volume: 1

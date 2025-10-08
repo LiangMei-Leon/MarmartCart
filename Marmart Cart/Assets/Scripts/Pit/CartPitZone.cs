@@ -29,7 +29,7 @@ public class CartPitZone : MonoBehaviour
     {
         enteredCartRaycaster = other.GetComponent<LeadingCartRaycaster>();
         // if no player in pit and collider is a leading cart, check incoming direction
-        if (checkOutManager.IsStationAvailable() && enteredCartRaycaster != null && !playerInPit && enteredCartRaycaster.GetmySnakeCartManager().GetSnakeBodyLength() >= 2)
+        if (checkOutManager.IsStationAvailable() && enteredCartRaycaster != null && !playerInPit && enteredCartRaycaster.GetmySnakeCartManager().GetCurrentNumOfCartsWithItem() >= 1)
         {
             Vector3 incomingDirection = other.transform.forward;
             Vector3 requiredDirNormalized = requiredEntryDirection.normalized;
@@ -43,37 +43,40 @@ public class CartPitZone : MonoBehaviour
             */
             if (dot >= directionThreshold)
             {
-                // logic when player X successfully enters the pit
-                playerInPit = true;
-                if(other.gameObject.CompareTag("Player1"))
-                {
-                    isPlayer1 = true;
-                    p1Prompt.SetActive(true);
-                }
-                else
-                {
-                    isPlayer1 = false;
-                    p2Prompt.SetActive(true);
-                }
-                enteredCartController = other.GetComponentInChildren<CartControlScript>();
-                if(enteredCartController != null)
-                {
-                    // Disable player input for turn and boost
-                    enteredCartController.SetInPit();
-                    // enteredCartController.DisallowActivatePowerUp();
-                    // Setup events
-                    enteredCartController.SetActiveCheckoutHandler(checkOutManager);
-                    checkOutManager.SetSnakeCartManager(enteredCartRaycaster.GetmySnakeCartManager());
-                    checkOutManager.SetCartRaycaster(enteredCartRaycaster);
-                    checkOutManager.SetIsCheckingOut();
-                    checkOutManager.EnableStation();
-                    // Stop the cart, set speed to zero
-                    FreezeAllWheelBehavior(enteredCartRaycaster);
-                }
-                else
-                {
-                    Debug.LogError("can't find cartcontrolscript");
-                }
+                // Automatically checkout all carts with items
+                enteredCartRaycaster.GetmySnakeCartManager().RemoveAllCartsWithItem();
+                //checkOutManager.QuitCheckout();
+                //// logic when player X successfully enters the pit
+                //playerInPit = true;
+                //if(other.gameObject.CompareTag("Player1"))
+                //{
+                //    isPlayer1 = true;
+                //    p1Prompt.SetActive(true);
+                //}
+                //else
+                //{
+                //    isPlayer1 = false;
+                //    p2Prompt.SetActive(true);
+                //}
+                //enteredCartController = other.GetComponentInChildren<CartControlScript>();
+                //if(enteredCartController != null)
+                //{
+                //    // Disable player input for turn and boost
+                //    enteredCartController.SetInPit();
+                //    // enteredCartController.DisallowActivatePowerUp();
+                //    // Setup events
+                //    enteredCartController.SetActiveCheckoutHandler(checkOutManager);
+                //    checkOutManager.SetSnakeCartManager(enteredCartRaycaster.GetmySnakeCartManager());
+                //    checkOutManager.SetCartRaycaster(enteredCartRaycaster);
+                //    checkOutManager.SetIsCheckingOut();
+                //    checkOutManager.EnableStation();
+                //    // Stop the cart, set speed to zero
+                //    FreezeAllWheelBehavior(enteredCartRaycaster);
+                //}
+                //else
+                //{
+                //    Debug.LogError("can't find cartcontrolscript");
+                //}
             }
             else
             {

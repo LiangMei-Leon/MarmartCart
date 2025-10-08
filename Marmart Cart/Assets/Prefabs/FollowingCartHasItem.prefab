@@ -591,7 +591,7 @@ GameObject:
   - component: {fileID: 4352900759099298663}
   - component: {fileID: 2029535004146302134}
   m_Layer: 7
-  m_Name: FollowingCart
+  m_Name: FollowingCartHasItem
   m_TagString: Item
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1004,7 +1004,7 @@ MonoBehaviour:
   p2CollectGroceryItemCartEvent: {fileID: 11400000, guid: ed91acab010b54f49a35288a9c636c04, type: 2}
   p1CollectEmptyCartEvent: {fileID: 11400000, guid: 3b4ead65526027847896f815ba35cc19, type: 2}
   p2CollectEmptyCartEvent: {fileID: 11400000, guid: 4bb2e60a7016149459e25d00136555dd, type: 2}
-  hasGroceryItem: 0
+  hasGroceryItem: 1
   groceryItemVisual: {fileID: 7418003342242864943}
 --- !u!65 &4352900759099298663
 BoxCollider:
@@ -1371,7 +1371,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8634587376673501393, guid: f2d54ba28423a4f84947396846fc73c2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8980151079752854123, guid: f2d54ba28423a4f84947396846fc73c2, type: 3}
       propertyPath: m_LocalScale.x
