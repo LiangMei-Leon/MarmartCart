@@ -3,10 +3,11 @@ using UnityEngine;
 public class PowerupItem : MonoBehaviour
 {
     [SerializeField] private SfxManager sfxManager;
+    [SerializeField] private float selfCleanTime = 20f;
     private void Start()
     {
         // Automatically destroy the powerup item after 30 seconds if not collected
-        Destroy(this.gameObject, 30f);
+        Destroy(this.gameObject, selfCleanTime);
     }
     void OnTriggerEnter(Collider other)
     {

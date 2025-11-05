@@ -3,10 +3,12 @@ using UnityEngine;
 public class GroceryItemBehavior : MonoBehaviour
 {
     [SerializeField] private SfxManager sfxManager;
+    [SerializeField] private float selfCleanTime = 20f;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    private void Start()
     {
-        
+        // Automatically destroy the powerup item after 30 seconds if not collected
+        Destroy(this.gameObject, selfCleanTime);
     }
 
     // Update is called once per frame

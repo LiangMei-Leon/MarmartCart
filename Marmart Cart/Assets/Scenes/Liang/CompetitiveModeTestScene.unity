@@ -4673,7 +4673,7 @@ MonoBehaviour:
     m_Bits: 64
   phase1Duration: 30
   phase1SpawnInterval: 10
-  phase1ItemsPerSpawn: 3
+  phase1ItemsPerSpawn: 4
   phase1NormalItemProbability: 100
   phase2Duration: 90
   phase2SpawnInterval: 10
@@ -20799,9 +20799,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   phase1Duration: 30
-  phase1SpawnInterval: 15
+  phase1SpawnInterval: 20
   phase1ItemsPerSpawn: 2
-  phase1NormalItemProbability: 100
+  phase1NormalItemProbability: 6
   phase2Duration: 90
   phase2SpawnInterval: 10
   phase2ItemsPerSpawn: 2
@@ -23245,6 +23245,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: GroceryItem
       objectReference: {fileID: 0}
+    - target: {fileID: 319821544491134380, guid: 5f722ec503c1c1b429c44eaebcb4a9ed, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5005725719001791404, guid: 5f722ec503c1c1b429c44eaebcb4a9ed, type: 3}
       propertyPath: m_LocalPosition.x
       value: 30.21
@@ -23727,6 +23731,10 @@ PrefabInstance:
     - target: {fileID: 4928861809367301561, guid: 3374e2a8a19c75c43814510f2f13761d, type: 3}
       propertyPath: m_Name
       value: Question Mark Block
+      objectReference: {fileID: 0}
+    - target: {fileID: 4928861809367301561, guid: 3374e2a8a19c75c43814510f2f13761d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5705221934000891651, guid: 3374e2a8a19c75c43814510f2f13761d, type: 3}
       propertyPath: m_LocalPosition.x
