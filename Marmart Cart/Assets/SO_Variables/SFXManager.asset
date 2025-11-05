@@ -34,3 +34,9 @@ MonoBehaviour:
   - name: CollectGroceryItem
     clip: {fileID: 8300000, guid: e2a4bfd1e04163d43be6fdd5bb8f5b7b, type: 3}
     volume: 1
+  - name: CollectPowerup
+    clip: {fileID: 8300000, guid: 496e4637cf17c344ca3185408b7abef3, type: 3}
+    volume: 1
+  - name: UnstoppableCharge
+    clip: {fileID: 8300000, guid: a538e67d437a0c94b9ed484f3ab93db1, type: 3}
+    volume: 1

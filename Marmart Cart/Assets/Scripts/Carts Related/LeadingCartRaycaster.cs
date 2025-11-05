@@ -127,14 +127,15 @@ public class LeadingCartRaycaster : MonoBehaviour
                                 DetachSelfCompletely();
                             }
                         }
-                        // If the player is not charging, detach carts if it hits its own cart
+                        // If the player is not charging, detach all carts if it hits its own cart
                         if (hitObject.CompareTag(this.gameObject.tag))
                         {
                             if (hitCartInfo.isCollectedByPlayer && cooldownTimer <= 0f)
                             {
-                                hitDirection = -1 * hit.normal;
-                                hitCartInfo.OnDetach(hitDirection);
-                                sfxManager.PlaySFX("Detach");
+                                DetachSelfCompletely();
+                                //hitDirection = -1 * hit.normal;
+                                //hitCartInfo.OnDetach(hitDirection);
+                                //sfxManager.PlaySFX("Detach");
                             }
                         }
                     }

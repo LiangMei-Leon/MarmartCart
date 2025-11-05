@@ -199,7 +199,9 @@ public class SnakeCartManager : MonoBehaviour
     public void AddBodyParts(GameObject addedObj)
     {
         if(needScaleup)
+        {
             addedObj.transform.localScale = new Vector3(10f, 10f, 10f); // Apply scale multiplier to the new cart
+        }
         else
             addedObj.transform.localScale = new Vector3(5f, 5f, 5f);
 

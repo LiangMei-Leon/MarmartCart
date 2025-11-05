@@ -20,9 +20,25 @@ public class PowerupsManager : MonoBehaviour
     [SerializeField] private Transform firePoint;
 
     [Header("Scaling Powerup")]
+    [SerializeField] private GameObject cartPrefab;
     [SerializeField] private float scaleDuration = 10f;
 
+    [SerializeField] private SfxManager sfxManager;
+
     void Start()
+    {
+        Invoke(nameof(RegisterPlayer), 2f);
+        //if (snakeCartManager == null)
+        //{
+        //    snakeCartManager = this.transform.parent.GetComponent<SnakeCartManager>();
+        //}
+        //if (cartControlScript == null)
+        //{
+        //    cartControlScript = this.gameObject.GetComponentInChildren<CartControlScript>();
+        //    cartControlScript.SetPowerupsManager(this);
+        //}
+    }
+    public void RegisterPlayer()
     {
         if (snakeCartManager == null)
         {
@@ -94,6 +110,7 @@ public class PowerupsManager : MonoBehaviour
         yield return new WaitForSeconds(scaleDuration);
 
         snakeCartManager.needScaleup = false;
+        cartPrefab.transform.localScale = new Vector3(5f, 5f, 5f); //hard reset the prefab scale to avoid issues with newly spawned carts
 
         foreach (var cart in scaledCarts)
             cart.transform.localScale = new Vector3(5f, 5f, 5f);
