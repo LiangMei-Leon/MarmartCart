@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e01023b4e10a033458893eb9e3d4f8e8, type: 3}
-  m_Name: P1 Collect Common Cart
+  m_Name: P2 Collect Expensive Item Cart
   m_EditorClassIdentifier: 
-  DeveloperDescription: '(P1)Raise this when the player successfully collect
+  DeveloperDescription: '(P2)Raise this when the player successfully collect
 
     a
-    common cart'
+    cart with an expensive item'

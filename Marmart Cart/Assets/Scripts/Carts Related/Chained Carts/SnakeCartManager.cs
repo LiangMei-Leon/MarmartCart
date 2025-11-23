@@ -304,28 +304,28 @@ public class SnakeCartManager : MonoBehaviour
 
         return snakeBody.Count;
     }
-    public (int common, int rare, int epic, int legendary) GetCartRarityBreakdown()
-    {
-        int common = 0, rare = 0, epic = 0, legendary = 0;
+    //public (int common, int rare, int epic, int legendary) GetCartRarityBreakdown()
+    //{
+    //    int common = 0, rare = 0, epic = 0, legendary = 0;
 
-        for (int i = 1; i < snakeBody.Count; i++) // skip the leading cart
-        {
-            var cm = snakeBody[i].GetComponent<ChainedCartManager>();
-            if (cm == null) continue;
+    //    for (int i = 1; i < snakeBody.Count; i++) // skip the leading cart
+    //    {
+    //        var cm = snakeBody[i].GetComponent<ChainedCartManager>();
+    //        if (cm == null) continue;
 
-            switch (cm.CartType)
-            {
-                case CartRarity.Common: common++; break;
-                case CartRarity.Rare: rare++; break;
-                case CartRarity.Epic: epic++; break;
-                case CartRarity.Legendary: legendary++; break;
-            }
-        }
+    //        switch (cm.CartType)
+    //        {
+    //            case CartRarity.Common: common++; break;
+    //            case CartRarity.Rare: rare++; break;
+    //            case CartRarity.Epic: epic++; break;
+    //            case CartRarity.Legendary: legendary++; break;
+    //        }
+    //    }
 
-        return (common, rare, epic, legendary);
-    }
+    //    return (common, rare, epic, legendary);
+    //}
 
-    public void CollectGroceryItem()
+    public void CollectNormalGroceryItem()
     {
         if (cartsWithOutItem.Count >= 1)
         {
@@ -333,16 +333,32 @@ public class SnakeCartManager : MonoBehaviour
             // Give a random cart (excluding leading cart) a grocery item
             int cartIndex = Random.Range(0, cartsWithOutItem.Count);
             ChainedCartManager cartManager = cartsWithOutItem[cartIndex].GetComponent<ChainedCartManager>();
-            cartManager.EnableGroveryItem();
+            cartManager.EnableNormalGroveryItem();
             cartsWithOutItem.RemoveAt(cartIndex); // Remove from list to avoid duplicate assignment
         }
         else
         {
             // All carts already have grocery items.
-            Debug.Log("All carts already have grocery items.");
+            // Debug.Log("All carts already have grocery items.");
         }
     }
-
+    public void CollectExpensiveGroceryItem()
+    {
+        if (cartsWithOutItem.Count >= 1)
+        {
+            numOfCartsWithGroceryItem++;
+            // Give a random cart (excluding leading cart) a grocery item
+            int cartIndex = Random.Range(0, cartsWithOutItem.Count);
+            ChainedCartManager cartManager = cartsWithOutItem[cartIndex].GetComponent<ChainedCartManager>();
+            cartManager.EnableExpensiveGroveryItem();
+            cartsWithOutItem.RemoveAt(cartIndex); // Remove from list to avoid duplicate assignment
+        }
+        else
+        {
+            // All carts already have grocery items.
+            // Debug.Log("All carts already have grocery items.");
+        }
+    }
     public void IncreaseNumOfCartsWithItem()
     {
         numOfCartsWithGroceryItem++;
