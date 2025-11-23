@@ -166,16 +166,16 @@ MonoBehaviour:
   legendaryVisual: {fileID: 1407906241763432777}
   emptyCartVisual: {fileID: 4611747631260897745}
   itemCartVisual: {fileID: 8758928540047781732}
-  p1CollectItemCartEvent: {fileID: 11400000, guid: d11083922a7dde644a6fbdf94ccfe0e9, type: 2}
-  p1CollectCommonEvent: {fileID: 11400000, guid: 3b4ead65526027847896f815ba35cc19, type: 2}
-  p1CollectRareEvent: {fileID: 11400000, guid: b0b5ecfdb80c3c0489c3d8a4b31157fa, type: 2}
-  p1CollectEpicEvent: {fileID: 11400000, guid: 783b978c61c8b654687a1d173bfcc9f9, type: 2}
-  p1CollectLegendaryEvent: {fileID: 11400000, guid: 2bad864c35a403240b1ba42a84ff890a, type: 2}
-  p2CollectItemCartEvent: {fileID: 11400000, guid: ed91acab010b54f49a35288a9c636c04, type: 2}
-  p2CollectCommonEvent: {fileID: 11400000, guid: 4bb2e60a7016149459e25d00136555dd, type: 2}
-  p2CollectRareEvent: {fileID: 11400000, guid: 39df01c269cc3bd499e34210376acb05, type: 2}
-  p2CollectEpicEvent: {fileID: 11400000, guid: 05b5424568d8f9d4eb0c00f6c30ef5cf, type: 2}
-  p2CollectLegendaryEvent: {fileID: 11400000, guid: a9f2e32c7934e7348b5a72b899e9336b, type: 2}
+  expensiveItemCartVisual: {fileID: 8298962485701665871}
+  p1CollectEmptyCartEvent: {fileID: 11400000, guid: 1c2f6ba77010d5645894c2545add5964, type: 2}
+  p1CollectNormalItemCartEvent: {fileID: 11400000, guid: d11083922a7dde644a6fbdf94ccfe0e9, type: 2}
+  p1CollectExpensiveItemCartEvent: {fileID: 11400000, guid: 2aac4365b88a43c45b7f206bcdece31c, type: 2}
+  p2CollectEmptyCartEvent: {fileID: 11400000, guid: 53bc1f737b4b6ea47a1ddcaf9047cb1a, type: 2}
+  p2CollectNormalItemCartEvent: {fileID: 11400000, guid: ed91acab010b54f49a35288a9c636c04, type: 2}
+  p2CollectExpensiveItemCartEvent: {fileID: 11400000, guid: 3870df526ee277849912f5f979d3502b, type: 2}
+  carryingItem: 0
+  carryingNormalItem: 0
+  carryingExpensiveItem: 0
   targetPool: {fileID: 11400000, guid: 0d8e17767b483314990dca3aeb27508e, type: 2}
 --- !u!114 &6583466558974393557
 MonoBehaviour:
@@ -272,6 +272,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6300713480911889079, guid: 13443b58731ed4f49be8f80299bdec0f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6901196807611596499, guid: 13443b58731ed4f49be8f80299bdec0f, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 6901196807611596499, guid: 13443b58731ed4f49be8f80299bdec0f, type: 3}
+      propertyPath: m_VersionIndex
+      value: 4043
+      objectReference: {fileID: 0}
+    - target: {fileID: 7120222928919513381, guid: 13443b58731ed4f49be8f80299bdec0f, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -305,6 +321,11 @@ GameObject:
 --- !u!4 &6970101854464876443 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4963443269047769443, guid: 13443b58731ed4f49be8f80299bdec0f, type: 3}
+  m_PrefabInstance: {fileID: 2619819472496543480}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &8298962485701665871 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6300713480911889079, guid: 13443b58731ed4f49be8f80299bdec0f, type: 3}
   m_PrefabInstance: {fileID: 2619819472496543480}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &8758928540047781732 stripped

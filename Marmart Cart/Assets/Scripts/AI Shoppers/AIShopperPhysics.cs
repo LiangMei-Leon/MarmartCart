@@ -71,8 +71,8 @@ public class AIShopperPhysics : MonoBehaviour
             }
             rb.isKinematic = false;
             int playerIndex = 1;
-            KnockOut(playerIndex);
             shopperBehaviour.OnKnockOut(playerIndex);
+            KnockOut(playerIndex);
         }
         else if (other.gameObject.CompareTag("Player2"))
         {
@@ -96,8 +96,8 @@ public class AIShopperPhysics : MonoBehaviour
             }
             rb.isKinematic = false;
             int playerIndex = 2;
-            KnockOut(playerIndex);
             shopperBehaviour.OnKnockOut(playerIndex);
+            KnockOut(playerIndex);
         }
     }
 

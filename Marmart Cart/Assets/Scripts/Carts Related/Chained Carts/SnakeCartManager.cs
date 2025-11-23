@@ -130,6 +130,7 @@ public class SnakeCartManager : MonoBehaviour
             if (cartManager != null)
             {
                 cartManager.CollectByPlayer();
+                cartManager.SetCartTeamColor();
             }
 
             snakeBody.Add(temp);

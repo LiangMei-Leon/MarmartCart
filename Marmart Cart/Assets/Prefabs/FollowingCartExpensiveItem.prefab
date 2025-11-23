@@ -952,7 +952,7 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 1664
+    m_Bits: 9344
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
@@ -997,6 +997,9 @@ MonoBehaviour:
   disappearTime: 20
   countTimer: 0
   cartRenderer: {fileID: 5131415986485558397}
+  defaultColor: {r: 0.32156864, g: 0.3372549, b: 0.3647059, a: 1}
+  player1TeamColor: {r: 0.24705882, g: 0.6784314, b: 0.84313726, a: 1}
+  player2TeamColor: {r: 0.77254903, g: 0.18431373, b: 0.20392157, a: 1}
   commonColor: {r: 0.38364768, g: 0.38364768, b: 0.38364768, a: 1}
   rareColor: {r: 0.054469083, g: 0.7169812, b: 0.029310422, a: 1}
   epicColor: {r: 0.7951557, g: 0.15513617, b: 0.9308176, a: 1}

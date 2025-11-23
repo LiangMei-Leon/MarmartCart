@@ -36,6 +36,10 @@ public class ChainedCartManager : MonoBehaviour
     [Header("Visual Settings")]
     [SerializeField] private Renderer cartRenderer; // Reference to mesh renderer that uses the material
 
+    [SerializeField] private Color defaultColor = Color.white;
+    [SerializeField] private Color player1TeamColor = Color.blue;
+    [SerializeField] private Color player2TeamColor = Color.red;
+
     [SerializeField] private Color commonColor = Color.white;
     [SerializeField] private Color rareColor = Color.blue;
     [SerializeField] private Color epicColor = Color.magenta;
@@ -87,7 +91,7 @@ public class ChainedCartManager : MonoBehaviour
     {
         p1AllowCollect = !p1Raycaster.getIfInGhostMode();
         p2AllowCollect = !p2Raycaster.getIfInGhostMode();
-
+        
         if(hasGroceryItem)
         {
             if(hasNormalGroceryItem)
@@ -134,7 +138,8 @@ public class ChainedCartManager : MonoBehaviour
         Vector3 forceDirection = UnityEngine.Random.insideUnitSphere;
 
         isCollectedByPlayer = false;
-
+        // Reset cart color to default
+        SetCartTeamColor();
         // Normalize the input direction to ensure it's a unit vector
         forceDirection.y = 0; // Ensure it's constrained to the XZ plane
         forceDirection.Normalize();
@@ -158,7 +163,8 @@ public class ChainedCartManager : MonoBehaviour
         Vector3 forceDirection = hitDirection;
 
         isCollectedByPlayer = false;
-
+        // Reset cart color to default
+        SetCartTeamColor();
         // Normalize the input direction to ensure it's a unit vector
         forceDirection.y = 0; // Ensure it's constrained to the XZ plane
         forceDirection.Normalize();
@@ -218,6 +224,28 @@ public class ChainedCartManager : MonoBehaviour
 
             Destroy(this.gameObject);
         }
+    }
+    public void SetCartTeamColor()
+    {
+        if (cartRenderer == null) return;
+        Material[] materials = cartRenderer.materials;
+        if (materials.Length < 2 || materials[1] == null) return;
+        Color targetColor = commonColor;
+
+        if (isCollectedByPlayer && this.CompareTag("Player1"))
+        {
+            targetColor = player1TeamColor;
+        }
+        else if (isCollectedByPlayer && this.CompareTag("Player2"))
+        {
+            targetColor = player2TeamColor;
+        }
+        else
+        {
+            targetColor = defaultColor;
+        }
+        materials[1].color = targetColor;
+        cartRenderer.materials = materials;
     }
     private void ApplyRarityColor()
     {
@@ -305,5 +333,13 @@ public class ChainedCartManager : MonoBehaviour
     public bool HasGroceryItem()
     {
         return hasGroceryItem;
+    }
+    public bool isCarryingNormalGroceryItem()
+    {
+        return hasNormalGroceryItem;
+    }
+    public bool isCarryingExpensiveGroceryItem()
+    {
+        return hasExpensiveGroceryItem;
     }
 }

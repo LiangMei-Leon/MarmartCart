@@ -481,7 +481,7 @@ GameObject:
   - component: {fileID: 3763879871901451941}
   - component: {fileID: 6823561496986431421}
   - component: {fileID: 2731498683968454099}
-  m_Layer: 9
+  m_Layer: 13
   m_Name: Cube
   m_TagString: Obstacles
   m_Icon: {fileID: 0}
@@ -742,7 +742,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1191399663520681521}
-  m_Layer: 9
+  m_Layer: 13
   m_Name: CellingPreventSpawn
   m_TagString: Obstacles
   m_Icon: {fileID: 0}
