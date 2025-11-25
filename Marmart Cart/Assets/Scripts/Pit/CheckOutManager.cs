@@ -38,8 +38,8 @@ public class CheckOutManager : MonoBehaviour
             return;
         }
 
-        int newLength = enteredSnakeCartManager.CheckOutFirstChainedCart();
-        if (newLength <= 1)
+        int cartWithItemLeft = enteredSnakeCartManager.CheckOutNextCartWithItem();
+        if (cartWithItemLeft <= 0)
         {
             QuitCheckout();
         }

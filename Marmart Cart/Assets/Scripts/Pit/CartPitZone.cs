@@ -17,7 +17,15 @@ public class CartPitZone : MonoBehaviour
     [SerializeField] private GameObject p1Prompt;
     [SerializeField] private GameObject p2Prompt;
 
+    [SerializeField] private CashScoreManager cashScoreManager;
+
     private CheckOutManager checkOutManager;
+
+    [Header("Camera")]
+    [SerializeField] private int myLaneNumber = 1; // 1 or 2
+    [SerializeField] private PlayerCameraManager p1CameraManager;
+    [SerializeField] private PlayerCameraManager p2CameraManager;
+
     void Start()
     {
         checkOutManager = this.GetComponent<CheckOutManager>();
@@ -43,40 +51,45 @@ public class CartPitZone : MonoBehaviour
             */
             if (dot >= directionThreshold)
             {
-                // Automatically checkout all carts with items
-                enteredCartRaycaster.GetmySnakeCartManager().RemoveAllCartsWithItem();
+                // Automatically checkout all carts with items (Obsolete)
+                //enteredCartRaycaster.GetmySnakeCartManager().RemoveAllCartsWithItem();
                 //checkOutManager.QuitCheckout();
-                //// logic when player X successfully enters the pit
-                //playerInPit = true;
-                //if(other.gameObject.CompareTag("Player1"))
-                //{
-                //    isPlayer1 = true;
-                //    p1Prompt.SetActive(true);
-                //}
-                //else
-                //{
-                //    isPlayer1 = false;
-                //    p2Prompt.SetActive(true);
-                //}
-                //enteredCartController = other.GetComponentInChildren<CartControlScript>();
-                //if(enteredCartController != null)
-                //{
-                //    // Disable player input for turn and boost
-                //    enteredCartController.SetInPit();
-                //    // enteredCartController.DisallowActivatePowerUp();
-                //    // Setup events
-                //    enteredCartController.SetActiveCheckoutHandler(checkOutManager);
-                //    checkOutManager.SetSnakeCartManager(enteredCartRaycaster.GetmySnakeCartManager());
-                //    checkOutManager.SetCartRaycaster(enteredCartRaycaster);
-                //    checkOutManager.SetIsCheckingOut();
-                //    checkOutManager.EnableStation();
-                //    // Stop the cart, set speed to zero
-                //    FreezeAllWheelBehavior(enteredCartRaycaster);
-                //}
-                //else
-                //{
-                //    Debug.LogError("can't find cartcontrolscript");
-                //}
+                // logic when player X successfully enters the pit
+                playerInPit = true;
+                if (other.gameObject.CompareTag("Player1"))
+                {
+                    isPlayer1 = true;
+                    p1CameraManager.EnterCheckoutLane(myLaneNumber);
+                    p1Prompt.SetActive(true);
+                    cashScoreManager.StartCheckoutSession(1);
+                }
+                else
+                {
+                    isPlayer1 = false;
+                    p2CameraManager.EnterCheckoutLane(myLaneNumber);
+                    p2Prompt.SetActive(true);
+                    cashScoreManager.StartCheckoutSession(2);
+                }
+                enteredCartController = other.GetComponentInChildren<CartControlScript>();
+                if (enteredCartController != null)
+                {
+                    // Disable player input for turn and boost
+                    enteredCartController.SetInPit();
+                    enteredCartController.DisallowActivatePowerUp();
+                    // Setup events
+                    enteredCartController.SetActiveCheckoutHandler(checkOutManager);
+                    checkOutManager.SetSnakeCartManager(enteredCartRaycaster.GetmySnakeCartManager());
+                    checkOutManager.SetCartRaycaster(enteredCartRaycaster);
+                    checkOutManager.SetIsCheckingOut();
+                    checkOutManager.EnableStation();
+                    // Stop the cart, set speed to zero
+                    FreezeAllWheelBehavior(enteredCartRaycaster);
+                    Invoke("FreezeAllWheelBehavior", 0.5f); // ensure wheels are frozen after physics update
+                }
+                else
+                {
+                    Debug.LogError("can't find cartcontrolscript");
+                }
             }
             else
             {
@@ -87,18 +100,23 @@ public class CartPitZone : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        //enteredCartRaycaster = other.GetComponent<LeadingCartRaycaster>();
-        //// if no player in pit and collider is a leading cart, check incoming direction
-        //if (enteredCartRaycaster != null)
-        //{
-        //    checkOutManager.EnableStation();
-        //}
+        
     }
 
     public void ExitPitZone(LeadingCartRaycaster script)
     {
         if (playerInPit)
         {
+            if(isPlayer1)
+            {
+                p1CameraManager.ExitCheckout();
+                cashScoreManager.EndCheckoutSession(1);
+            }
+            else
+            {
+                p2CameraManager.ExitCheckout();
+                cashScoreManager.EndCheckoutSession(2);
+            }
             // might move to other place where handles player quit checking out carts
             playerInPit = false;
             // give players control
@@ -143,7 +161,22 @@ public class CartPitZone : MonoBehaviour
         leadingCartBehaviour2.SetSpeedToZero();
         leadingCartBehaviour3.SetSpeedToZero();
     }
+    private void FreezeAllWheelBehavior()
+    {
+        if(enteredCartRaycaster == null)
+        {
+            return;
+        }
+        LeadingCartBehaviour leadingCartBehaviour0 = enteredCartRaycaster.gameObject.transform.GetChild(0).GetChild(0).GetComponent<LeadingCartBehaviour>();
+        LeadingCartBehaviour leadingCartBehaviour1 = enteredCartRaycaster.gameObject.transform.GetChild(0).GetChild(1).GetComponent<LeadingCartBehaviour>();
+        LeadingCartBehaviour leadingCartBehaviour2 = enteredCartRaycaster.gameObject.transform.GetChild(0).GetChild(2).GetComponent<LeadingCartBehaviour>();
+        LeadingCartBehaviour leadingCartBehaviour3 = enteredCartRaycaster.gameObject.transform.GetChild(0).GetChild(3).GetComponent<LeadingCartBehaviour>();
 
+        leadingCartBehaviour0.SetSpeedToZero();
+        leadingCartBehaviour1.SetSpeedToZero();
+        leadingCartBehaviour2.SetSpeedToZero();
+        leadingCartBehaviour3.SetSpeedToZero();
+    }
     private void UnfreezeAllWheelBehavior(LeadingCartRaycaster enteredCartRaycaster)
     {
         LeadingCartBehaviour leadingCartBehaviour0 = enteredCartRaycaster.gameObject.transform.GetChild(0).GetChild(0).GetComponent<LeadingCartBehaviour>();

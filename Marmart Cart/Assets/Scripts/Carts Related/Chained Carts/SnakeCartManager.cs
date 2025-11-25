@@ -27,7 +27,7 @@ public class SnakeCartManager : MonoBehaviour
 
     [SerializeField] private DinoIndictor dinoIndictor;
     [SerializeField] private CashScoreManager cashScoreManager;
-    [SerializeField] private ComboDealsManager comboDealsManager;
+    //[SerializeField] private ComboDealsManager comboDealsManager;
 
     public bool needScaleup = false;
 
@@ -276,35 +276,80 @@ public class SnakeCartManager : MonoBehaviour
             }
         }
     }
-
-    public int CheckOutFirstChainedCart()
+    public int CheckOutNextCartWithItem()
     {
-        if (snakeBody.Count > 1)
-        {
-            // Get cart rarity
-            var cartManager = snakeBody[1].GetComponent<ChainedCartManager>();
-            CartRarity cartRarity = cartManager.CartType;
-            int playerIndex = isPlayer1 ? 1 : 2;
+        // No chained carts, nothing to do
+        if (snakeBody.Count <= 1)
+            return snakeBody.Count;
 
-            // Submit to combo deal system
-            if (comboDealsManager != null)
+        int playerIndex = isPlayer1 ? 1 : 2;
+
+        // Start from 1 to skip the leading cart
+        for (int i = 1; i < snakeBody.Count; i++)
+        {
+            var cartManager = snakeBody[i].GetComponent<ChainedCartManager>();
+            if (cartManager == null || !cartManager.HasGroceryItem())
+                continue;
+
+            // Get rarity from this cart
+            bool isExpensiveItem = cartManager.isCarryingExpensiveGroceryItem();
+
+            // Update internal counters
+            numOfCartsWithGroceryItem = Mathf.Max(0, numOfCartsWithGroceryItem - 1);
+
+            // Submit to cash score manager and handle combo streak there
+            if (cashScoreManager != null)
             {
-                comboDealsManager.SubmitCartToCombos(cartRarity, playerIndex);
+                cashScoreManager.RegisterItemCheckout(playerIndex, isExpensiveItem);
             }
 
-            // Update score
-            cashScoreManager.AddCartToPlayer(cartRarity, playerIndex);
+            // Play checkout SFX
+            if (sfxManager != null)
+            {
+                sfxManager.PlaySFX("CheckoutSingle"); // sfx for each item checkout
+            }
 
-            // Remove cart from list and destroy
-            GameObject removed = snakeBody[1];
-            snakeBody.RemoveAt(1);
+            // Remove this cart from the snake and destroy it
+            GameObject removed = snakeBody[i];
+            snakeBody.RemoveAt(i);
             Destroy(removed);
 
-            return snakeBody.Count;
+            // Return remaining number of carts in snake
+            return numOfCartsWithGroceryItem;
         }
 
-        return snakeBody.Count;
+        // If we reach here, there was no cart with a grocery item
+        return numOfCartsWithGroceryItem;
     }
+    //public int CheckOutFirstChainedCart()
+    //{
+    //    if (snakeBody.Count > 1)
+    //    {
+    //        // Get cart rarity
+    //        var cartManager = snakeBody[1].GetComponent<ChainedCartManager>();
+    //        CartRarity cartRarity = cartManager.CartType;
+    //        int playerIndex = isPlayer1 ? 1 : 2;
+
+    //        // Submit to combo deal system
+    //        if (comboDealsManager != null)
+    //        {
+    //            comboDealsManager.SubmitCartToCombos(cartRarity, playerIndex);
+    //        }
+
+    //        // Update score (obsolete)
+    //        // cashScoreManager.AddCartToPlayer(cartRarity, playerIndex);
+
+    //        // Remove cart from list and destroy
+    //        GameObject removed = snakeBody[1];
+    //        snakeBody.RemoveAt(1);
+    //        Destroy(removed);
+
+    //        return snakeBody.Count;
+    //    }
+
+    //    return snakeBody.Count;
+    //}
+
     //public (int common, int rare, int epic, int legendary) GetCartRarityBreakdown()
     //{
     //    int common = 0, rare = 0, epic = 0, legendary = 0;
@@ -382,7 +427,8 @@ public class SnakeCartManager : MonoBehaviour
             {
                 numOfCartsWithGroceryItem--;
                 int playerIndex = isPlayer1 ? 1 : 2;
-                cashScoreManager.AddCartToPlayer(CartRarity.Common, playerIndex);
+                //(obsolete)
+                //cashScoreManager.AddCartToPlayer(CartRarity.Common, playerIndex);
                 GameObject removed = snakeBody[i];
                 snakeBody.RemoveAt(i); // use RemoveAt for clarity
                 Destroy(removed);

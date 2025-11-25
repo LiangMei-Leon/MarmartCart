@@ -601,10 +601,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   requiredEntryDirection: {x: 0, y: 0, z: -1}
-  directionThreshold: 0.7
-  ghostDurationAfterQuit: 3
+  directionThreshold: 0.6
+  ghostDurationAfterQuit: 2
   p1Prompt: {fileID: 456282093972669060}
   p2Prompt: {fileID: 6084405486954796980}
+  cashScoreManager: {fileID: 0}
 --- !u!114 &1247859869023602521
 MonoBehaviour:
   m_ObjectHideFlags: 0

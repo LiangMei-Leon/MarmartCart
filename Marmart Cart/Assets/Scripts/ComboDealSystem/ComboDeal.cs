@@ -167,7 +167,7 @@ public class ComboDeal : MonoBehaviour
             if (scoreManager != null)
             {
                 Debug.Log($"Combo Deal {DealID} completed by Player {finalContributorIndex}! Reward: {RewardPoints} points");
-                scoreManager.AddComboRewardToPlayer(RewardPoints, finalContributorIndex);
+                //scoreManager.AddComboRewardToPlayer(RewardPoints, finalContributorIndex);
             }
             else
             {
