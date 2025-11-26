@@ -129,9 +129,6 @@ public class GameTimeManager : MonoBehaviour
         // Update timer display
         UpdateTimerDisplay();
         //Update Player1 Cart Count display and adjust camera
-        // Player 1
-
-        //var (commonP1, rareP1, epicP1, legendaryP1) = snakeCartManagerP1.GetCartRarityBreakdown();
         int newTotalP1 = snakeCartManagerP1.GetSnakeBodyLength() - 1;
         int newItemCartsP1 = snakeCartManagerP1.GetCurrentNumOfCartsWithItem();
 
@@ -142,24 +139,12 @@ public class GameTimeManager : MonoBehaviour
 
             currentTotalCartCountP1Text.text = cartCountP1.ToString();
             currentItemCartCountP1Text.text = itemCartsP1.ToString();
-            //cartCountCommonP1.text = commonP1.ToString();
-            //cartCountRareP1.text = rareP1.ToString();
-            //cartCountEpicP1.text = epicP1.ToString();
-            //cartCountLegendaryP1.text = legendaryP1.ToString();
-
-            StartCoroutine(AnimateText(currentTotalCartCountP1Text, false));
+            //StartCoroutine(AnimateText(currentTotalCartCountP1Text, false));
             StartCoroutine(AnimateText(currentItemCartCountP1Text, false));
-
-            //StartCoroutine(AnimateText(cartCountCommonP1, false));
-            //StartCoroutine(AnimateText(cartCountRareP1, false));
-            //StartCoroutine(AnimateText(cartCountEpicP1, false));
-            //StartCoroutine(AnimateText(cartCountLegendaryP1, false));
-
             UpdateCameraZoomP1();
         }
 
         //Update Player2 Cart Count display and adjust camera
-        // Player 1
         int newTotalP2 = snakeCartManagerP2.GetSnakeBodyLength() - 1;
         int newItemCartsP2 = snakeCartManagerP2.GetCurrentNumOfCartsWithItem();
 
@@ -170,28 +155,10 @@ public class GameTimeManager : MonoBehaviour
 
             currentTotalCartCountP2Text.text = cartCountP2.ToString();
             currentItemCartCountP2Text.text = itemCartsP2.ToString();
-            //cartCountCommonP2.text = commonP2.ToString();
-            //cartCountRareP2.text = rareP2.ToString();
-            //cartCountEpicP2.text = epicP2.ToString();
-            //cartCountLegendaryP2.text = legendaryP2.ToString();
-            StartCoroutine(AnimateText(currentTotalCartCountP2Text, false));
+            //StartCoroutine(AnimateText(currentTotalCartCountP2Text, false));
             StartCoroutine(AnimateText(currentItemCartCountP2Text, false));
-
-            //StartCoroutine(AnimateText(cartCountCommonP2, false));
-            //StartCoroutine(AnimateText(cartCountRareP2, false));
-            //StartCoroutine(AnimateText(cartCountEpicP2, false));
-            //StartCoroutine(AnimateText(cartCountLegendaryP2, false));
-
             UpdateCameraZoomP2();
         }
-        //int currentCartCountP2 = snakeCartManagerP2.GetSnakeBodyLength();
-        //if (currentCartCountP2 != cartCountP2)
-        //{
-        //    cartCountP2 = currentCartCountP2;
-        //    cartCountP2Text.text = cartCountP2.ToString();
-        //    StartCoroutine(AnimateText(cartCountP2Text, false));
-        //    UpdateCameraZoomP2();
-        //}
 
         // Check if game time has ended
         if (elapsedTime >= totalGameDuration)
@@ -226,11 +193,11 @@ public class GameTimeManager : MonoBehaviour
         //Debug.Log("Game Over!");
 
         // Calculate the final score
-        CalculateFinalScore();
+        //CalculateFinalScore();
 
         // Show final score screen
         finalScoreScreen.SetActive(true);
-        DisplayScoreBreakdown();
+        //DisplayScoreBreakdown();
     }
 
     private void PauseGame()
@@ -362,29 +329,29 @@ public class GameTimeManager : MonoBehaviour
         finalScoreP1 = (hitCountP1 * pointsPerHit) + (normalItemCountP1 * pointsPerNormalItem) + (bonusItemCountP1 * pointsPerBonusItem);
         finalScoreP2 = (hitCountP2 * pointsPerHit) + (normalItemCountP2 * pointsPerNormalItem) + (bonusItemCountP2 * pointsPerBonusItem);
     }
-    private void DisplayScoreBreakdown()
-    {
-        //         hitCountText.text = $"Hits: {hitCount}";
-        //         normalItemText.text = $"Normal Items: {normalItemCount}";
-        //         bonusItemText.text = $"Bonus Items: {bonusItemCount}";
-        //         finalScoreText.text = $"Final Score: {finalScore}";
-        scoreBreakdownTextP1.text =
-            $"Score Breakdown:\n" +
-            $"{hitCountP1} x {pointsPerHit} (Hits) = {hitCountP1 * pointsPerHit}\n" +
-            $"{normalItemCountP1} x {pointsPerNormalItem} (Normal Items) = {normalItemCountP1 * pointsPerNormalItem}\n" +
-            $"{bonusItemCountP1} x {pointsPerBonusItem} (Bonus Items) = {bonusItemCountP1 * pointsPerBonusItem}\n" +
-            $"Player1 Score: {finalScoreP1}";
-        scoreBreakdownTextP2.text =
-            $"Score Breakdown:\n" +
-            $"{hitCountP2} x {pointsPerHit} (Hits) = {hitCountP2 * pointsPerHit}\n" +
-            $"{normalItemCountP2} x {pointsPerNormalItem} (Normal Items) = {normalItemCountP2 * pointsPerNormalItem}\n" +
-            $"{bonusItemCountP2} x {pointsPerBonusItem} (Bonus Items) = {bonusItemCountP2 * pointsPerBonusItem}\n" +
-            $"Player2 Score: {finalScoreP2}";
+    //private void DisplayScoreBreakdown()
+    //{
+    //    //         hitCountText.text = $"Hits: {hitCount}";
+    //    //         normalItemText.text = $"Normal Items: {normalItemCount}";
+    //    //         bonusItemText.text = $"Bonus Items: {bonusItemCount}";
+    //    //         finalScoreText.text = $"Final Score: {finalScore}";
+    //    scoreBreakdownTextP1.text =
+    //        $"Score Breakdown:\n" +
+    //        $"{hitCountP1} x {pointsPerHit} (Hits) = {hitCountP1 * pointsPerHit}\n" +
+    //        $"{normalItemCountP1} x {pointsPerNormalItem} (Normal Items) = {normalItemCountP1 * pointsPerNormalItem}\n" +
+    //        $"{bonusItemCountP1} x {pointsPerBonusItem} (Bonus Items) = {bonusItemCountP1 * pointsPerBonusItem}\n" +
+    //        $"Player1 Score: {finalScoreP1}";
+    //    scoreBreakdownTextP2.text =
+    //        $"Score Breakdown:\n" +
+    //        $"{hitCountP2} x {pointsPerHit} (Hits) = {hitCountP2 * pointsPerHit}\n" +
+    //        $"{normalItemCountP2} x {pointsPerNormalItem} (Normal Items) = {normalItemCountP2 * pointsPerNormalItem}\n" +
+    //        $"{bonusItemCountP2} x {pointsPerBonusItem} (Bonus Items) = {bonusItemCountP2 * pointsPerBonusItem}\n" +
+    //        $"Player2 Score: {finalScoreP2}";
 
-        scoreBreakdownText.text =
-            $"Total Score: {finalScoreP1 + finalScoreP2 + Mathf.RoundToInt(martConditionManager.percent * 10000)}\n\n" + $"Mart Condition Score: {Mathf.RoundToInt(martConditionManager.percent * 10000)}" +
-            "Thanks For Protecting the Mart!";
-    }
+    //    scoreBreakdownText.text =
+    //        $"Total Score: {finalScoreP1 + finalScoreP2 + Mathf.RoundToInt(martConditionManager.percent * 10000)}\n\n" + $"Mart Condition Score: {Mathf.RoundToInt(martConditionManager.percent * 10000)}" +
+    //        "Thanks For Protecting the Mart!";
+    //}
 
     public float GetCurrentGameTime()
     {

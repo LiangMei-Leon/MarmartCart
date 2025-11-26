@@ -1,3 +1,4 @@
+﻿using System.Collections;
 using UnityEngine;
 
 public class CheckOutManager : MonoBehaviour
@@ -9,14 +10,18 @@ public class CheckOutManager : MonoBehaviour
     [Header("State")]
     [SerializeField] private bool isCheckingOut = false;
     [SerializeField] private bool isStationAvailable = true;
+    [Header("Checkout Timer")]
+    [SerializeField] private float checkoutTimeLimit = 20f; // seconds allowed in lane
+    private Coroutine checkoutTimerRoutine;
 
-    [SerializeField] private GameObject pitInavailableIndictor;
+    //[SerializeField] private GameObject pitInavailableIndictor;
     private void Start()
     {
-        if (pitInavailableIndictor == null)
-        {
-            Debug.LogError("pitBlocks not assigned");
-        }
+        //if (pitInavailableIndictor == null)
+        //{
+        //    Debug.LogError("pitBlocks not assigned");
+        //}
+        EnableStation();
     }
     public void SetSnakeCartManager(SnakeCartManager script)
     {
@@ -46,28 +51,34 @@ public class CheckOutManager : MonoBehaviour
     }
     public void QuitCheckout()
     {
-        myPitZone.ExitPitZone(enteredCartRaycaster);
         isCheckingOut = false;
-        Invoke(nameof(DisableStation), 1f);
+
+        if (checkoutTimerRoutine != null)
+        {
+            StopCoroutine(checkoutTimerRoutine);
+            checkoutTimerRoutine = null;
+        }
+
+        myPitZone.ExitPitZone(enteredCartRaycaster);
     }
     public void EnableStation()
     {
         isStationAvailable = true;
-        pitInavailableIndictor.SetActive(false);
+        //pitInavailableIndictor.SetActive(false);
     }
-    public void DisableStation()
-    {
-        isStationAvailable = false;
-        if(isCheckingOut)
-        {
-            QuitCheckout();
-            Invoke(nameof(DisableStation), 1f);
-        }
-        else
-        {
-            pitInavailableIndictor.SetActive(true);
-        }
-    }
+    //public void DisableStation()
+    //{
+    //    isStationAvailable = false;
+    //    if(isCheckingOut)
+    //    {
+    //        QuitCheckout();
+    //        Invoke(nameof(DisableStation), 1f);
+    //    }
+    //    else
+    //    {
+    //        pitInavailableIndictor.SetActive(true);
+    //    }
+    //}
     public bool IsStationAvailable()
     {
         return isStationAvailable;
@@ -75,5 +86,26 @@ public class CheckOutManager : MonoBehaviour
     public void SetIsCheckingOut()
     {
         isCheckingOut = true;
+        // Start / restart checkout timer
+        if (checkoutTimerRoutine != null)
+            StopCoroutine(checkoutTimerRoutine);
+
+        checkoutTimerRoutine = StartCoroutine(CheckoutTimerRoutine());
+    }
+    private IEnumerator CheckoutTimerRoutine()
+    {
+        float timer = checkoutTimeLimit;
+
+        while (timer > 0f && isCheckingOut)
+        {
+            timer -= Time.deltaTime;
+            yield return null;
+        }
+
+        // Time ran out while still checking out → kick player
+        if (isCheckingOut)
+        {
+            QuitCheckout();
+        }
     }
 }

@@ -31,7 +31,7 @@ public class CartPitZone : MonoBehaviour
         checkOutManager = this.GetComponent<CheckOutManager>();
         checkOutManager.SetMyPitZone(this);
 
-        requiredEntryDirection = -1 * transform.forward;
+        requiredEntryDirection = transform.forward;
     }
     private void OnTriggerEnter(Collider other)
     {
@@ -61,14 +61,16 @@ public class CartPitZone : MonoBehaviour
                     isPlayer1 = true;
                     p1CameraManager.EnterCheckoutLane(myLaneNumber);
                     p1Prompt.SetActive(true);
-                    cashScoreManager.StartCheckoutSession(1);
+                    cashScoreManager.StartCheckoutSession(1, myLaneNumber-1);
+                    cashScoreManager.ShowCheckoutUI(1, myLaneNumber, true);
                 }
                 else
                 {
                     isPlayer1 = false;
                     p2CameraManager.EnterCheckoutLane(myLaneNumber);
                     p2Prompt.SetActive(true);
-                    cashScoreManager.StartCheckoutSession(2);
+                    cashScoreManager.StartCheckoutSession(2, myLaneNumber - 1);
+                    cashScoreManager.ShowCheckoutUI(2, myLaneNumber, true);
                 }
                 enteredCartController = other.GetComponentInChildren<CartControlScript>();
                 if (enteredCartController != null)
@@ -111,11 +113,13 @@ public class CartPitZone : MonoBehaviour
             {
                 p1CameraManager.ExitCheckout();
                 cashScoreManager.EndCheckoutSession(1);
+                cashScoreManager.ShowCheckoutUI(1, myLaneNumber, false);
             }
             else
             {
                 p2CameraManager.ExitCheckout();
                 cashScoreManager.EndCheckoutSession(2);
+                cashScoreManager.ShowCheckoutUI(2, myLaneNumber, false);
             }
             // might move to other place where handles player quit checking out carts
             playerInPit = false;
