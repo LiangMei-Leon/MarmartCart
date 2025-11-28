@@ -309,7 +309,7 @@ public class CashScoreManager : MonoBehaviour
 
         if (laneUI.subtotalText != null)
         {
-            laneUI.subtotalText.text = "+ " + session.subtotal.ToString("F0");
+            laneUI.subtotalText.text = "+" + session.subtotal.ToString("F0");
 
             if (itemCountAnims[pIdx, laneIdx] != null)
                 StopCoroutine(itemCountAnims[pIdx, laneIdx]);
@@ -389,7 +389,7 @@ public class CashScoreManager : MonoBehaviour
         Vector3 startPos = originalPosition;
         Vector3 endPos = startPos + new Vector3(0, 25f, 0);
 
-        float duration = 3f;
+        float duration = 1.5f;
         float time = 0f;
 
         while (time < duration)
@@ -400,7 +400,7 @@ public class CashScoreManager : MonoBehaviour
             tmp.rectTransform.anchoredPosition = Vector3.Lerp(startPos, endPos, t);
 
             // Fade out
-            if(time > duration * 0.75f)
+            if(time > duration * 0.9f)
                 tmp.alpha = Mathf.Lerp(1f, 0f, t);
 
             time += Time.deltaTime;

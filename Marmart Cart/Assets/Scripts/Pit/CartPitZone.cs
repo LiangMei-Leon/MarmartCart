@@ -77,6 +77,7 @@ public class CartPitZone : MonoBehaviour
                 {
                     // Disable player input for turn and boost
                     enteredCartController.SetInPit();
+                    enteredCartController.DisallowSpeedingUp();
                     enteredCartController.DisallowActivatePowerUp();
                     // Setup events
                     enteredCartController.SetActiveCheckoutHandler(checkOutManager);
@@ -125,6 +126,8 @@ public class CartPitZone : MonoBehaviour
             playerInPit = false;
             // give players control
             enteredCartController.SetOutPit();
+            enteredCartController.AllowSpeedingUp();
+            enteredCartController.AllowActivatePowerUp();
             //enteredCartController.AllowBoost();
             // reset speed
             UnfreezeAllWheelBehavior(script);

@@ -97,7 +97,7 @@ public class AIGenerationScript : MonoBehaviour
             {
                 var randomPool = aiPools[Random.Range(0, aiPools.Length)];
                 GameObject ai = randomPool.GetGameObject(spawnPosition + Vector3.up * 0.5f, Quaternion.identity);
-                Debug.Log("AI generated");
+                //Debug.Log("AI generated");
                 var aiBehaviour = ai.GetComponent<AIShopperBehaviour>();
                 if (aiBehaviour != null)
                 {

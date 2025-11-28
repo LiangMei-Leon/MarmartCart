@@ -71,14 +71,25 @@ public class LeadingCartBehaviour : MonoBehaviour
     }
     void Update()
     {
-        if(cartControlInput.IsSpeedingUp() && cartControlInput.CanSpeedingUp())
+        if (cartControlInput.GetIsInPit() || isStopping || isBoosting)
+            return;
+
+        if (cartControlInput.IsSpeedingUp() && cartControlInput.CanSpeedingUp())
         {
             targetSpeed = upSpeed;
         }
-        else if(!cartControlInput.GetIsInPit() && !isStopping && !isBoosting)
+        else
         {
             targetSpeed = 20f;
         }
+        //if(cartControlInput.IsSpeedingUp() && cartControlInput.CanSpeedingUp())
+        //{
+        //    targetSpeed = upSpeed;
+        //}
+        //else if(!cartControlInput.GetIsInPit() && !isStopping && !isBoosting)
+        //{
+        //    targetSpeed = 20f;
+        //}
     }
     void FixedUpdate()
     {

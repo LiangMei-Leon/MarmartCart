@@ -8,8 +8,12 @@ public class OtherPlayerIndictor : MonoBehaviour
 
     [SerializeField] private Transform thisPlayer;
     [SerializeField] private Transform otherPlayer;
-    private Transform pitT;
-    [SerializeField] private GameObject pit;
+    [Header("Rotation")]
+    [Tooltip("Extra rotation around Y to fine-tune arrow facing")]
+    [SerializeField] private float yRotationOffset = 0f;
+
+    [Tooltip("Base X rotation needed for the mesh (e.g. -90)")]
+    [SerializeField] private float baseXRotation = -90f;
     private void Start()
     {
         Invoke(nameof(RegisterPlayer), 2f);
@@ -29,15 +33,27 @@ public class OtherPlayerIndictor : MonoBehaviour
     }
     private void Update()
     {
-        if (otherPlayer == null || thisPlayer == null)
-        {
+        if (thisPlayer == null || otherPlayer == null)
             return;
-        }
-        GetComponent<MeshRenderer>().enabled = true;
+
+        MeshRenderer mr = GetComponent<MeshRenderer>();
+        if (mr != null)
+            mr.enabled = true;
+
+        // --- POSITION ---+
         Vector3 direction = otherPlayer.position - thisPlayer.position;
         direction.y = 0f;
+        if (direction.sqrMagnitude < 0.0001f)
+            return;
+
         direction.Normalize();
         transform.position = thisPlayer.position + direction * offsetDistance + Vector3.up * -1f;
 
+        // --- ROTATION (same as PitIndicator) ---
+        float angleY = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+
+        angleY += yRotationOffset;
+
+        transform.rotation = Quaternion.Euler(baseXRotation, angleY, 0f);
     }
 }

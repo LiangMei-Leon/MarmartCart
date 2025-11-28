@@ -193,7 +193,7 @@ public class CartControlScript : MonoBehaviour
     }
     void Start()
     {
-        speedUpMeter = 0f;
+        speedUpMeter = 50f;
     }
 
     // Update is called once per frame
@@ -304,6 +304,14 @@ public class CartControlScript : MonoBehaviour
     public bool CanSpeedingUp()
     {
         return canSpeedup;
+    }
+    public void AllowSpeedingUp()
+    {
+        canSpeedup = true;
+    }
+    public void DisallowSpeedingUp()
+    {
+        canSpeedup = false;
     }
     public float GetSpeedUpMeter()
     {

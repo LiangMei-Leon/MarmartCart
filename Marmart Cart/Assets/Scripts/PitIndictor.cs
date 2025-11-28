@@ -9,9 +9,14 @@ public class PitIndictor : MonoBehaviour
     [SerializeField] private Transform player;
     private Transform pitT;
     [SerializeField] private GameObject pit;
+    [Header("Rotation")]
+    [Tooltip("Extra rotation around Y to fine-tune arrow facing")]
+    [SerializeField] private float yRotationOffset = 0f;
+
+    [Tooltip("Base X rotation needed for the mesh to look correct (your -90)")]
+    [SerializeField] private float baseXRotation = -90f;
     private void Start()
     {
-
         pit = GameObject.FindGameObjectWithTag("CheckOutStation");
         Invoke(nameof(RegisterPlayer), 2f);
     }
@@ -29,25 +34,32 @@ public class PitIndictor : MonoBehaviour
     {
         if (pit == null || player == null)
         {
-            Debug.Log("Null");
+            // Optional: hide if data missing
+            GetComponent<MeshRenderer>().enabled = false;
             return;
         }
 
-        if (pit != null)
-        {
-            GetComponent<MeshRenderer>().enabled = true;
-            pitT = pit.transform;
-            // Position ball in direction of dino
-            Vector3 direction = pitT.position - player.position;
-            direction.y = 0f;
-            direction.Normalize();
+        pitT = pit.transform;
+        GetComponent<MeshRenderer>().enabled = true;
 
-            transform.position = player.position + direction * offsetDistance + Vector3.up * -1f;
-        }
-        else
-        {
-            pitT = null;
-            GetComponent<MeshRenderer>().enabled = false;
-        }
+        // --- POSITION: same as your previous approach ---
+        Vector3 direction = pitT.position - player.position;
+        direction.y = 0f;              // ignore height
+        if (direction.sqrMagnitude < 0.0001f)
+            return;                    // avoid NaN when very close
+
+        direction.Normalize();
+        transform.position = player.position + direction * offsetDistance + Vector3.up * -1f;
+
+        // --- ROTATION: point arrow head toward pit, yaw only + offset ---
+
+        // Angle on XZ plane, using Z as forward
+        float angleY = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+
+        // Add manual tweak
+        angleY += yRotationOffset;
+
+        // Final rotation: your mesh needs -90 on X, and we rotate on Y
+        transform.rotation = Quaternion.Euler(baseXRotation, angleY, 0f);
     }
 }

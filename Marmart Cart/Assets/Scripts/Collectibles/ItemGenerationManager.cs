@@ -16,42 +16,31 @@ public class ItemGenerationManager : MonoBehaviour
     [SerializeField] private float phase1Duration = 60f;
     [SerializeField] private float phase1SpawnInterval = 15f;
     [SerializeField] private int phase1ItemsPerSpawn = 5;
-    [SerializeField, Range(0, 100)] private int phase1NormalItemProbability = 80;
 
     [Header("Phase 2 Settings")]
     [SerializeField] private float phase2Duration = 60f; // Phase 2 starts after Phase 1
     [SerializeField] private float phase2SpawnInterval = 10f;
     [SerializeField] private int phase2ItemsPerSpawn = 6;
-    [SerializeField, Range(0, 100)] private int phase2NormalItemProbability = 70;
 
     [Header("Phase 3 Settings")]
     [SerializeField] private float phase3SpawnInterval = 10f;
     [SerializeField] private int phase3ItemsPerSpawn = 8;
-    [SerializeField, Range(0, 100)] private int phase3NormalItemProbability = 60;
 
     private int currentPhase = 0;
     private float elapsedGameTime = 0f;
     private float spawnInterval;
     private int itemsPerSpawn;
-    private int normalItemProbability;
 
-    [Header("Item Prefabs")]
-    [SerializeField] private GameObject normalItemPrefab; // Prefab for normal items
-    [SerializeField] private GameObject bonusItemPrefab;  // Prefab for bonus items
 
     [Header("Cart Prefabs")]
     [SerializeField] private GameObject cartPrefab;
-    [SerializeField] private GameObject commonCartPrefab;
-    [SerializeField] private GameObject rareCartPrefab;
-    [SerializeField] private GameObject epicCartPrefab;
-    [SerializeField] private GameObject legendaryCartPrefab;
 
     [SerializeField] private float yOffset = 20f;
 
-    [Header("Poor and Temp fix on prefab scale issue")]
-    [SerializeField] private SnakeCartManager snakeCartManager1;
-    [SerializeField] private SnakeCartManager snakeCartManager2;
-    [SerializeField] private bool applyPrefabScaleFix = false;
+    //[Header("Poor and Temp fix on prefab scale issue")]
+    //[SerializeField] private SnakeCartManager snakeCartManager1;
+    //[SerializeField] private SnakeCartManager snakeCartManager2;
+    //[SerializeField] private bool applyPrefabScaleFix = false;
 
 
     private float nextSpawnTime;
@@ -85,7 +74,6 @@ public class ItemGenerationManager : MonoBehaviour
             currentPhase = 1;
             spawnInterval = phase1SpawnInterval;
             itemsPerSpawn = phase1ItemsPerSpawn;
-            normalItemProbability = phase1NormalItemProbability;
         }
         else if (elapsedGameTime >= phase1Duration && elapsedGameTime < phase1Duration + phase2Duration && currentPhase != 2)
         {
@@ -93,7 +81,6 @@ public class ItemGenerationManager : MonoBehaviour
             currentPhase = 2;
             spawnInterval = phase2SpawnInterval;
             itemsPerSpawn = phase2ItemsPerSpawn;
-            normalItemProbability = phase2NormalItemProbability;
         }
         else if (elapsedGameTime >= phase1Duration + phase2Duration && currentPhase != 3)
         {
@@ -101,7 +88,6 @@ public class ItemGenerationManager : MonoBehaviour
             currentPhase = 3;
             spawnInterval = phase3SpawnInterval;
             itemsPerSpawn = phase3ItemsPerSpawn;
-            normalItemProbability = phase3NormalItemProbability;
         }
     }
 
@@ -112,62 +98,19 @@ public class ItemGenerationManager : MonoBehaviour
             Vector3 spawnPosition = GetValidSpawnPosition();
             if (spawnPosition != Vector3.zero)
             {
-                // 1. Generate rarity using your static method
-                //CartRarity rarity = GenerateRarity(0.25f, 0.10f, 0.05f); // Adjust rates as needed
-                CartRarity rarity = CartRarity.Common; // Adjust rates as needed
-
-                GameObject prefabToSpawn = cartPrefab; // Default prefab
-                //// 2. Choose a prefab based on rarity (optional)
-                //GameObject prefabToSpawn = normalItemPrefab; // fallback
-                //switch(rarity)
-                //    {
-                //    case CartRarity.Common:
-                //        prefabToSpawn = commonCartPrefab;
-                //        break;
-                //    case CartRarity.Rare:
-                //        prefabToSpawn = rareCartPrefab;
-                //        break;
-                //    case CartRarity.Epic:
-                //        prefabToSpawn = epicCartPrefab;
-                //        break;
-                //    case CartRarity.Legendary:
-                //        prefabToSpawn = legendaryCartPrefab;
-                //        break;
-                //}
-
-                // 3. Instantiate the item
+                GameObject prefabToSpawn = cartPrefab; 
+                // Instantiate the item
                 GameObject spawned = Instantiate(prefabToSpawn, spawnPosition + new Vector3(0, 10f, 0), prefabToSpawn.transform.rotation);
-                if(applyPrefabScaleFix && (snakeCartManager1.needScaleup || snakeCartManager2.needScaleup))
-                {
-                    spawned.transform.localScale = new Vector3(5f, 5f, 5f);
-                }
-                // 4. Assign rarity to the spawned item
-                var cart = spawned.GetComponent<ChainedCartManager>();
-                if (cart != null)
-                {
-                    cart.SetRarity(rarity);
-                }
+                //if(applyPrefabScaleFix && (snakeCartManager1.needScaleup || snakeCartManager2.needScaleup))
+                //{
+                //    spawned.transform.localScale = new Vector3(5f, 5f, 5f);
+                //}
             }
             else
             {
-                Debug.LogWarning("Failed to find a valid spawn position after multiple attempts.");
+                //Debug.LogWarning("Failed to find a valid spawn position after multiple attempts.");
             }
         }
-        //for (int i = 0; i < itemsPerSpawn; i++)
-        //{
-        //    // Keep trying to find a valid spawn position
-        //    Vector3 spawnPosition = GetValidSpawnPosition();
-        //    if (spawnPosition != Vector3.zero)
-        //    {
-        //        // Choose the item to spawn based on the probability
-        //        GameObject itemToSpawn = (Random.Range(0, 100) < normalItemProbability) ? normalItemPrefab : bonusItemPrefab;
-        //        Instantiate(itemToSpawn, spawnPosition + new Vector3(0, 10f, 0), Quaternion.identity);
-        //    }
-        //    else
-        //    {
-        //        Debug.LogWarning("Failed to find a valid spawn position after multiple attempts.");
-        //    }
-        //}
     }
 
     private Vector3 GetValidSpawnPosition()
@@ -205,19 +148,6 @@ public class ItemGenerationManager : MonoBehaviour
         }
 
         return Vector3.zero; // Return an invalid position if no ground is found after retries
-    }
-    public CartRarity GenerateRarity(float rareChance, float epicChance, float legendaryChance)
-    {
-        float roll = UnityEngine.Random.value;
-
-        if (roll < legendaryChance)
-            return CartRarity.Legendary;
-        else if (roll < legendaryChance + epicChance)
-            return CartRarity.Epic;
-        else if (roll < legendaryChance + epicChance + rareChance)
-            return CartRarity.Rare;
-        else
-            return CartRarity.Common;
     }
 
     private void OnDrawGizmos()

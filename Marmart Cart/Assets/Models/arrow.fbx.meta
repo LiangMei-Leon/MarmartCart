@@ -1,14 +1,9 @@
 fileFormatVersion: 2
-guid: cb192648dffdfab47b1e3a1e00ea2ef5
+guid: 3884c6fed946353449d16345543a3a42
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Opaque Sandstone
-    second: {fileID: -3661639628750336703, guid: 57e76b6273852224bb286bbb0875564c, type: 3}
+  externalObjects: {}
   materials:
     materialImportMode: 2
     materialName: 0
