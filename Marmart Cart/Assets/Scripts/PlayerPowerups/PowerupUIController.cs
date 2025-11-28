@@ -39,7 +39,7 @@ public class PowerupUIController : MonoBehaviour
                     SetIconActive(scaleIcon, true);
                     break;
 
-                case PowerupsManager.PowerupType.Projectile:
+                case PowerupsManager.PowerupType.BowlingBall:
                     displayName = "BOWLING STRIKE";
                     SetIconActive(projectileIcon, true);
                     break;

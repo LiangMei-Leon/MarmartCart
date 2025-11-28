@@ -1,4 +1,6 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class LeadingCartRaycaster : MonoBehaviour
 {
@@ -24,6 +26,13 @@ public class LeadingCartRaycaster : MonoBehaviour
 
     [SerializeField] SfxManager sfxManager;
     [SerializeField] GameObject chargingVFX;
+
+    [Header("Tomato Splash")]
+    [SerializeField] private Image tomatoSplashEffect;
+    [SerializeField] private float splashFadeDelay = 2f;      // wait before fade
+    [SerializeField] private float splashFadeDuration = 3f;   // fade time
+    private Coroutine tomatoSplashRoutine;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -233,8 +242,9 @@ public class LeadingCartRaycaster : MonoBehaviour
             if(GMode.Instance.IsCompetitive)
             {
                 cartControlInput.AllowFlip();
+                cartControlInput.DisallowActivatePowerUp();
 
-                if(cartControlInput.IsCharing())
+                if (cartControlInput.IsCharing())
                 {
                     Destroy(collision.gameObject);
                 }
@@ -245,6 +255,7 @@ public class LeadingCartRaycaster : MonoBehaviour
         {
             sfxManager.PlaySFX("CrashWalls");
             cartControlInput.AllowFlip();
+            cartControlInput.DisallowActivatePowerUp();
         }
     }
 
@@ -257,6 +268,7 @@ public class LeadingCartRaycaster : MonoBehaviour
                 if (cartControlInput.GetCanFlip())
                 {
                     cartControlInput.DisallowFlip();
+                    cartControlInput.AllowActivatePowerUp();
                 }
             }
         }
@@ -274,6 +286,7 @@ public class LeadingCartRaycaster : MonoBehaviour
         if (collision.gameObject.CompareTag("Walls"))
         {
             cartControlInput.AllowFlip();
+            cartControlInput.DisallowActivatePowerUp();
         }
     }
 
@@ -285,5 +298,47 @@ public class LeadingCartRaycaster : MonoBehaviour
     public SnakeCartManager GetmySnakeCartManager()
     {
         return snakeCartManager;
+    }
+    public void TriggerTomatoSplash()
+    {
+        if (tomatoSplashEffect == null) return;
+
+        // If an old splash is running, restart it
+        if (tomatoSplashRoutine != null)
+            StopCoroutine(tomatoSplashRoutine);
+
+        tomatoSplashRoutine = StartCoroutine(TomatoSplashCoroutine());
+    }
+
+    private IEnumerator TomatoSplashCoroutine()
+    {
+        // Enable and set full alpha
+        tomatoSplashEffect.gameObject.SetActive(true);
+
+        Color c = tomatoSplashEffect.color;
+        c.a = 1f;
+        tomatoSplashEffect.color = c;
+
+        // Hold full opacity for a delay
+        yield return new WaitForSeconds(splashFadeDelay);
+
+        // Fade out over splashFadeDuration
+        float elapsed = 0f;
+        while (elapsed < splashFadeDuration)
+        {
+            float t = elapsed / splashFadeDuration;
+            c.a = Mathf.Lerp(1f, 0f, t);
+            tomatoSplashEffect.color = c;
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        // Ensure alpha is fully 0 and turn off object
+        c.a = 0f;
+        tomatoSplashEffect.color = c;
+        tomatoSplashEffect.gameObject.SetActive(false);
+
+        tomatoSplashRoutine = null;
     }
 }

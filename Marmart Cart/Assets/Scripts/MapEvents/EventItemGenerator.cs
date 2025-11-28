@@ -19,6 +19,10 @@ public class EventItemGenerator : MonoBehaviour
     [SerializeField] private GameObject[] aiShopperPrefabs;
 
     private Coroutine spawnRoutine;
+    [Header("Poor and Temp fix on prefab scale issue")]
+    [SerializeField] private SnakeCartManager snakeCartManager1;
+    [SerializeField] private SnakeCartManager snakeCartManager2;
+    [SerializeField] private bool applyPrefabScaleFix = false;
 
     // -------------------------------------------------------
     // PUBLIC API  (called by EventManager)
@@ -37,7 +41,7 @@ public class EventItemGenerator : MonoBehaviour
     public void StartEmptyCartEvent(int total, float interval, int itemsPerSpawn)
     {
         if (spawnRoutine != null) StopCoroutine(spawnRoutine);
-        spawnRoutine = StartCoroutine(SpawnEventCoroutine(emptyCartPrefab, total, interval, itemsPerSpawn));
+        spawnRoutine = StartCoroutine(SpawnCartEventCoroutine(emptyCartPrefab, total, interval, itemsPerSpawn));
     }
 
     public void StartPowerupEvent(int total, float interval, int itemsPerSpawn)
@@ -82,7 +86,24 @@ public class EventItemGenerator : MonoBehaviour
 
         spawnRoutine = null; // finished
     }
+    private IEnumerator SpawnCartEventCoroutine(GameObject prefab, int total, float interval, int itemsPerSpawn)
+    {
+        if (prefab == null) yield break;
+        if (total <= 0 || interval <= 0 || itemsPerSpawn <= 0) yield break;
 
+        int spawned = 0;
+
+        while (spawned < total)
+        {
+            int batch = Mathf.Min(itemsPerSpawn, total - spawned);
+            SpawnCartPrefab(prefab, batch);
+            spawned += batch;
+
+            yield return new WaitForSeconds(interval);
+        }
+
+        spawnRoutine = null; // finished
+    }
     private void SpawnSpecificPrefab(GameObject prefab, int count)
     {
         for (int i = 0; i < count; i++)
@@ -91,6 +112,21 @@ public class EventItemGenerator : MonoBehaviour
             if (pos != Vector3.zero)
             {
                 Instantiate(prefab, pos + new Vector3(0, yOffset, 0), prefab.transform.rotation);
+            }
+        }
+    }
+    private void SpawnCartPrefab(GameObject prefab, int count)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            Vector3 pos = GetValidSpawnPosition();
+            if (pos != Vector3.zero)
+            {
+                GameObject spawned = Instantiate(prefab, pos + new Vector3(0, yOffset, 0), prefab.transform.rotation);
+                if (applyPrefabScaleFix && (snakeCartManager1.needScaleup || snakeCartManager2.needScaleup))
+                {
+                    spawned.transform.localScale = new Vector3(5f, 5f, 5f);
+                }
             }
         }
     }

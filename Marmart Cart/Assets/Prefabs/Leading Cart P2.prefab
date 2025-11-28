@@ -1862,6 +1862,81 @@ MonoBehaviour:
   speedLerpRate: 50
   isBoosting: 0
   disableDetachEvent: {fileID: 11400000, guid: 87a9fb9219fdbba4ea0baff15a1c840a, type: 2}
+--- !u!1 &4596209353773545545
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5484995282433463815}
+  - component: {fileID: 8880336474370463847}
+  - component: {fileID: 584517931008647964}
+  m_Layer: 0
+  m_Name: TomatoSplashEffect
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &5484995282433463815
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4596209353773545545}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 8.35065, y: 8.35065, z: 8.35065}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8130329731504654138}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 476, y: -0.0001449585}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &8880336474370463847
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4596209353773545545}
+  m_CullTransparentMesh: 1
+--- !u!114 &584517931008647964
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4596209353773545545}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 503dfc05c6817e74eb75eb4b6a311de1, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &4656564825517800351
 GameObject:
   m_ObjectHideFlags: 0
@@ -2739,6 +2814,9 @@ MonoBehaviour:
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
   sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
   chargingVFX: {fileID: 890071643070153643}
+  tomatoSplashEffect: {fileID: 584517931008647964}
+  splashFadeDelay: 2
+  splashFadeDuration: 3
 --- !u!114 &6575914362257146396
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2772,7 +2850,8 @@ MonoBehaviour:
   snakeCartManager: {fileID: 0}
   cartControlScript: {fileID: 0}
   boostEvent: {fileID: 11400000, guid: 63f020d701030904f98502e230ee870d, type: 2}
-  projectilePrefab: {fileID: 7540862284275205987, guid: dbcee0f7f13d9e14db8fc44d18ad02da, type: 3}
+  bowlingBallPrefab: {fileID: 7540862284275205987, guid: dbcee0f7f13d9e14db8fc44d18ad02da, type: 3}
+  tomatoPrefab: {fileID: 6546787813360329547, guid: 0d59b1e11605e8244b92bcf3821c98bb, type: 3}
   firePoint: {fileID: 3846094103009838050}
   cartPrefab: {fileID: 6914780558269192623, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
   scaleDuration: 10
@@ -3188,6 +3267,7 @@ RectTransform:
   - {fileID: 7095621650480718548}
   - {fileID: 3815552718601343755}
   - {fileID: 4123052513534130849}
+  - {fileID: 5484995282433463815}
   m_Father: {fileID: 6000561608375612997}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}

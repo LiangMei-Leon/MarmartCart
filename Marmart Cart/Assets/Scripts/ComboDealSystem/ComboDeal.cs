@@ -147,7 +147,6 @@ public class ComboDeal : MonoBehaviour
 
     private void OnCompleted()
     {
-
         if (finalContributorIndex != 0)
         {
             if (rewardType == ComboRewardType.Powerup)
@@ -155,12 +154,12 @@ public class ComboDeal : MonoBehaviour
                 if(finalContributorIndex ==1)
                 {
                     PowerupsManager p1PowerupManager = GameObject.FindGameObjectWithTag("Player1").GetComponentInChildren<PowerupsManager>();
-                    p1PowerupManager.RollRandomPowerup();
+                    //p1PowerupManager.RollRandomPowerup();
                 }
                 else if(finalContributorIndex ==2)
                 {
                     PowerupsManager p2PowerupManager = GameObject.FindGameObjectWithTag("Player2").GetComponentInChildren<PowerupsManager>();
-                    p2PowerupManager.RollRandomPowerup();
+                    //p2PowerupManager.RollRandomPowerup();
                 }
             }
             CashScoreManager scoreManager = FindFirstObjectByType<CashScoreManager>();

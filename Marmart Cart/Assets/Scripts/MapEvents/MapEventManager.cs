@@ -132,8 +132,6 @@ public class MapEventManager : MonoBehaviour
             yield break;
         }
 
-        // Warning text: grounded supermarket style
-        // "⚠ Section A: Shelf Restock in X…"
         yield return StartCoroutine(WarningPhase(
             section,
             normalSaleConfig.warningDuration,
@@ -142,7 +140,6 @@ public class MapEventManager : MonoBehaviour
 
         section.SetActive();
 
-        // Active text: "🔥 Section A: Shelf Restock happening now!"
         ShowRollingText($"Section {section.sectionId}: Clearance Sale happening now!");
 
         int total = normalSaleConfig.GetRandomTotal();

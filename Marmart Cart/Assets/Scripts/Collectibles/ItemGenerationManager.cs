@@ -37,10 +37,10 @@ public class ItemGenerationManager : MonoBehaviour
 
     [SerializeField] private float yOffset = 20f;
 
-    //[Header("Poor and Temp fix on prefab scale issue")]
-    //[SerializeField] private SnakeCartManager snakeCartManager1;
-    //[SerializeField] private SnakeCartManager snakeCartManager2;
-    //[SerializeField] private bool applyPrefabScaleFix = false;
+    [Header("Poor and Temp fix on prefab scale issue")]
+    [SerializeField] private SnakeCartManager snakeCartManager1;
+    [SerializeField] private SnakeCartManager snakeCartManager2;
+    [SerializeField] private bool applyPrefabScaleFix = false;
 
 
     private float nextSpawnTime;
@@ -101,10 +101,10 @@ public class ItemGenerationManager : MonoBehaviour
                 GameObject prefabToSpawn = cartPrefab; 
                 // Instantiate the item
                 GameObject spawned = Instantiate(prefabToSpawn, spawnPosition + new Vector3(0, 10f, 0), prefabToSpawn.transform.rotation);
-                //if(applyPrefabScaleFix && (snakeCartManager1.needScaleup || snakeCartManager2.needScaleup))
-                //{
-                //    spawned.transform.localScale = new Vector3(5f, 5f, 5f);
-                //}
+                if (applyPrefabScaleFix && (snakeCartManager1.needScaleup || snakeCartManager2.needScaleup))
+                {
+                    spawned.transform.localScale = new Vector3(5f, 5f, 5f);
+                }
             }
             else
             {
