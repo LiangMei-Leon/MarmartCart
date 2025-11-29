@@ -66,9 +66,9 @@ public class MapEventManager : MonoBehaviour
 
             switch (nextType)
             {
-                //case MapEventType.RareItemSale:
-                //    yield return StartCoroutine(RunRareItemSaleEvent());
-                //    break;
+                case MapEventType.RareItemSale:
+                    yield return StartCoroutine(RunRareItemSaleEvent());
+                    break;
 
                 case MapEventType.CartRain:
                     yield return StartCoroutine(RunCartRainEvent());
@@ -82,9 +82,9 @@ public class MapEventManager : MonoBehaviour
                     yield return StartCoroutine(RunShopperRushEvent());
                     break;
 
-                case MapEventType.NormalItemSale:                      
-                    yield return StartCoroutine(RunNormalItemSaleEvent());
-                    break;
+                //case MapEventType.NormalItemSale:                      
+                //    yield return StartCoroutine(RunNormalItemSaleEvent());
+                //    break;
             }
             // Wait some time before next event
             float wait = Random.Range(minTimeBetweenEvents, maxTimeBetweenEvents);
