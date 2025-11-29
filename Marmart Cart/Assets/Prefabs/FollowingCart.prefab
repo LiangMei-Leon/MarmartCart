@@ -994,7 +994,7 @@ MonoBehaviour:
   <isCollectedByAI>k__BackingField: 0
   p1Snake: {fileID: 0}
   p2Snake: {fileID: 0}
-  disappearTime: 20
+  disappearTime: 15
   countTimer: 0
   cartRenderer: {fileID: 5131415986485558397}
   defaultColor: {r: 0.3200426, g: 0.3386831, b: 0.36477977, a: 1}

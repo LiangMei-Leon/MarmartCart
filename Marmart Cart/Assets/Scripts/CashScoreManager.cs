@@ -9,8 +9,8 @@ public class CashScoreManager : MonoBehaviour
     [SerializeField] private int normalItemValue = 10;
     [SerializeField] private int expensiveItemValue = 50;
 
-    [SerializeField] private float p1TotalScore = 0f;
-    [SerializeField] private float p2TotalScore = 0f;
+    [SerializeField] public float p1TotalScore = 0f;
+    [SerializeField] public float p2TotalScore = 0f;
 
     [SerializeField] private TextMeshProUGUI totalScoreP1TMP;
     [SerializeField] private TextMeshProUGUI totalScoreP2TMP;

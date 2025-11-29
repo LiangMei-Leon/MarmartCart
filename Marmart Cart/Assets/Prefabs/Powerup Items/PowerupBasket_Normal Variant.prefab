@@ -291,6 +291,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PowerupBasket_Normal Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 2968767392834945714, guid: 9790ecdaf7c590a4a8c8b862fad86628, type: 3}
+      propertyPath: m_TagString
+      value: PowerupGold
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -316,6 +320,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2968767392834945714, guid: 9790ecdaf7c590a4a8c8b862fad86628, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5085021740918619346}
+    - targetCorrespondingSourceObject: {fileID: 2968767392834945714, guid: 9790ecdaf7c590a4a8c8b862fad86628, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4325967618006797935}
   m_SourcePrefab: {fileID: 100100000, guid: 9790ecdaf7c590a4a8c8b862fad86628, type: 3}
 --- !u!1 &6231759305289963231 stripped
 GameObject:
@@ -404,8 +411,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
-  selfCleanTime: 20
+  selfCleanTime: 10
   powerupTier: 0
+--- !u!114 &4325967618006797935
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6231759305289963231}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 0.5988643, g: 0.9685534, b: 0.58174115, a: 1}
+  outlineWidth: 6
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!4 &6714999805056863333 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2484015133819459592, guid: 9790ecdaf7c590a4a8c8b862fad86628, type: 3}

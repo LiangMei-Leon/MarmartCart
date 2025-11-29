@@ -66,9 +66,9 @@ public class MapEventManager : MonoBehaviour
 
             switch (nextType)
             {
-                case MapEventType.RareItemSale:
-                    yield return StartCoroutine(RunRareItemSaleEvent());
-                    break;
+                //case MapEventType.RareItemSale:
+                //    yield return StartCoroutine(RunRareItemSaleEvent());
+                //    break;
 
                 case MapEventType.CartRain:
                     yield return StartCoroutine(RunCartRainEvent());
@@ -111,7 +111,7 @@ public class MapEventManager : MonoBehaviour
             return t;
         }
         // Simple random between all four types for now
-        int v = Random.Range(0, 5);
+        int v = Random.Range(0, 4);
         return (MapEventType)v;
     }
 
@@ -135,12 +135,12 @@ public class MapEventManager : MonoBehaviour
         yield return StartCoroutine(WarningPhase(
             section,
             normalSaleConfig.warningDuration,
-            $"Section {section.sectionId}: Clearance Sale in "
+            "Section " + section.sectionId + "\nClearance sale in "
         ));
 
         section.SetActive();
 
-        ShowRollingText($"Section {section.sectionId}: Clearance Sale happening now!");
+        ShowRollingText("Section " + section.sectionId + "\nClearance sale! ");
 
         int total = normalSaleConfig.GetRandomTotal();
         float interval = normalSaleConfig.spawnInterval;
@@ -177,11 +177,11 @@ public class MapEventManager : MonoBehaviour
         yield return StartCoroutine(WarningPhase(
             section,
             rareSaleConfig.warningDuration,
-            "Section " + section.sectionId + ": Flash Sale starts in "
+            "Section " + section.sectionId + "\nFlash sale starts in "
         ));
 
         section.SetActive();
-        ShowRollingText($"Section {section.sectionId}: Flash Sale happening now!");
+        ShowRollingText("Section " + section.sectionId + "\nFlash sale!!!");
 
         int total = rareSaleConfig.GetRandomTotal();
         float interval = rareSaleConfig.spawnInterval;
@@ -219,11 +219,11 @@ public class MapEventManager : MonoBehaviour
         yield return StartCoroutine(WarningPhase(
             section,
             cartRainConfig.warningDuration,
-            "Section " + section.sectionId + ": Cart Restock in "
+            "Section " + section.sectionId + "\nCart restock in "
         ));
 
         section.SetActive();
-        ShowRollingText($"Section {section.sectionId}: Cart Restock happening now!");
+        ShowRollingText("Section " + section.sectionId + "\nCart restocked!");
 
         int total = cartRainConfig.GetRandomTotal();
         float interval = cartRainConfig.spawnInterval;
@@ -261,11 +261,11 @@ public class MapEventManager : MonoBehaviour
         yield return StartCoroutine(WarningPhase(
             section,
             powerupStormConfig.warningDuration,
-            "Section " + section.sectionId + ": Special Delivery in "
+            "Section " + section.sectionId + "\nSpecial delivery in "
         ));
 
         section.SetActive();
-        ShowRollingText($"Section {section.sectionId}: Special Delivery happening now!");
+        ShowRollingText("Section " + section.sectionId + "\nSpecial delivery!!! ");
 
         int total = powerupStormConfig.GetRandomTotal();
         float interval = powerupStormConfig.spawnInterval;
@@ -303,11 +303,11 @@ public class MapEventManager : MonoBehaviour
         yield return StartCoroutine(WarningPhase(
             section,
             shopperRushConfig.warningDuration,
-            "Section " + section.sectionId + ": Shoppers Breaking in "
+            "Section " + section.sectionId + "\nShoppers breaking in "
         ));
 
         section.SetActive();
-        ShowRollingText($"Section {section.sectionId}: Shoppers breaking in now!");
+        ShowRollingText("Section " + section.sectionId + "\nShoppers breaking in!");
 
         int total = shopperRushConfig.GetRandomTotal();
         float interval = shopperRushConfig.spawnInterval;

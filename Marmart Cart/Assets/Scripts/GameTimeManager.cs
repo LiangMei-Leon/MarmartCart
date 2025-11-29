@@ -21,9 +21,12 @@ public class GameTimeManager : MonoBehaviour
 //     [SerializeField] private TextMeshProUGUI finalScoreText; // TMP for final score display
 //     [SerializeField] private TextMeshProUGUI normalItemText; // TMP for normal item count
 //     [SerializeField] private TextMeshProUGUI bonusItemText; // TMP for bonus item count
-    [SerializeField] private TextMeshProUGUI scoreBreakdownText; // TMP for score breakdown
+    // [SerializeField] private TextMeshProUGUI scoreBreakdownText; // TMP for score breakdown
     [SerializeField] private TextMeshProUGUI scoreBreakdownTextP1; // TMP for score breakdown
     [SerializeField] private TextMeshProUGUI scoreBreakdownTextP2; // TMP for score breakdown
+    [SerializeField] private CashScoreManager cashScoreManager;
+    [SerializeField] private GameObject p1WinResult;
+    [SerializeField] private GameObject p2WinResult;
 
     private int normalItemCountP1 = 0;
     private int bonusItemCountP1 = 0;
@@ -196,7 +199,19 @@ public class GameTimeManager : MonoBehaviour
         //CalculateFinalScore();
 
         // Show final score screen
+        scoreBreakdownTextP1.text = cashScoreManager.p1TotalScore.ToString();
+        scoreBreakdownTextP2.text = cashScoreManager.p2TotalScore.ToString();
         finalScoreScreen.SetActive(true);
+        if(cashScoreManager.p1TotalScore > cashScoreManager.p2TotalScore)
+        {
+            p1WinResult.SetActive(true);
+            p2WinResult.SetActive(false);
+        }
+        else if(cashScoreManager.p2TotalScore > cashScoreManager.p1TotalScore)
+        {
+            p1WinResult.SetActive(false);
+            p2WinResult.SetActive(true);
+        }
         //DisplayScoreBreakdown();
     }
 

@@ -20,13 +20,18 @@ public class TomatoBehavior : MonoBehaviour
         // Check for Chained Cart
         if (hitObj.TryGetComponent(out ChainedCartManager hitCart))
         {
-            Destroy(gameObject);
+            if (hitCart.isCollectedByPlayer)
+            {
+                hitCart.transform.parent.GetChild(0).GetComponent<LeadingCartRaycaster>().TriggerTomatoSplash();   //trigger the UI effect
+                Destroy(gameObject);
+                return;
+            }
         }
 
         // Check for Leading Cart
         if (hitObj.TryGetComponent(out LeadingCartRaycaster leadingCart))
         {
-            Debug.Log("Tomato hit leading cart!");
+            //Debug.Log("Tomato hit leading cart!");
             leadingCart.TriggerTomatoSplash();   //trigger the UI effect
             Destroy(gameObject);
             return;

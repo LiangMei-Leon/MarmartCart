@@ -271,6 +271,7 @@ public class LeadingCartBehaviour : MonoBehaviour
         // Debug.Log("attempt to flip the cart");
         disableDetachEvent.Raise();
         cartControlInput.DisallowFlip();
+        cartControlInput.AllowActivatePowerUp();
         Vector3 desiredFacingDirection = -1 * cartBody.gameObject.transform.forward;
         cartBody.gameObject.transform.rotation = Quaternion.LookRotation(desiredFacingDirection);
 

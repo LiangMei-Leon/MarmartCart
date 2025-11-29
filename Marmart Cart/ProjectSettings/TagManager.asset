@@ -17,6 +17,10 @@ TagManager:
   - SnakeCartManagerP2
   - CheckOutStation
   - ComboDealManager
+  - NormalGrocery
+  - ExpensiveGrocery
+  - PowerupNormal
+  - PowerupGold
   layers:
   - Default
   - TransparentFX
