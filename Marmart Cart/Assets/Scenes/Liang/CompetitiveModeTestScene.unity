@@ -6098,7 +6098,7 @@ MonoBehaviour:
   phase2SpawnInterval: 5
   phase2ItemsPerSpawn: 2
   phase3SpawnInterval: 3
-  phase3ItemsPerSpawn: 1
+  phase3ItemsPerSpawn: 2
   cartPrefab: {fileID: 6914780558269192623, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
   yOffset: 20
   snakeCartManager1: {fileID: 1981863288}
@@ -10085,7 +10085,7 @@ MonoBehaviour:
   phase1ItemsPerSpawn: 1
   phase2Duration: 90
   phase2SpawnInterval: 3
-  phase2ItemsPerSpawn: 1
+  phase2ItemsPerSpawn: 2
   phase3SpawnInterval: 2
   phase3ItemsPerSpawn: 1
   cartPrefab: {fileID: 319821544491134380, guid: 5f722ec503c1c1b429c44eaebcb4a9ed, type: 3}
@@ -32953,7 +32953,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.01
+  near clip plane: -100
   far clip plane: 1000
   field of view: 30
   orthographic: 1
@@ -32982,7 +32982,7 @@ Transform:
   m_GameObject: {fileID: 797802257}
   serializedVersion: 2
   m_LocalRotation: {x: 0.23911765, y: 0.3696438, z: -0.09904577, w: 0.89239913}
-  m_LocalPosition: {x: 36.13627, y: 7.6699996, z: -479.02374}
+  m_LocalPosition: {x: 43.03627, y: 10.72, z: -479.0237}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -68090,7 +68090,7 @@ MonoBehaviour:
     itemsPerSpawn: 2
   cartRainConfig:
     warningDuration: 10
-    totalCartsRange: {x: 12, y: 16}
+    totalCartsRange: {x: 10, y: 15}
     spawnInterval: 1
     itemsPerSpawn: 2
   powerupStormConfig:
@@ -68099,7 +68099,7 @@ MonoBehaviour:
     spawnInterval: 1
     itemsPerSpawn: 1
   shopperRushConfig:
-    warningDuration: 10
+    warningDuration: 5
     totalShoppersRange: {x: 20, y: 40}
     spawnInterval: 1
     shoppersPerSpawn: 4
