@@ -35,6 +35,9 @@ public class CartControlScript : MonoBehaviour
     // fro cart pit check out actions
     private CheckOutManager activeCheckoutManager;
 
+    public System.Action OnTutorialPrev;
+    public System.Action OnTutorialNext;
+
     public void InitializeWithDevice(InputDevice device)
     {
         assignedDevice = device;
@@ -110,7 +113,18 @@ public class CartControlScript : MonoBehaviour
             if (ctx.control.device == device && activeCheckoutManager != null)
                 activeCheckoutManager.QuitCheckout();
         };
+        // Tutorial page inputs (D-pad left/right)
+        _inputActions.Player.TutorialPrev.performed += ctx =>
+        {
+            if (ctx.control.device == device)
+                OnTutorialPrev?.Invoke();
+        };
 
+        _inputActions.Player.TutorialNext.performed += ctx =>
+        {
+            if (ctx.control.device == device)
+                OnTutorialNext?.Invoke();
+        };
         _inputActions.Enable(); // Only enable after setup is complete
     }
     public void InitializeWithKeyboard()
@@ -189,6 +203,17 @@ public class CartControlScript : MonoBehaviour
         {
             if (ctx.control.device == Keyboard.current && activeCheckoutManager != null)
                 activeCheckoutManager.QuitCheckout();
+        };
+        _inputActions.Player.TutorialPrev.performed += ctx =>
+        {
+            if (ctx.control.device == Keyboard.current)
+                OnTutorialPrev?.Invoke();
+        };
+
+        _inputActions.Player.TutorialNext.performed += ctx =>
+        {
+            if (ctx.control.device == Keyboard.current)
+                OnTutorialNext?.Invoke();
         };
     }
     void Start()

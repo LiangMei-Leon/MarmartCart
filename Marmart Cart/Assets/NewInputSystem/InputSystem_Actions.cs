@@ -153,6 +153,24 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""TutorialPrev"",
+                    ""type"": ""Button"",
+                    ""id"": ""9f0d2ef8-f686-4f3d-80de-42b60eac6a61"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""TutorialNext"",
+                    ""type"": ""Button"",
+                    ""id"": ""4a229b13-4b85-4ec9-9038-db7527415c36"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -483,6 +501,50 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": "";Keyboard_WASD"",
                     ""action"": ""Aim"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""112c7749-e8d3-4e64-b15d-e3972030e609"",
+                    ""path"": ""<Gamepad>/dpad/left"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Controller"",
+                    ""action"": ""TutorialPrev"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""48b786d7-88a3-4580-a243-109f2d3fc645"",
+                    ""path"": ""<Keyboard>/z"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard_WASD"",
+                    ""action"": ""TutorialPrev"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""acd1a558-445a-42fb-b85e-0a9e79885582"",
+                    ""path"": ""<Gamepad>/dpad/right"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Controller"",
+                    ""action"": ""TutorialNext"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""a57fc88f-df0d-4877-80a9-8a399e6b70ab"",
+                    ""path"": ""<Keyboard>/x"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard_WASD"",
+                    ""action"": ""TutorialNext"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1088,6 +1150,8 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         m_Player_CheckOut = m_Player.FindAction("CheckOut", throwIfNotFound: true);
         m_Player_QuitCheckOut = m_Player.FindAction("QuitCheckOut", throwIfNotFound: true);
         m_Player_Speedup = m_Player.FindAction("Speedup", throwIfNotFound: true);
+        m_Player_TutorialPrev = m_Player.FindAction("TutorialPrev", throwIfNotFound: true);
+        m_Player_TutorialNext = m_Player.FindAction("TutorialNext", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1188,6 +1252,8 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_CheckOut;
     private readonly InputAction m_Player_QuitCheckOut;
     private readonly InputAction m_Player_Speedup;
+    private readonly InputAction m_Player_TutorialPrev;
+    private readonly InputAction m_Player_TutorialNext;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -1227,6 +1293,14 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/Speedup".
         /// </summary>
         public InputAction @Speedup => m_Wrapper.m_Player_Speedup;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/TutorialPrev".
+        /// </summary>
+        public InputAction @TutorialPrev => m_Wrapper.m_Player_TutorialPrev;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/TutorialNext".
+        /// </summary>
+        public InputAction @TutorialNext => m_Wrapper.m_Player_TutorialNext;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -1274,6 +1348,12 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @Speedup.started += instance.OnSpeedup;
             @Speedup.performed += instance.OnSpeedup;
             @Speedup.canceled += instance.OnSpeedup;
+            @TutorialPrev.started += instance.OnTutorialPrev;
+            @TutorialPrev.performed += instance.OnTutorialPrev;
+            @TutorialPrev.canceled += instance.OnTutorialPrev;
+            @TutorialNext.started += instance.OnTutorialNext;
+            @TutorialNext.performed += instance.OnTutorialNext;
+            @TutorialNext.canceled += instance.OnTutorialNext;
         }
 
         /// <summary>
@@ -1306,6 +1386,12 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @Speedup.started -= instance.OnSpeedup;
             @Speedup.performed -= instance.OnSpeedup;
             @Speedup.canceled -= instance.OnSpeedup;
+            @TutorialPrev.started -= instance.OnTutorialPrev;
+            @TutorialPrev.performed -= instance.OnTutorialPrev;
+            @TutorialPrev.canceled -= instance.OnTutorialPrev;
+            @TutorialNext.started -= instance.OnTutorialNext;
+            @TutorialNext.performed -= instance.OnTutorialNext;
+            @TutorialNext.canceled -= instance.OnTutorialNext;
         }
 
         /// <summary>
@@ -1668,6 +1754,20 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnSpeedup(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "TutorialPrev" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnTutorialPrev(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "TutorialNext" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnTutorialNext(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.
