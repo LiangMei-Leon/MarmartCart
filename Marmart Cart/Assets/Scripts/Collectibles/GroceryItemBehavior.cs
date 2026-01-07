@@ -1,14 +1,27 @@
 using UnityEngine;
 
-public class GroceryItemBehavior : MonoBehaviour
+public class GroceryItemBehavior : MonoBehaviour, ISpawnerHoldable
 {
     [SerializeField] private SfxManager sfxManager;
     [SerializeField] private float selfCleanTime = 20f;
     [SerializeField] private bool isExpensiveItem = false;
+
+    private bool _heldBySpawner = false;
+    public void OnSpawnerHoldStart()
+    {
+        _heldBySpawner = true;
+    }
+
+    public void OnSpawnerHoldEnd()
+    {
+        _heldBySpawner = false;
+    }
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     private void Start()
     {
         // Automatically destroy the powerup item after 30 seconds if not collected
+        if (_heldBySpawner) {return; }
         Destroy(this.gameObject, selfCleanTime);
     }
 
@@ -29,6 +42,7 @@ public class GroceryItemBehavior : MonoBehaviour
                 {
                     sfxManager.PlaySFX("CollectGroceryItem");
                     p1SnakeCartManager.CollectNormalGroceryItem();
+                    TutorialGroceryTaskManager.Instance?.NotifyGroceryCollected(other.tag);
                     Destroy(this.gameObject);
                 }
             }
@@ -40,6 +54,7 @@ public class GroceryItemBehavior : MonoBehaviour
                 {
                     sfxManager.PlaySFX("CollectGroceryItem");
                     p2SnakeCartManager.CollectNormalGroceryItem();
+                    TutorialGroceryTaskManager.Instance?.NotifyGroceryCollected(other.tag);
                     Destroy(this.gameObject);
                 }
             }
@@ -53,6 +68,7 @@ public class GroceryItemBehavior : MonoBehaviour
                 {
                     sfxManager.PlaySFX("CollectGroceryItem");
                     p1SnakeCartManager.CollectExpensiveGroceryItem();
+                    TutorialGroceryTaskManager.Instance?.NotifyGroceryCollected(other.tag);
                     Destroy(this.gameObject);
                 }
             }
@@ -64,6 +80,7 @@ public class GroceryItemBehavior : MonoBehaviour
                 {
                     sfxManager.PlaySFX("CollectGroceryItem");
                     p2SnakeCartManager.CollectExpensiveGroceryItem();
+                    TutorialGroceryTaskManager.Instance?.NotifyGroceryCollected(other.tag);
                     Destroy(this.gameObject);
                 }
             }

@@ -2,7 +2,7 @@ using System;
 using Unity.Properties;
 using UnityEngine;
 
-public class ChainedCartManager : MonoBehaviour
+public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
 {
     [Header("Cart Info")]
     [field: SerializeField]
@@ -59,6 +59,7 @@ public class ChainedCartManager : MonoBehaviour
     [SerializeField] private bool hasExpensiveGroceryItem = false;
     [SerializeField] private GameObject normalGroceryItemVisual;
     [SerializeField] private GameObject expensiveGroceryItemVisual;
+    private bool _heldBySpawner = false;
 
     void Awake()
     {
@@ -69,7 +70,18 @@ public class ChainedCartManager : MonoBehaviour
         }
         ApplyRarityColor();
     }
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    public void OnSpawnerHoldStart()
+    {
+        _heldBySpawner = true;
+        ResetDisappearCountDown(); // you already have this method
+    }
+
+    public void OnSpawnerHoldEnd()
+    {
+        _heldBySpawner = false;
+        ResetDisappearCountDown();
+    }
+
     void Start()
     {
         // Cache the Rigidbody reference
@@ -112,23 +124,26 @@ public class ChainedCartManager : MonoBehaviour
             }
         }
 
-        if (isAvailable)
+        if (_heldBySpawner)
         {
-            countTimer += Time.deltaTime;
+            countTimer = 0f;
         }
         else
         {
-            countTimer = 0;
+            if (isAvailable) countTimer += Time.deltaTime;
+            else countTimer = 0f;
+
+            if (countTimer - (disappearTime - 3f) <= 0.1f && countTimer - (disappearTime - 3f) > 0f)
+            {
+                this.gameObject.GetComponent<CartMaterialManager>()?.SetCooldown(3f);
+                //Debug.Log("enter ghost mode");
+            }
+            else if (countTimer >= disappearTime)
+            {
+                Destroy(this.gameObject);
+            }
         }
-        if (countTimer - (disappearTime - 3f) <= 0.1f && countTimer - (disappearTime - 3f) > 0f)
-        {
-            this.gameObject.GetComponent<CartMaterialManager>()?.SetCooldown(3f);
-            Debug.Log("enter ghost mode");
-        }else if (countTimer >= disappearTime)
-        {
-            Destroy(this.gameObject);
-        }
-        
+
     }
 
     public void OnDetach()

@@ -4,16 +4,27 @@ public enum PowerupTier
     Normal,
     Gold
 }
-public class PowerupItem : MonoBehaviour
+public class PowerupItem : MonoBehaviour, ISpawnerHoldable
 {
     [SerializeField] private SfxManager sfxManager;
     [SerializeField] private float selfCleanTime = 20f;
     [Header("Powerup Tier")]
     [SerializeField] private PowerupTier powerupTier = PowerupTier.Normal;  // NEW
 
+    private bool _heldBySpawner = false;
+    public void OnSpawnerHoldStart()
+    {
+        _heldBySpawner = true;
+    }
+
+    public void OnSpawnerHoldEnd()
+    {
+        _heldBySpawner = false;
+    }
     private void Start()
     {
         // Automatically destroy the powerup item after X seconds if not collected
+        if (_heldBySpawner) { return; }
         Destroy(this.gameObject, selfCleanTime);
     }
 
