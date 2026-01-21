@@ -38,6 +38,15 @@ public class CartControlScript : MonoBehaviour
     public System.Action OnTutorialPrev;
     public System.Action OnTutorialNext;
 
+    public System.Action OnFlipPressed;
+    public System.Action OnCheckoutReleased;
+    public System.Action OnExitReleased;
+    public System.Action OnShootPressed;
+
+    public System.Action<bool> OnMoveHeld;
+    public System.Action<bool> OnAimHeld;
+    public System.Action<bool> OnSpeedupHeld;
+
     public void InitializeWithDevice(InputDevice device)
     {
         assignedDevice = device;
@@ -54,7 +63,9 @@ public class CartControlScript : MonoBehaviour
         _inputActions.Player.Move.performed += ctx =>
         {
             if (ctx.control.device == device)
+            {
                 _inputVector = ctx.ReadValue<Vector2>();
+            }
         };
         _inputActions.Player.Move.canceled += ctx =>
         {
@@ -95,23 +106,34 @@ public class CartControlScript : MonoBehaviour
             if (ctx.control.device == device && canActivatePowerUp)
             {
                 ActivatePowerUp();
+                OnShootPressed?.Invoke();
             }
         };
         _inputActions.Player.FlipDirection.performed += ctx =>
         {
             if (ctx.control.device == device && canFlip)
+            {
                 resetCartEvent.Raise();
+                OnFlipPressed?.Invoke();
+            }
+                
         };
         // inputs for check out pit
         _inputActions.Player.CheckOut.performed += ctx =>
         {
             if (ctx.control.device == device && activeCheckoutManager != null)
+            {
                 activeCheckoutManager.TryCheckoutCart();
+                OnCheckoutReleased?.Invoke();
+            }
         };
         _inputActions.Player.QuitCheckOut.performed += ctx =>
         {
             if (ctx.control.device == device && activeCheckoutManager != null)
+            {
                 activeCheckoutManager.QuitCheckout();
+                OnExitReleased?.Invoke();
+            }
         };
         // Tutorial page inputs (D-pad left/right)
         _inputActions.Player.TutorialPrev.performed += ctx =>
@@ -186,23 +208,33 @@ public class CartControlScript : MonoBehaviour
             if (ctx.control.device == Keyboard.current && canActivatePowerUp)
             {
                 ActivatePowerUp();
+                OnShootPressed?.Invoke();
             }
         };
         _inputActions.Player.FlipDirection.performed += ctx =>
         {
             if (ctx.control.device == Keyboard.current && canFlip)
+            {
                 resetCartEvent.Raise();
+                OnFlipPressed?.Invoke();
+            }
         };
         // inputs for check out pit
         _inputActions.Player.CheckOut.performed += ctx =>
         {
             if (ctx.control.device == Keyboard.current && activeCheckoutManager != null)
+            {
                 activeCheckoutManager.TryCheckoutCart();
+                OnCheckoutReleased?.Invoke();
+            }
         };
         _inputActions.Player.QuitCheckOut.performed += ctx =>
         {
             if (ctx.control.device == Keyboard.current && activeCheckoutManager != null)
+            {
                 activeCheckoutManager.QuitCheckout();
+                OnExitReleased?.Invoke();
+            }
         };
         _inputActions.Player.TutorialPrev.performed += ctx =>
         {
@@ -224,7 +256,7 @@ public class CartControlScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Debug.DrawRay(transform.position + Vector3.up * 0.5f, AimDirection * 30f, Color.red);
+        //Debug.DrawRay(transform.position + Vector3.up * 0.5f, AimDirection * 30f, Color.red);
         if (controllable && !isInPit)
         {
             GatherInput();
@@ -233,15 +265,26 @@ public class CartControlScript : MonoBehaviour
         if (isSpeedingUp && speedUpMeter > 0f)
         {
             speedUpMeter -= speedUpConsumeRate * Time.deltaTime * 10f;
-
+            OnSpeedupHeld?.Invoke(true);
             if (speedUpMeter <= 0f)
             {
                 speedUpMeter = 0f;
                 isSpeedingUp = false;
+                OnSpeedupHeld?.Invoke(false);
             }
         }
+        else
+        {
+            OnSpeedupHeld?.Invoke(false);
+        }
 
-        if(UnityEngine.Input.GetKeyDown(KeyCode.T))
+        bool isMoving = _inputVector.sqrMagnitude > 0.05f;
+        OnMoveHeld?.Invoke(isMoving);
+
+        bool isAiming = Mathf.Abs(_aimInputVector.sqrMagnitude) > 0.05f;
+        OnAimHeld?.Invoke(isAiming);
+
+        if (UnityEngine.Input.GetKeyDown(KeyCode.T))
         {
             RefillSpeedUpMeter(100f);
         }

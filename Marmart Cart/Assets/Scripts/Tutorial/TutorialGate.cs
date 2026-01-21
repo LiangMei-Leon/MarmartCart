@@ -18,6 +18,7 @@ public class TutorialGate : MonoBehaviour
     [Header("Texts")]
     [SerializeField] private TextMeshPro taskText;
     [SerializeField] private string unlockText = "Task Complete! Please drive to the next area.";
+
     private void Reset()
     {
         gateCollider = GetComponent<BoxCollider>();
@@ -39,6 +40,7 @@ public class TutorialGate : MonoBehaviour
         isOpen = true;
         ApplyState();
         taskText.text = unlockText;
+       
     }
 
     public void CloseGate()

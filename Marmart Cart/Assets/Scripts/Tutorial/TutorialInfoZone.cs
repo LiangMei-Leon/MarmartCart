@@ -11,6 +11,8 @@ public class TutorialInfoZone : MonoBehaviour
     [SerializeField] private bool oneShot = false;
     private bool _used;
 
+    [SerializeField] private ControlsOverlayUI ControlsOverlayUIscript;
+    [SerializeField] int caseSwitch = 0;
     private void Reset()
     {
         var col = GetComponent<BoxCollider>();
@@ -36,5 +38,22 @@ public class TutorialInfoZone : MonoBehaviour
 
         _used = true;
         panel.Open(cartCtrl, raycaster);
+
+        if (ControlsOverlayUIscript != null)
+        {
+            switch
+                 (caseSwitch)
+            {
+                case 0:
+                    ControlsOverlayUIscript.IntroduceCheckout();
+                    ControlsOverlayUIscript.IntroduceExit();
+                    break;
+                case 1:
+                    ControlsOverlayUIscript.IntroduceAim();
+                    ControlsOverlayUIscript.IntroduceShoot();
+                    ControlsOverlayUIscript.IntroduceCharge();
+                    break;
+            }
+        }
     }
 }
