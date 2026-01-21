@@ -41497,7 +41497,7 @@ Camera:
   far clip plane: 1000
   field of view: 30
   orthographic: 1
-  orthographic size: 7.7
+  orthographic size: 14
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -41521,8 +41521,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 797802257}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.23911765, y: 0.3696438, z: -0.09904577, w: 0.89239913}
-  m_LocalPosition: {x: 41.186283, y: 10.719996, z: -336.72372}
+  m_LocalRotation: {x: 0.46193978, y: 0.33141357, z: -0.19134171, w: 0.8001032}
+  m_LocalPosition: {x: -22, y: 122.6, z: -490.6356}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -47223,8 +47223,6 @@ MonoBehaviour:
   - Welcome to Marmart Cart, a party game where you compete against your friends
     in chaotic shopping theme battle!
   - First let's learn how to drive your shopping cart.
-  - In Marmart Cart, the shopping cart you are controlling will always moving forward
-    by itself.
   - In Marmart Cart, the shopping cart you are controlling will always moving forward
     by itself.
   - 'Use your [LEFT JOYSTICK] to guide the direction of the cart. The direction is
@@ -110434,9 +110432,7 @@ MonoBehaviour:
   - First let's learn how to drive your shopping cart.
   - In Marmart Cart, the shopping cart you are controlling will always moving forward
     by itself.
-  - In Marmart Cart, the shopping cart you are controlling will always moving forward
-    by itself.
-  - 'Use your LEFT JOYSTICK to guide the direction of the cart. The direction is
+  - 'Use your [LEFT JOYSTICK] to guide the direction of the cart. The direction is
     mapped based on the screen. '
   - If your cart got stuck, you can press [B] to flip the cart direction.
   - 'Pro TIp: Try keep pushing the joysitck towards the direction you want the cart

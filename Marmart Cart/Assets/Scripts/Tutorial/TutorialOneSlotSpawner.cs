@@ -32,6 +32,7 @@ public class TutorialOneSlotSpawner : MonoBehaviour
     private int _playersInside = 0;
     private Coroutine _respawnRoutine;
     private ISpawnerHoldable _holdable;
+    [SerializeField] private bool needScaleFix = false;
     private void Reset()
     {
         _zone = GetComponent<BoxCollider>();
@@ -162,7 +163,8 @@ public class TutorialOneSlotSpawner : MonoBehaviour
         if (!prefab || _current != null) return;
 
         _current = Instantiate(prefab, spawnPoint.position, prefab.transform.rotation, spawnParent);
-
+        if (needScaleFix)
+        _current.transform.localScale = new Vector3(5f, 5f, 5f);
         _holdable = _current.GetComponentInChildren<ISpawnerHoldable>();
         _holdable?.OnSpawnerHoldStart();
     }

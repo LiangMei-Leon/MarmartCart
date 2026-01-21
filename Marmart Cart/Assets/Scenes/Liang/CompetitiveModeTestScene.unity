@@ -6159,7 +6159,7 @@ MonoBehaviour:
   phase2Duration: 90
   phase2SpawnInterval: 5
   phase2ItemsPerSpawn: 2
-  phase3SpawnInterval: 3
+  phase3SpawnInterval: 2
   phase3ItemsPerSpawn: 2
   cartPrefab: {fileID: 6914780558269192623, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
   yOffset: 20
@@ -10209,9 +10209,9 @@ MonoBehaviour:
   phase1ItemsPerSpawn: 1
   phase2Duration: 90
   phase2SpawnInterval: 3
-  phase2ItemsPerSpawn: 2
-  phase3SpawnInterval: 2
-  phase3ItemsPerSpawn: 1
+  phase2ItemsPerSpawn: 1
+  phase3SpawnInterval: 3
+  phase3ItemsPerSpawn: 2
   cartPrefab: {fileID: 319821544491134380, guid: 5f722ec503c1c1b429c44eaebcb4a9ed, type: 3}
   yOffset: 20
   snakeCartManager1: {fileID: 0}

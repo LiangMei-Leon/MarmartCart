@@ -21,6 +21,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 319821544491134380, guid: 5f722ec503c1c1b429c44eaebcb4a9ed, type: 3}
     - target: {fileID: 7956497476081934906, guid: eb6d6664fdb1e144cacfdd369958f3f1, type: 3}
+      propertyPath: needScaleFix
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7956497476081934906, guid: eb6d6664fdb1e144cacfdd369958f3f1, type: 3}
       propertyPath: zoneBlockMask.m_Bits
       value: 129
       objectReference: {fileID: 0}
