@@ -21,6 +21,8 @@ TagManager:
   - ExpensiveGrocery
   - PowerupNormal
   - PowerupGold
+  - SnakeCartManagerP3
+  - SnakeCartManagerP4
   layers:
   - Default
   - TransparentFX
