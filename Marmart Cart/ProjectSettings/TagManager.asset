@@ -23,6 +23,8 @@ TagManager:
   - PowerupGold
   - SnakeCartManagerP3
   - SnakeCartManagerP4
+  - Player3
+  - Player4
   layers:
   - Default
   - TransparentFX

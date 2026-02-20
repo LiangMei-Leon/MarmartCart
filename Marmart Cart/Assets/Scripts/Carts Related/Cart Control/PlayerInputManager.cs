@@ -4,42 +4,77 @@ using UnityEngine.InputSystem.Users;
 
 public class PlayerInputManager : MonoBehaviour
 {
+    public enum PlayerMode { TwoPlayers = 2, FourPlayers = 4 }
+
+    [Header("Mode")]
+    [SerializeField] private PlayerMode mode = PlayerMode.TwoPlayers;
+
     [Header("Cart References")]
-    [SerializeField] private GameObject player1; // Drag from scene
-    [SerializeField] private GameObject player2; // Drag from scene
+    [SerializeField] private GameObject player1;
+    [SerializeField] private GameObject player2;
+    [SerializeField] private GameObject player3;
+    [SerializeField] private GameObject player4;
 
-    [SerializeField] private bool enableDebugMode = true; // expose to Inspector
+    [Header("Fallback")]
+    [SerializeField] private bool enableKeyboardInput = true;
 
+    // If CartControlScript is always at child(0)->child(3), keep this.
+    // Otherwise, replace this with GetComponentInChildren<CartControlScript>() or serialize refs directly.
+    private CartControlScript GetCartControl(GameObject playerRoot)
+    {
+        if (!playerRoot) return null;
+        return playerRoot.transform.GetChild(0).GetChild(3).GetComponent<CartControlScript>();
+    }
+    private void Start()
+    {
+        SetupPlayers();
+    }
     public void SetupPlayers()
     {
-        var gamepads = Gamepad.all;
+        int neededPlayers = (int)mode;
 
-        if (gamepads.Count >= 2)
+        GameObject[] players = new GameObject[] { player1, player2, player3, player4 };
+
+        // Enable only the players we need
+        for (int i = 0; i < players.Length; i++)
         {
-            player1.transform.GetChild(0).GetChild(3).GetComponent<CartControlScript>().InitializeWithDevice(gamepads[0]);
-            player2.transform.GetChild(0).GetChild(3).GetComponent<CartControlScript>().InitializeWithDevice(gamepads[1]);
+            if (!players[i]) continue;
+            players[i].SetActive(i < neededPlayers);
         }
-        else if (gamepads.Count == 1)
-        {
-            player1.transform.GetChild(0).GetChild(3).GetComponent<CartControlScript>().InitializeWithDevice(gamepads[0]);
 
-            if (enableDebugMode)
+        var gamepads = Gamepad.all;
+        int padCount = gamepads.Count;
+
+        for (int i = 0; i < neededPlayers; i++)
+        {
+            var p = players[i];
+            if (!p)
             {
-                player2.transform.GetChild(0).GetChild(3).GetComponent<CartControlScript>().InitializeWithKeyboard();
+                Debug.LogError($"Player {i + 1} reference is missing.");
+                continue;
+            }
+
+            var cart = GetCartControl(p);
+            if (!cart)
+            {
+                Debug.LogError($"CartControlScript not found for Player {i + 1}.");
+                continue;
+            }
+
+            // Assign gamepad if available for this slot, else keyboard if allowed
+            if (i < padCount)
+            {
+                cart.InitializeWithDevice(gamepads[i]);
+            }
+            else if (enableKeyboardInput)
+            {
+                cart.InitializeWithKeyboard(); // shared keyboard input (all keyboard players share it)
             }
             else
             {
-                Debug.LogWarning("Only one gamepad detected. Player 2 inactive.");
+                Debug.LogWarning($"Not enough gamepads for Player {i + 1}, and keyboard is disabled. Disabling that player.");
+                p.SetActive(false);
             }
-        }
-        else if (enableDebugMode)
-        {
-            player1.transform.GetChild(0).GetChild(3).GetComponent<CartControlScript>().InitializeWithKeyboard();
-            player2.transform.GetChild(0).GetChild(3).GetComponent<CartControlScript>().InitializeWithKeyboard(); // Optional
-        }
-        else
-        {
-            Debug.LogError("No gamepads found, and debug mode is off.");
         }
     }
 }

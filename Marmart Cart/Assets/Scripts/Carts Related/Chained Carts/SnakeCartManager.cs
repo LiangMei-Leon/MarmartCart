@@ -15,7 +15,9 @@ public class SnakeCartManager : MonoBehaviour
     [SerializeField] List<GameObject> cartsWithOutItem = new List<GameObject>();
 
     LeadingCartRaycaster LeadingCartRaycaster;
-    [SerializeField] bool isPlayer1 = true;
+    [Header("Player")]
+    [UnityEngine.Range(1, 4)]
+    [SerializeField] private int playerIndex = 1; // 1..4
 
     [Header("Related Events")]
     [SerializeField] GameEvent setupCamera;
@@ -25,7 +27,6 @@ public class SnakeCartManager : MonoBehaviour
     [Header("PlayerInputManager")]
     [SerializeField] private PlayerInputManager playerInputManager;
 
-    [SerializeField] private DinoIndictor dinoIndictor;
     [SerializeField] private CashScoreManager cashScoreManager;
     //[SerializeField] private ComboDealsManager comboDealsManager;
 
@@ -68,41 +69,31 @@ public class SnakeCartManager : MonoBehaviour
     {
         if (snakeBody.Count == 0)
         {
-            GameObject temp1 = Instantiate(bodyParts[0], transform.position, transform.rotation, transform);
-            if(isPlayer1)
-                temp1.tag = "Player1";
-            else
-                temp1.tag = "Player2";
+            GameObject tempCartInstance = Instantiate(bodyParts[0], transform.position, transform.rotation, transform);
+            tempCartInstance.tag = GetPlayerTag(); // Set tag to the attached carts based on player index
             // Ensure MarkerManager is added
-            if (!temp1.GetComponent<MarkerManager>())
+            if (!tempCartInstance.GetComponent<MarkerManager>())
             {
-                temp1.AddComponent<MarkerManager>();
+                tempCartInstance.AddComponent<MarkerManager>();
             }
 
             // Set as collected by the player
-            var cartManager = temp1.GetComponent<ChainedCartManager>();
+            var cartManager = tempCartInstance.GetComponent<ChainedCartManager>();
             if (cartManager != null)
             {
                 cartManager.CollectByPlayer();
             }
 
-            snakeBody.Add(temp1);
-            LeadingCartRaycaster = temp1.GetComponent<LeadingCartRaycaster>();
+            snakeBody.Add(tempCartInstance);
+            LeadingCartRaycaster = tempCartInstance.GetComponent<LeadingCartRaycaster>();
             setupCamera.Raise();
             bodyParts.RemoveAt(0);
 
-            if(playerInputManager != null)
-            {
-                if (isPlayer1)
-                    playerInputManager.SetupPlayers();
-                    //playerInputManager.PairGamepad1WithPlayer1();
-                //else
-                    //playerInputManager.PairGamepad2WithPlayer2();
-            }
-            if(dinoIndictor != null)
-            {
-                dinoIndictor.RegisterPlayer(isPlayer1);
-            }
+            //if(playerInputManager != null)
+            //{
+            //    if (isPlayer1)
+            //        playerInputManager.SetupPlayers();
+            //}
             return;
         }
 
@@ -114,32 +105,29 @@ public class SnakeCartManager : MonoBehaviour
         countUp += Time.deltaTime;
         if (countUp >= distanceBetween)
         {
-            GameObject temp = Instantiate(bodyParts[0], markM.markerList[0].position, markM.markerList[0].rotation, transform);
-            if (isPlayer1)
-                temp.tag = "Player1";
-            else
-                temp.tag = "Player2";
+            GameObject tempCartInstance = Instantiate(bodyParts[0], markM.markerList[0].position, markM.markerList[0].rotation, transform);
+            tempCartInstance.tag = GetPlayerTag();
             // Ensure MarkerManager is added
-            if (!temp.GetComponent<MarkerManager>())
+            if (!tempCartInstance.GetComponent<MarkerManager>())
             {
-                temp.AddComponent<MarkerManager>();
+                tempCartInstance.AddComponent<MarkerManager>();
             }
 
             // Set as collected by the player
-            var cartManager = temp.GetComponent<ChainedCartManager>();
+            var cartManager = tempCartInstance.GetComponent<ChainedCartManager>();
             if (cartManager != null)
             {
                 cartManager.CollectByPlayer();
                 cartManager.SetCartTeamColor();
             }
 
-            snakeBody.Add(temp);
-            if(!temp.GetComponent<ChainedCartManager>().HasGroceryItem())
+            snakeBody.Add(tempCartInstance);
+            if(!tempCartInstance.GetComponent<ChainedCartManager>().HasGroceryItem())
             {
-                cartsWithOutItem.Add(temp);
+                cartsWithOutItem.Add(tempCartInstance);
             }
             bodyParts.RemoveAt(0);
-            temp.GetComponent<MarkerManager>().ClearMarkerList();
+            tempCartInstance.GetComponent<MarkerManager>().ClearMarkerList();
             countUp = 0;
         }
     }
@@ -282,7 +270,7 @@ public class SnakeCartManager : MonoBehaviour
         if (snakeBody.Count <= 1)
             return snakeBody.Count;
 
-        int playerIndex = isPlayer1 ? 1 : 2;
+        int pIndex = playerIndex;
 
         // Start from 1 to skip the leading cart
         for (int i = 1; i < snakeBody.Count; i++)
@@ -300,7 +288,7 @@ public class SnakeCartManager : MonoBehaviour
             // Submit to cash score manager and handle combo streak there
             if (cashScoreManager != null)
             {
-                cashScoreManager.RegisterItemCheckout(playerIndex, isExpensiveItem);
+                cashScoreManager.RegisterItemCheckout(pIndex, isExpensiveItem);
             }
 
             // Play checkout SFX
@@ -321,56 +309,6 @@ public class SnakeCartManager : MonoBehaviour
         // If we reach here, there was no cart with a grocery item
         return numOfCartsWithGroceryItem;
     }
-    //public int CheckOutFirstChainedCart()
-    //{
-    //    if (snakeBody.Count > 1)
-    //    {
-    //        // Get cart rarity
-    //        var cartManager = snakeBody[1].GetComponent<ChainedCartManager>();
-    //        CartRarity cartRarity = cartManager.CartType;
-    //        int playerIndex = isPlayer1 ? 1 : 2;
-
-    //        // Submit to combo deal system
-    //        if (comboDealsManager != null)
-    //        {
-    //            comboDealsManager.SubmitCartToCombos(cartRarity, playerIndex);
-    //        }
-
-    //        // Update score (obsolete)
-    //        // cashScoreManager.AddCartToPlayer(cartRarity, playerIndex);
-
-    //        // Remove cart from list and destroy
-    //        GameObject removed = snakeBody[1];
-    //        snakeBody.RemoveAt(1);
-    //        Destroy(removed);
-
-    //        return snakeBody.Count;
-    //    }
-
-    //    return snakeBody.Count;
-    //}
-
-    //public (int common, int rare, int epic, int legendary) GetCartRarityBreakdown()
-    //{
-    //    int common = 0, rare = 0, epic = 0, legendary = 0;
-
-    //    for (int i = 1; i < snakeBody.Count; i++) // skip the leading cart
-    //    {
-    //        var cm = snakeBody[i].GetComponent<ChainedCartManager>();
-    //        if (cm == null) continue;
-
-    //        switch (cm.CartType)
-    //        {
-    //            case CartRarity.Common: common++; break;
-    //            case CartRarity.Rare: rare++; break;
-    //            case CartRarity.Epic: epic++; break;
-    //            case CartRarity.Legendary: legendary++; break;
-    //        }
-    //    }
-
-    //    return (common, rare, epic, legendary);
-    //}
-
     public void CollectNormalGroceryItem()
     {
         if (cartsWithOutItem.Count >= 1)
@@ -426,52 +364,16 @@ public class SnakeCartManager : MonoBehaviour
             if (cartManager != null && cartManager.HasGroceryItem())
             {
                 numOfCartsWithGroceryItem--;
-                int playerIndex = isPlayer1 ? 1 : 2;
-                //(obsolete)
-                //cashScoreManager.AddCartToPlayer(CartRarity.Common, playerIndex);
                 GameObject removed = snakeBody[i];
                 snakeBody.RemoveAt(i); // use RemoveAt for clarity
                 Destroy(removed);
             }
         }
-        
     }
-    //public void SpeedUpPowerUp()
-    //{
-    //    int bonusRatio = 1;
-    //    // Count items in the snake body player 2
-    //    foreach (var cart in this.GetSnakeBody())
-    //    {
-    //        var cartManager = cart.GetComponent<ChainedCartManager>();
-    //        if (cartManager != null)
-    //        {
-    //            if (cartManager.isBonusCart)
-    //                bonusRatio++;
-    //        }
-    //    }
-    //    LeadingCartBehaviour leadingCartBehaviour0 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(0).GetComponent<LeadingCartBehaviour>();
-    //    LeadingCartBehaviour leadingCartBehaviour1 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(1).GetComponent<LeadingCartBehaviour>();
-    //    LeadingCartBehaviour leadingCartBehaviour2 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(2).GetComponent<LeadingCartBehaviour>();
-    //    LeadingCartBehaviour leadingCartBehaviour3 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(3).GetComponent<LeadingCartBehaviour>();
-
-    //    leadingCartBehaviour0.regularMaxSpeed += bonusRatio;
-    //    leadingCartBehaviour1.regularMaxSpeed += bonusRatio;
-    //    leadingCartBehaviour2.regularMaxSpeed += bonusRatio;
-    //    leadingCartBehaviour3.regularMaxSpeed += bonusRatio;
-
-    //    Invoke("ResetCartMaxSpeed", 5f);
-    //}
-
-    //void ResetCartMaxSpeed()
-    //{
-    //    LeadingCartBehaviour leadingCartBehaviour0 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(0).GetComponent<LeadingCartBehaviour>();
-    //    LeadingCartBehaviour leadingCartBehaviour1 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(1).GetComponent<LeadingCartBehaviour>();
-    //    LeadingCartBehaviour leadingCartBehaviour2 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(2).GetComponent<LeadingCartBehaviour>();
-    //    LeadingCartBehaviour leadingCartBehaviour3 = this.GetSnakeBody().ElementAt(0).gameObject.transform.GetChild(0).GetChild(3).GetComponent<LeadingCartBehaviour>();
-
-    //    leadingCartBehaviour0.regularMaxSpeed = 20f;
-    //    leadingCartBehaviour1.regularMaxSpeed = 20f;
-    //    leadingCartBehaviour2.regularMaxSpeed = 20f;
-    //    leadingCartBehaviour3.regularMaxSpeed = 20f;
-    //}
+    private string GetPlayerTag()
+    {
+        // Make sure these tags exist in Unity Tag Manager:
+        // Player1, Player2, Player3, Player4
+        return $"Player{playerIndex}";
+    }
 }

@@ -74,6 +74,8 @@ public class GameTimeManager : MonoBehaviour
     [Header("Camera Settings")]
     [SerializeField] private CinemachineCamera cinemachineCameraP1;
     [SerializeField] private CinemachineCamera cinemachineCameraP2;
+    [SerializeField] private CinemachineCamera cinemachineCameraP3;
+    [SerializeField] private CinemachineCamera cinemachineCameraP4;
     [SerializeField] private float defaultOrthographicSize = 16f;
     [SerializeField] private float orthographicSizeIncrement = 0.5f;
     [SerializeField] private int cartsPerZoomIncrement = 5;
@@ -110,6 +112,14 @@ public class GameTimeManager : MonoBehaviour
         if (cinemachineCameraP2 != null)
         {
             cinemachineCameraP2.Lens.OrthographicSize = defaultOrthographicSize;
+        }
+        if (cinemachineCameraP3 != null)
+        {
+            cinemachineCameraP3.Lens.OrthographicSize = defaultOrthographicSize;
+        }
+        if (cinemachineCameraP4 != null)
+        {
+            cinemachineCameraP4.Lens.OrthographicSize = defaultOrthographicSize;
         }
     }
 

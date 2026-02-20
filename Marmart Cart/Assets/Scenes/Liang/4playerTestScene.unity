@@ -2942,10 +2942,9 @@ MonoBehaviour:
   - {fileID: 6597024514049572970, guid: c6c12bfc1b7ace847be00ecc6a8d5d79, type: 3}
   snakeBody: []
   cartsWithOutItem: []
-  isPlayer1: 0
+  playerIndex: 1
   setupCamera: {fileID: 11400000, guid: a2aa89cd59a0c8f40966246bd2b2532a, type: 2}
   playerInputManager: {fileID: 447031817}
-  dinoIndictor: {fileID: 0}
   cashScoreManager: {fileID: 1773933218}
   needScaleup: 0
   numOfCartsWithGroceryItem: 0
@@ -5278,7 +5277,7 @@ Camera:
   far clip plane: 1000
   field of view: 30
   orthographic: 1
-  orthographic size: 7.7
+  orthographic size: 14
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -5302,8 +5301,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 300062265}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.23911765, y: 0.3696438, z: -0.09904577, w: 0.89239913}
-  m_LocalPosition: {x: 43.03627, y: 10.72, z: -479.0237}
+  m_LocalRotation: {x: 0.46193978, y: 0.33141357, z: -0.19134171, w: 0.8001032}
+  m_LocalPosition: {x: -41.935543, y: 11.310254, z: -490.6356}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -6613,9 +6612,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9a92409e7362f2469ebeb100d718cee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mode: 4
   player1: {fileID: 1981863287}
   player2: {fileID: 203355757}
-  enableDebugMode: 1
+  player3: {fileID: 1417757266}
+  player4: {fileID: 635788454}
+  enableKeyboardInput: 1
 --- !u!4 &447031818
 Transform:
   m_ObjectHideFlags: 0
@@ -9826,13 +9828,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   distanceBetween: 0.11
   bodyParts:
-  - {fileID: 6597024514049572970, guid: c6c12bfc1b7ace847be00ecc6a8d5d79, type: 3}
+  - {fileID: 6597024514049572970, guid: ddd4a2478a4ba0643ba10383ce5adb33, type: 3}
   snakeBody: []
   cartsWithOutItem: []
-  isPlayer1: 0
-  setupCamera: {fileID: 11400000, guid: a2aa89cd59a0c8f40966246bd2b2532a, type: 2}
+  playerIndex: 1
+  setupCamera: {fileID: 11400000, guid: 451def84b38fa3848907aef82b322f89, type: 2}
   playerInputManager: {fileID: 447031817}
-  dinoIndictor: {fileID: 0}
   cashScoreManager: {fileID: 1773933218}
   needScaleup: 0
   numOfCartsWithGroceryItem: 0
@@ -63070,13 +63071,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   distanceBetween: 0.11
   bodyParts:
-  - {fileID: 6597024514049572970, guid: c6c12bfc1b7ace847be00ecc6a8d5d79, type: 3}
+  - {fileID: 6597024514049572970, guid: eb604ccf023d8ae44a3f75176632b652, type: 3}
   snakeBody: []
   cartsWithOutItem: []
-  isPlayer1: 0
-  setupCamera: {fileID: 11400000, guid: a2aa89cd59a0c8f40966246bd2b2532a, type: 2}
+  playerIndex: 1
+  setupCamera: {fileID: 11400000, guid: ac80406201c49794989b643d47ea750a, type: 2}
   playerInputManager: {fileID: 447031817}
-  dinoIndictor: {fileID: 0}
   cashScoreManager: {fileID: 1773933218}
   needScaleup: 0
   numOfCartsWithGroceryItem: 0
@@ -66828,6 +66828,8 @@ GameObject:
   - component: {fileID: 1653367397}
   - component: {fileID: 1653367396}
   - component: {fileID: 1653367399}
+  - component: {fileID: 1653367401}
+  - component: {fileID: 1653367400}
   m_Layer: 0
   m_Name: Camera Manager
   m_TagString: Untagged
@@ -66877,8 +66879,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   chainedCartsP1: {fileID: 1981863287}
   chainedCartsP2: {fileID: 203355757}
+  chainedCartsP3: {fileID: 1417757266}
+  chainedCartsP4: {fileID: 635788454}
   topDownCameraP1: {fileID: 1035736240}
   topDownCameraP2: {fileID: 2078120475}
+  topDownCameraP3: {fileID: 196644408}
+  topDownCameraP4: {fileID: 974848353}
 --- !u!4 &1653367398
 Transform:
   m_ObjectHideFlags: 0
@@ -66913,6 +66919,62 @@ MonoBehaviour:
       - m_Target: {fileID: 1653367397}
         m_TargetAssemblyTypeName: CameraManager, Assembly-CSharp
         m_MethodName: SetCameraP2ToLookAtLeadingCart
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &1653367400
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1653367395}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: {fileID: 11400000, guid: 451def84b38fa3848907aef82b322f89, type: 2}
+  Response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1653367397}
+        m_TargetAssemblyTypeName: CameraManager, Assembly-CSharp
+        m_MethodName: SetCameraP4ToLookAtLeadingCart
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &1653367401
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1653367395}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: {fileID: 11400000, guid: ac80406201c49794989b643d47ea750a, type: 2}
+  Response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1653367397}
+        m_TargetAssemblyTypeName: CameraManager, Assembly-CSharp
+        m_MethodName: SetCameraP3ToLookAtLeadingCart
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -69167,7 +69229,7 @@ GameObject:
   - component: {fileID: 1773933217}
   - component: {fileID: 1773933218}
   m_Layer: 0
-  m_Name: Game Manager
+  m_Name: Game Manager (time&score)
   m_TagString: GameManager
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -69224,7 +69286,9 @@ MonoBehaviour:
   currentItemCartCountP2Text: {fileID: 1363511736}
   cinemachineCameraP1: {fileID: 1035736240}
   cinemachineCameraP2: {fileID: 2078120475}
-  defaultOrthographicSize: 36
+  cinemachineCameraP3: {fileID: 196644408}
+  cinemachineCameraP4: {fileID: 974848353}
+  defaultOrthographicSize: 24
   orthographicSizeIncrement: 0.5
   cartsPerZoomIncrement: 2
   maxOrthographicSize: 40
@@ -115338,10 +115402,9 @@ MonoBehaviour:
   - {fileID: 6597024514049572970, guid: 8b73817db514d35448f8eae48c6e04fb, type: 3}
   snakeBody: []
   cartsWithOutItem: []
-  isPlayer1: 1
+  playerIndex: 1
   setupCamera: {fileID: 11400000, guid: c694c52992c7f5f4fbfb31d18772ac53, type: 2}
   playerInputManager: {fileID: 447031817}
-  dinoIndictor: {fileID: 0}
   cashScoreManager: {fileID: 1773933218}
   needScaleup: 0
   numOfCartsWithGroceryItem: 0
