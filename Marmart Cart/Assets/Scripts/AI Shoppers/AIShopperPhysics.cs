@@ -106,7 +106,7 @@ public class AIShopperPhysics : MonoBehaviour
         if (rb == null) return;
 
         isKnockedOut = true;
-        gameManager.IncreaseHitCount(playerIndex);
+        //gameManager.IncreaseHitCount(playerIndex);
         // Generate a random direction for knockback
         Vector3 randomDirection = new Vector3(
             Random.Range(-1f, 1f),

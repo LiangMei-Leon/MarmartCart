@@ -17,35 +17,34 @@ public class GameTimeManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI timerTextP1; // TMP for time display p1
     [SerializeField] private TextMeshProUGUI timerTextP2; // TMP for time display p2
     [SerializeField] private GameObject finalScoreScreen; // Final score screen object
-//     [SerializeField] private TextMeshProUGUI finalHitCountText; // TMP for hit count display
-//     [SerializeField] private TextMeshProUGUI finalScoreText; // TMP for final score display
-//     [SerializeField] private TextMeshProUGUI normalItemText; // TMP for normal item count
-//     [SerializeField] private TextMeshProUGUI bonusItemText; // TMP for bonus item count
-    // [SerializeField] private TextMeshProUGUI scoreBreakdownText; // TMP for score breakdown
+    //[SerializeField] private TextMeshProUGUI finalHitCountText; // TMP for hit count display
+    //[SerializeField] private TextMeshProUGUI finalScoreText; // TMP for final score display
+    //[SerializeField] private TextMeshProUGUI normalItemText; // TMP for normal item count
+    //[SerializeField] private TextMeshProUGUI bonusItemText; // TMP for bonus item count
+    //[SerializeField] private TextMeshProUGUI scoreBreakdownText; // TMP for score breakdown
     [SerializeField] private TextMeshProUGUI scoreBreakdownTextP1; // TMP for score breakdown
     [SerializeField] private TextMeshProUGUI scoreBreakdownTextP2; // TMP for score breakdown
     [SerializeField] private CashScoreManager cashScoreManager;
     [SerializeField] private GameObject p1WinResult;
     [SerializeField] private GameObject p2WinResult;
 
-    private int normalItemCountP1 = 0;
-    private int bonusItemCountP1 = 0;
-    private int finalScoreP1 = 0;
-    private int normalItemCountP2 = 0;
-    private int bonusItemCountP2 = 0;
-    private int finalScoreP2 = 0;
+    //private int normalItemCountP1 = 0;
+    //private int bonusItemCountP1 = 0;
+    //private int finalScoreP1 = 0;
+    //private int normalItemCountP2 = 0;
+    //private int bonusItemCountP2 = 0;
+    //private int finalScoreP2 = 0;
 
-    [Header("Points System")]
-    [SerializeField] private int pointsPerHit = 5;
-    [SerializeField] private int pointsPerNormalItem = 20;
-    [SerializeField] private int pointsPerBonusItem = 30;
-    [SerializeField] private MartConditionManager martConditionManager;
+    // obselete, points now calculated in CashScoreManager
+    //[Header("Points System")]
+    //[SerializeField] private int pointsPerHit = 5;
+    //[SerializeField] private int pointsPerNormalItem = 20;
+    //[SerializeField] private int pointsPerBonusItem = 30;
+    //[SerializeField] private MartConditionManager martConditionManager;
 
     [Header("Player Carts")]
     //Player 1
     [SerializeField] private SnakeCartManager snakeCartManagerP1;
-    private int hitCountP1 = 0;
-    [SerializeField] private TextMeshProUGUI hitCountP1Text; // TMP for hit count display
     private int cartCountP1 = 0;
     private int itemCartsP1 = 0;
     [SerializeField] private TextMeshProUGUI currentTotalCartCountP1Text;
@@ -54,11 +53,11 @@ public class GameTimeManager : MonoBehaviour
     //[SerializeField] private TextMeshProUGUI cartCountRareP1;
     //[SerializeField] private TextMeshProUGUI cartCountEpicP1;
     //[SerializeField] private TextMeshProUGUI cartCountLegendaryP1;
+    //private int hitCountP1 = 0;
+    //[SerializeField] private TextMeshProUGUI hitCountP1Text; // TMP for hit count display
 
     //Player 2
     [SerializeField] private SnakeCartManager snakeCartManagerP2;
-    private int hitCountP2 = 0;
-    [SerializeField] private TextMeshProUGUI hitCountP2Text; // TMP for hit count display
     private int cartCountP2 = 0;
     private int itemCartsP2 = 0;
     [SerializeField] private TextMeshProUGUI currentTotalCartCountP2Text;
@@ -67,6 +66,8 @@ public class GameTimeManager : MonoBehaviour
     //[SerializeField] private TextMeshProUGUI cartCountRareP2;
     //[SerializeField] private TextMeshProUGUI cartCountEpicP2;
     //[SerializeField] private TextMeshProUGUI cartCountLegendaryP2;
+    //private int hitCountP2 = 0;
+    //[SerializeField] private TextMeshProUGUI hitCountP2Text; // TMP for hit count display
 
     private bool isAnimatingHitCount = false; // Flag for hit count text animation
     private bool isAnimatingCartCount = false; // Flag for cart count text animation
@@ -89,8 +90,8 @@ public class GameTimeManager : MonoBehaviour
         // Pause game and show title screen at the beginning
         PauseGame();
         titleScreen.SetActive(true);
-        hitCountP1Text.text = "0";
-        hitCountP2Text.text = "0";
+        //hitCountP1Text.text = "0";
+        //hitCountP2Text.text = "0";
         currentTotalCartCountP1Text.text = "0";
         currentItemCartCountP1Text.text = "0";
         currentTotalCartCountP2Text.text = "0";
@@ -237,21 +238,21 @@ public class GameTimeManager : MonoBehaviour
         gamePaused = false;
     }
 
-    public void IncreaseHitCount(int playerIndex)
-    {
-        if(playerIndex == 1)
-        {
-            hitCountP1++;
-            hitCountP1Text.text = hitCountP1.ToString();
-            StartCoroutine(AnimateText(hitCountP1Text, true));
-        }
-        else if(playerIndex == 2)
-        {
-            hitCountP2++;
-            hitCountP2Text.text = hitCountP2.ToString();
-            StartCoroutine(AnimateText(hitCountP2Text, true));
-        }
-    }
+    //public void IncreaseHitCount(int playerIndex)
+    //{
+    //    if(playerIndex == 1)
+    //    {
+    //        hitCountP1++;
+    //        hitCountP1Text.text = hitCountP1.ToString();
+    //        StartCoroutine(AnimateText(hitCountP1Text, true));
+    //    }
+    //    else if(playerIndex == 2)
+    //    {
+    //        hitCountP2++;
+    //        hitCountP2Text.text = hitCountP2.ToString();
+    //        StartCoroutine(AnimateText(hitCountP2Text, true));
+    //    }
+    //}
 
     private IEnumerator AnimateText(TextMeshProUGUI text, bool isHitCount)
     {
@@ -319,41 +320,42 @@ public class GameTimeManager : MonoBehaviour
         // Apply the new orthographic size
         cinemachineCameraP2.Lens.OrthographicSize = newOrthographicSize;
     }
-    private void CalculateFinalScore()
-    {
-        normalItemCountP1 = 0;
-        bonusItemCountP1 = 0;
-        normalItemCountP2 = 0;
-        bonusItemCountP2 = 0;
-        // Count items in the snake body player 1
-        foreach (var cart in snakeCartManagerP1.GetSnakeBody())
-        {
-            var cartManager = cart.GetComponent<ChainedCartManager>();
-            if (cartManager != null)
-            {
-                if (cartManager.isBonusCart)
-                    bonusItemCountP1++;
-                else
-                    normalItemCountP1++;
-            }
-        }
+    //private void CalculateFinalScore()
+    //{
+    //    normalItemCountP1 = 0;
+    //    bonusItemCountP1 = 0;
+    //    normalItemCountP2 = 0;
+    //    bonusItemCountP2 = 0;
+    //    // Count items in the snake body player 1
+    //    foreach (var cart in snakeCartManagerP1.GetSnakeBody())
+    //    {
+    //        var cartManager = cart.GetComponent<ChainedCartManager>();
+    //        if (cartManager != null)
+    //        {
+    //            if (cartManager.isBonusCart)
+    //                bonusItemCountP1++;
+    //            else
+    //                normalItemCountP1++;
+    //        }
+    //    }
 
-        // Count items in the snake body player 2
-        foreach (var cart in snakeCartManagerP2.GetSnakeBody())
-        {
-            var cartManager = cart.GetComponent<ChainedCartManager>();
-            if (cartManager != null)
-            {
-                if (cartManager.isBonusCart)
-                    bonusItemCountP2++;
-                else
-                    normalItemCountP2++;
-            }
-        }
+    //    // Count items in the snake body player 2
+    //    foreach (var cart in snakeCartManagerP2.GetSnakeBody())
+    //    {
+    //        var cartManager = cart.GetComponent<ChainedCartManager>();
+    //        if (cartManager != null)
+    //        {
+    //            if (cartManager.isBonusCart)
+    //                bonusItemCountP2++;
+    //            else
+    //                normalItemCountP2++;
+    //        }
+    //    }
 
-        finalScoreP1 = (hitCountP1 * pointsPerHit) + (normalItemCountP1 * pointsPerNormalItem) + (bonusItemCountP1 * pointsPerBonusItem);
-        finalScoreP2 = (hitCountP2 * pointsPerHit) + (normalItemCountP2 * pointsPerNormalItem) + (bonusItemCountP2 * pointsPerBonusItem);
-    }
+    //    finalScoreP1 = (hitCountP1 * pointsPerHit) + (normalItemCountP1 * pointsPerNormalItem) + (bonusItemCountP1 * pointsPerBonusItem);
+    //    finalScoreP2 = (hitCountP2 * pointsPerHit) + (normalItemCountP2 * pointsPerNormalItem) + (bonusItemCountP2 * pointsPerBonusItem);
+    //}
+
     //private void DisplayScoreBreakdown()
     //{
     //    //         hitCountText.text = $"Hits: {hitCount}";
@@ -391,7 +393,5 @@ public class GameTimeManager : MonoBehaviour
             return 1;
         else /*if (elapsedTime > 120f && elapsedTime <= 180f)*/
             return 2;
-
-        return 0;
     }
 }
