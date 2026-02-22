@@ -18,13 +18,12 @@ public class AIShopperBehaviour : MonoBehaviour
     [SerializeField] private GameObject emptyCartVisual;
     [SerializeField] private GameObject itemCartVisual;
     [SerializeField] private GameObject expensiveItemCartVisual;
-    [Header("Cart Collect Events")]
-    [SerializeField] private GameEvent p1CollectEmptyCartEvent;
-    [SerializeField] private GameEvent p1CollectNormalItemCartEvent;
-    [SerializeField] private GameEvent p1CollectExpensiveItemCartEvent;
-    [SerializeField] private GameEvent p2CollectEmptyCartEvent;
-    [SerializeField] private GameEvent p2CollectNormalItemCartEvent;
-    [SerializeField] private GameEvent p2CollectExpensiveItemCartEvent;
+
+    [Header("Related Events")]
+    private const int MaxSupportedPlayers = 4;
+    [SerializeField] private GameEvent[] collectEmptyCartEvent = new GameEvent[MaxSupportedPlayers];
+    [SerializeField] private GameEvent[] collectNormalGroceryItemCartEvent = new GameEvent[MaxSupportedPlayers];
+    [SerializeField] private GameEvent[] collectExpensiveGroceryItemCartEvent = new GameEvent[MaxSupportedPlayers];
 
     private NavMeshAgent agent;
     private Transform targetItem;
@@ -221,7 +220,7 @@ public class AIShopperBehaviour : MonoBehaviour
             }
         }
     }
-
+    // call from AIShopperPhysics when hit by player, trigger VFX and raise related cart collect event if currently escaping with item
     public void OnKnockOut(int playerIndex)
     {
         hittingVFX.SetActive(true);
@@ -231,20 +230,18 @@ public class AIShopperBehaviour : MonoBehaviour
         runningVFX.SetActive(false);
         if (currentState == AIState.Escaping)
         {
+            int arrayIndex = playerIndex - 1; // Convert player index to array index (0-based)  
             if (carryingItem && carryingNormalItem)
             {
-                if (playerIndex == 1) p1CollectNormalItemCartEvent.Raise();
-                else if (playerIndex == 2) p2CollectNormalItemCartEvent.Raise();
+                collectNormalGroceryItemCartEvent[arrayIndex]?.Raise();
             }
             else if (carryingItem && carryingExpensiveItem)
             {
-                if (playerIndex == 1) p1CollectExpensiveItemCartEvent.Raise();
-                else if (playerIndex == 2) p2CollectExpensiveItemCartEvent.Raise();
+                collectExpensiveGroceryItemCartEvent[arrayIndex]?.Raise();
             }
             else
             {
-                if (playerIndex == 1) p1CollectEmptyCartEvent.Raise();
-                else if (playerIndex == 2) p2CollectEmptyCartEvent.Raise();
+                collectEmptyCartEvent[arrayIndex]?.Raise();
             }
         }        
     }

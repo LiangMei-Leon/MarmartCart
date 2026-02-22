@@ -167,12 +167,21 @@ MonoBehaviour:
   emptyCartVisual: {fileID: 924158505447345222}
   itemCartVisual: {fileID: 3845663221994386163}
   expensiveItemCartVisual: {fileID: 4609622388762229208}
-  p1CollectEmptyCartEvent: {fileID: 11400000, guid: 1c2f6ba77010d5645894c2545add5964, type: 2}
-  p1CollectNormalItemCartEvent: {fileID: 11400000, guid: d11083922a7dde644a6fbdf94ccfe0e9, type: 2}
-  p1CollectExpensiveItemCartEvent: {fileID: 11400000, guid: 2aac4365b88a43c45b7f206bcdece31c, type: 2}
-  p2CollectEmptyCartEvent: {fileID: 11400000, guid: 53bc1f737b4b6ea47a1ddcaf9047cb1a, type: 2}
-  p2CollectNormalItemCartEvent: {fileID: 11400000, guid: ed91acab010b54f49a35288a9c636c04, type: 2}
-  p2CollectExpensiveItemCartEvent: {fileID: 11400000, guid: 3870df526ee277849912f5f979d3502b, type: 2}
+  collectEmptyCartEvent:
+  - {fileID: 11400000, guid: 1c2f6ba77010d5645894c2545add5964, type: 2}
+  - {fileID: 11400000, guid: 53bc1f737b4b6ea47a1ddcaf9047cb1a, type: 2}
+  - {fileID: 11400000, guid: 0a7b976f82a6c0446b0a2982cb4d09f6, type: 2}
+  - {fileID: 11400000, guid: d569cd80caee22c4fa835a6ca9b644a8, type: 2}
+  collectNormalGroceryItemCartEvent:
+  - {fileID: 11400000, guid: d11083922a7dde644a6fbdf94ccfe0e9, type: 2}
+  - {fileID: 11400000, guid: ed91acab010b54f49a35288a9c636c04, type: 2}
+  - {fileID: 11400000, guid: b50516b6b8a021241a45cc835589d8d9, type: 2}
+  - {fileID: 11400000, guid: f4035e74315d597439b5bbf6ade4ebb0, type: 2}
+  collectExpensiveGroceryItemCartEvent:
+  - {fileID: 11400000, guid: 2aac4365b88a43c45b7f206bcdece31c, type: 2}
+  - {fileID: 11400000, guid: 3870df526ee277849912f5f979d3502b, type: 2}
+  - {fileID: 11400000, guid: d75c8bb3a2921234da5351bacc7f412e, type: 2}
+  - {fileID: 11400000, guid: 60ab87266561dcc49a1dc35a7906ab25, type: 2}
   carryingItem: 0
   carryingNormalItem: 0
   carryingExpensiveItem: 0

@@ -21,12 +21,11 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
     public bool isAvailable => !isCollectedByPlayer && !isCollectedByAI;
 
     private Rigidbody rb;
-    [SerializeField] private GameObject p1Snake;
-    private LeadingCartRaycaster p1Raycaster;
-    private bool p1AllowCollect = true;
-    [SerializeField] private GameObject p2Snake;
-    private LeadingCartRaycaster p2Raycaster;
-    private bool p2AllowCollect = true;
+
+    private const int MaxSupportedPlayers = 4;
+    private int maxPlayers = 4;
+    [SerializeField] private LeadingCartRaycaster[] playerRaycasters = new LeadingCartRaycaster[MaxSupportedPlayers];
+    private bool[] allowCollect;
 
     [Header("Self-destory timer")]
     [Tooltip("A timer that only ticks when it is not being collected by player, if the time is up, remove this cart from the scene")]
@@ -37,21 +36,16 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
     [SerializeField] private Renderer cartRenderer; // Reference to mesh renderer that uses the material
 
     [SerializeField] private Color defaultColor = Color.white;
-    [SerializeField] private Color player1TeamColor = Color.blue;
-    [SerializeField] private Color player2TeamColor = Color.red;
-
-    [SerializeField] private Color commonColor = Color.white;
-    [SerializeField] private Color rareColor = Color.blue;
-    [SerializeField] private Color epicColor = Color.magenta;
-    [SerializeField] private Color legendaryColor = Color.yellow;
+    [SerializeField]
+    private Color[] playerTeamColors = new Color[MaxSupportedPlayers]
+    {
+        Color.blue, Color.red, Color.green, Color.yellow
+    };
 
     [Header("Related Events")]
-    [SerializeField] GameEvent p1CollectEmptyCartEvent;
-    [SerializeField] GameEvent p1CollectNormalGroceryItemCartEvent;
-    [SerializeField] GameEvent p1CollectExpensiveGroceryItemCartEvent;
-    [SerializeField] GameEvent p2CollectEmptyCartEvent;
-    [SerializeField] GameEvent p2CollectNormalGroceryItemCartEvent;
-    [SerializeField] GameEvent p2CollectExpensiveGroceryItemCartEvent;
+    [SerializeField] private GameEvent[] collectEmptyCartEvent = new GameEvent[MaxSupportedPlayers];
+    [SerializeField] private GameEvent[] collectNormalGroceryItemCartEvent = new GameEvent[MaxSupportedPlayers];
+    [SerializeField] private GameEvent[] collectExpensiveGroceryItemCartEvent = new GameEvent[MaxSupportedPlayers];
 
     [Header("Grocery Item Setting")]
     [SerializeField] private bool hasGroceryItem = false;
@@ -63,12 +57,15 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
 
     void Awake()
     {
+        maxPlayers = Mathf.Clamp(GMode.Instance.PlayerCount(), 1, MaxSupportedPlayers);
+        allowCollect = new bool[maxPlayers];
+
         collectVFX = this.transform.GetChild(0).gameObject.GetComponent<ParticleSystem>();
         if (collectVFX == null)
         {
             Debug.Log("Fail to find the particle system");
         }
-        ApplyRarityColor();
+        SetCartTeamColor();
     }
     public void OnSpawnerHoldStart()
     {
@@ -90,21 +87,24 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
         {
             Debug.LogError("Rigidbody not found on the GameObject. Please attach one.");
         }
-        p1Snake = GameObject.FindWithTag("SnakeCartManagerP1");
-        p1Raycaster = p1Snake.transform.GetChild(0).GetComponent<LeadingCartRaycaster>();
-        p1AllowCollect = !p1Raycaster.getIfInGhostMode();
-        p2Snake = GameObject.FindWithTag("SnakeCartManagerP2");
-        p2Raycaster = p2Snake.transform.GetChild(0).GetComponent<LeadingCartRaycaster>();
-        p2AllowCollect = !p2Raycaster.getIfInGhostMode();
+        for (int i = 0; i < maxPlayers; i++)
+        {
+            playerRaycasters[i] = GameObject.FindWithTag("SnakeCartManagerP" + (i+1)).transform.GetChild(0).GetComponent<LeadingCartRaycaster>();
+            if (playerRaycasters[i] != null)
+                allowCollect[i] = !playerRaycasters[i].getIfInGhostMode();
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        p1AllowCollect = !p1Raycaster.getIfInGhostMode();
-        p2AllowCollect = !p2Raycaster.getIfInGhostMode();
-        
-        if(hasGroceryItem)
+        for (int i = 0; i < maxPlayers; i++)
+        {
+            if (playerRaycasters[i] != null)
+                allowCollect[i] = !playerRaycasters[i].getIfInGhostMode();
+        }
+
+        if (hasGroceryItem)
         {
             if(hasNormalGroceryItem)
             {
@@ -202,94 +202,80 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
         Vector3 randomTorque = UnityEngine.Random.insideUnitSphere * UnityEngine.Random.Range(20f, 30f); // Adjust range as needed
         rb.AddTorque(randomTorque, ForceMode.Impulse);
     }
-
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player1") && !isCollectedByPlayer && p1AllowCollect)
-        {
-            if(hasGroceryItem && hasNormalGroceryItem)
-            {
-                p1CollectNormalGroceryItemCartEvent.Raise();
-            }
-            else if(hasGroceryItem && hasExpensiveGroceryItem)
-            {
-                p1CollectExpensiveGroceryItemCartEvent.Raise();
-            }
-            else
-            {
-                p1CollectEmptyCartEvent.Raise();
-            }
+        if (isCollectedByPlayer) return;
 
-            Destroy(this.gameObject);
-        }
-        if (other.CompareTag("Player2") && !isCollectedByPlayer && p2AllowCollect)
-        {
-            if (hasGroceryItem && hasNormalGroceryItem)
-            {
-                p2CollectNormalGroceryItemCartEvent.Raise();
-            }
-            else if (hasGroceryItem && hasExpensiveGroceryItem)
-            {
-                p2CollectExpensiveGroceryItemCartEvent.Raise();
-            }
-            else
-            {
-                p2CollectEmptyCartEvent.Raise();
-            }
+        int playerIdx = TagToPlayerIndex(other.tag); // 0..3, -1 if not a player
+        if (playerIdx < 0) return;
 
-            Destroy(this.gameObject);
-        }
+        if (!allowCollect[playerIdx]) return;
+
+        // Raise correct event
+        if (hasGroceryItem && hasNormalGroceryItem)
+            collectNormalGroceryItemCartEvent[playerIdx]?.Raise();
+        else if (hasGroceryItem && hasExpensiveGroceryItem)
+            collectExpensiveGroceryItemCartEvent[playerIdx]?.Raise();
+        else
+            collectEmptyCartEvent[playerIdx]?.Raise();
+
+        Destroy(gameObject);
+    }
+
+    private int TagToPlayerIndex(string tag)
+    {
+        if(tag == "Player1") return 0;
+        if(tag == "Player2") return 1;
+        if(tag == "Player3") return 2;
+        if(tag == "Player4") return 3;
+        return -1;
     }
     public void SetCartTeamColor()
     {
         if (cartRenderer == null) return;
-        Material[] materials = cartRenderer.materials;
+        var materials = cartRenderer.materials;
         if (materials.Length < 2 || materials[1] == null) return;
-        Color targetColor = commonColor;
 
-        if (isCollectedByPlayer && this.CompareTag("Player1"))
+        Color targetColor = defaultColor;
+
+        if (isCollectedByPlayer)
         {
-            targetColor = player1TeamColor;
+            int idx = TagToPlayerIndex(gameObject.tag);
+            if (idx >= 0 && idx < playerTeamColors.Length)
+                targetColor = playerTeamColors[idx];
         }
-        else if (isCollectedByPlayer && this.CompareTag("Player2"))
-        {
-            targetColor = player2TeamColor;
-        }
-        else
-        {
-            targetColor = defaultColor;
-        }
+
         materials[1].color = targetColor;
         cartRenderer.materials = materials;
     }
-    private void ApplyRarityColor()
-    {
-        if (cartRenderer == null) return;
+    //private void ApplyRarityColor()
+    //{
+    //    if (cartRenderer == null) return;
 
-        Material[] materials = cartRenderer.materials;
-        if (materials.Length < 2 || materials[1] == null) return;
+    //    Material[] materials = cartRenderer.materials;
+    //    if (materials.Length < 2 || materials[1] == null) return;
 
-        Color targetColor = commonColor;
+    //    Color targetColor = commonColor;
 
-        switch (CartType)
-        {
-            case CartRarity.Common:
-                targetColor = commonColor;
-                break;
-            case CartRarity.Rare:
-                targetColor = rareColor;
-                break;
-            case CartRarity.Epic:
-                targetColor = epicColor;
-                break;
-            case CartRarity.Legendary:
-                targetColor = legendaryColor;
-                break;
-        }
+    //    switch (CartType)
+    //    {
+    //        case CartRarity.Common:
+    //            targetColor = commonColor;
+    //            break;
+    //        case CartRarity.Rare:
+    //            targetColor = rareColor;
+    //            break;
+    //        case CartRarity.Epic:
+    //            targetColor = epicColor;
+    //            break;
+    //        case CartRarity.Legendary:
+    //            targetColor = legendaryColor;
+    //            break;
+    //    }
 
-        materials[1].color = targetColor;
-        cartRenderer.materials = materials; // Apply the modified array back
-    }
+    //    materials[1].color = targetColor;
+    //    cartRenderer.materials = materials; // Apply the modified array back
+    //}
     public void PlayVFX()
     {
         //Debug.Log("Attempt to play vfx on: " + gameObject.name);
@@ -298,12 +284,12 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
         collectVFX.Play();
         //Debug.Log($"After Play: IsPlaying = {collectVFX.isPlaying}, IsEmitting = {collectVFX.isEmitting}");
     }
-    public void SetRarity(CartRarity rarity)
-    {
-        CartType = rarity;
-        // Apply the rarity color to the cart renderer
-        ApplyRarityColor();
-    }
+    //public void SetRarity(CartRarity rarity)
+    //{
+    //    CartType = rarity;
+    //    // Apply the rarity color to the cart renderer
+    //    ApplyRarityColor();
+    //}
     public void CollectByPlayer()
     {
         isCollectedByPlayer = true;

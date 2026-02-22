@@ -987,12 +987,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 95738524}
-  - component: {fileID: 95738523}
-  - component: {fileID: 95738528}
-  - component: {fileID: 95738530}
-  - component: {fileID: 95738531}
-  - component: {fileID: 95738533}
-  - component: {fileID: 95738532}
   m_Layer: 0
   m_Name: 'Events Listeners Collect Cart '
   m_TagString: Untagged
@@ -1000,46 +994,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &95738523
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 95738519}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Event: {fileID: 11400000, guid: 1c2f6ba77010d5645894c2545add5964, type: 2}
-  Response:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1981863288}
-        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
-        m_MethodName: AddBodyParts
-        m_Mode: 2
-        m_Arguments:
-          m_ObjectArgument: {fileID: 6914780558269192623, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
-        m_TargetAssemblyTypeName: SfxManager, Assembly-CSharp
-        m_MethodName: PlaySFX
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: CollectCart
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!4 &95738524
 Transform:
   m_ObjectHideFlags: 0
@@ -1049,260 +1003,16 @@ Transform:
   m_GameObject: {fileID: 95738519}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -60.86266, y: 1.4460702, z: -474.86917}
+  m_LocalPosition: {x: 43.1, y: 1.4460702, z: -455}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 895131876}
+  - {fileID: 766013845}
+  - {fileID: 575403417}
+  - {fileID: 1842272435}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &95738528
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 95738519}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Event: {fileID: 11400000, guid: 53bc1f737b4b6ea47a1ddcaf9047cb1a, type: 2}
-  Response:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 203355758}
-        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
-        m_MethodName: AddBodyParts
-        m_Mode: 2
-        m_Arguments:
-          m_ObjectArgument: {fileID: 6914780558269192623, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
-        m_TargetAssemblyTypeName: SfxManager, Assembly-CSharp
-        m_MethodName: PlaySFX
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: CollectCart
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &95738530
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 95738519}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Event: {fileID: 11400000, guid: d11083922a7dde644a6fbdf94ccfe0e9, type: 2}
-  Response:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1981863288}
-        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
-        m_MethodName: AddBodyParts
-        m_Mode: 2
-        m_Arguments:
-          m_ObjectArgument: {fileID: 6914780558269192623, guid: dc2031e035dc7d44e935f0bb65fb45b4, type: 3}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
-        m_TargetAssemblyTypeName: SfxManager, Assembly-CSharp
-        m_MethodName: PlaySFX
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: CollectCart
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 1981863288}
-        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
-        m_MethodName: IncreaseNumOfCartsWithItem
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: CollectCart
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &95738531
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 95738519}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Event: {fileID: 11400000, guid: ed91acab010b54f49a35288a9c636c04, type: 2}
-  Response:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 203355758}
-        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
-        m_MethodName: AddBodyParts
-        m_Mode: 2
-        m_Arguments:
-          m_ObjectArgument: {fileID: 6914780558269192623, guid: dc2031e035dc7d44e935f0bb65fb45b4, type: 3}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
-        m_TargetAssemblyTypeName: SfxManager, Assembly-CSharp
-        m_MethodName: PlaySFX
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: CollectCart
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 203355758}
-        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
-        m_MethodName: IncreaseNumOfCartsWithItem
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: CollectCart
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &95738532
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 95738519}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Event: {fileID: 11400000, guid: 3870df526ee277849912f5f979d3502b, type: 2}
-  Response:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 203355758}
-        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
-        m_MethodName: AddBodyParts
-        m_Mode: 2
-        m_Arguments:
-          m_ObjectArgument: {fileID: 6914780558269192623, guid: ae3a5850992e5574392e8393b4347144, type: 3}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
-        m_TargetAssemblyTypeName: SfxManager, Assembly-CSharp
-        m_MethodName: PlaySFX
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: CollectCart
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 203355758}
-        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
-        m_MethodName: IncreaseNumOfCartsWithItem
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: CollectCart
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &95738533
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 95738519}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Event: {fileID: 11400000, guid: 2aac4365b88a43c45b7f206bcdece31c, type: 2}
-  Response:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1981863288}
-        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
-        m_MethodName: AddBodyParts
-        m_Mode: 2
-        m_Arguments:
-          m_ObjectArgument: {fileID: 6914780558269192623, guid: ae3a5850992e5574392e8393b4347144, type: 3}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
-        m_TargetAssemblyTypeName: SfxManager, Assembly-CSharp
-        m_MethodName: PlaySFX
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: CollectCart
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 1981863288}
-        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
-        m_MethodName: IncreaseNumOfCartsWithItem
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: CollectCart
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!1001 &95888074
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2867,7 +2577,7 @@ MonoBehaviour:
   - {fileID: 6597024514049572970, guid: c6c12bfc1b7ace847be00ecc6a8d5d79, type: 3}
   snakeBody: []
   cartsWithOutItem: []
-  playerIndex: 1
+  playerIndex: 2
   setupCamera: {fileID: 11400000, guid: a2aa89cd59a0c8f40966246bd2b2532a, type: 2}
   playerInputManager: {fileID: 447031817}
   cashScoreManager: {fileID: 1773933218}
@@ -8704,6 +8414,184 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1654145384852969786, guid: a293afcaffff85249a47ec30e56b6ab2, type: 3}
   m_PrefabInstance: {fileID: 567431490}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &575403416
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 575403417}
+  - component: {fileID: 575403420}
+  - component: {fileID: 575403419}
+  - component: {fileID: 575403418}
+  m_Layer: 0
+  m_Name: P3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &575403417
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 575403416}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 95738524}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &575403418
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 575403416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: {fileID: 11400000, guid: d75c8bb3a2921234da5351bacc7f412e, type: 2}
+  Response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1417757267}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: AddBodyParts
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 6914780558269192623, guid: ae3a5850992e5574392e8393b4347144, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
+        m_TargetAssemblyTypeName: SfxManager, Assembly-CSharp
+        m_MethodName: PlaySFX
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: CollectCart
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1417757267}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: IncreaseNumOfCartsWithItem
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: CollectCart
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &575403419
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 575403416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: {fileID: 11400000, guid: b50516b6b8a021241a45cc835589d8d9, type: 2}
+  Response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1417757267}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: AddBodyParts
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 6914780558269192623, guid: dc2031e035dc7d44e935f0bb65fb45b4, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
+        m_TargetAssemblyTypeName: SfxManager, Assembly-CSharp
+        m_MethodName: PlaySFX
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: CollectCart
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1417757267}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: IncreaseNumOfCartsWithItem
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: CollectCart
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &575403420
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 575403416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: {fileID: 11400000, guid: 0a7b976f82a6c0446b0a2982cb4d09f6, type: 2}
+  Response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1417757267}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: AddBodyParts
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 6914780558269192623, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
+        m_TargetAssemblyTypeName: SfxManager, Assembly-CSharp
+        m_MethodName: PlaySFX
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: CollectCart
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &576752445
 GameObject:
   m_ObjectHideFlags: 0
@@ -8987,6 +8875,8 @@ GameObject:
   - component: {fileID: 591100670}
   - component: {fileID: 591100671}
   - component: {fileID: 591100676}
+  - component: {fileID: 591100678}
+  - component: {fileID: 591100677}
   m_Layer: 0
   m_Name: 'Events Listeners Cart Disable Detach '
   m_TagString: Untagged
@@ -9054,6 +8944,62 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 203355758}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: TemporarilyDisableDetaching
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &591100677
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 591100669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: {fileID: 11400000, guid: 9577c87a5470ba24bb0b52c553553622, type: 2}
+  Response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 635788455}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: TemporarilyDisableDetaching
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &591100678
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 591100669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: {fileID: 11400000, guid: 940e8e1d7f2de714ba48df30d3d46126, type: 2}
+  Response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1417757267}
         m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
         m_MethodName: TemporarilyDisableDetaching
         m_Mode: 1
@@ -9681,7 +9627,7 @@ MonoBehaviour:
   - {fileID: 6597024514049572970, guid: ddd4a2478a4ba0643ba10383ce5adb33, type: 3}
   snakeBody: []
   cartsWithOutItem: []
-  playerIndex: 1
+  playerIndex: 4
   setupCamera: {fileID: 11400000, guid: 451def84b38fa3848907aef82b322f89, type: 2}
   playerInputManager: {fileID: 447031817}
   cashScoreManager: {fileID: 1773933218}
@@ -32835,6 +32781,184 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 40, y: 20, z: 0}
+--- !u!1 &766013844
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 766013845}
+  - component: {fileID: 766013848}
+  - component: {fileID: 766013847}
+  - component: {fileID: 766013846}
+  m_Layer: 0
+  m_Name: P2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &766013845
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 766013844}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 95738524}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &766013846
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 766013844}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: {fileID: 11400000, guid: 3870df526ee277849912f5f979d3502b, type: 2}
+  Response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 203355758}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: AddBodyParts
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 6914780558269192623, guid: ae3a5850992e5574392e8393b4347144, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
+        m_TargetAssemblyTypeName: SfxManager, Assembly-CSharp
+        m_MethodName: PlaySFX
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: CollectCart
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 203355758}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: IncreaseNumOfCartsWithItem
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: CollectCart
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &766013847
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 766013844}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: {fileID: 11400000, guid: ed91acab010b54f49a35288a9c636c04, type: 2}
+  Response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 203355758}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: AddBodyParts
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 6914780558269192623, guid: dc2031e035dc7d44e935f0bb65fb45b4, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
+        m_TargetAssemblyTypeName: SfxManager, Assembly-CSharp
+        m_MethodName: PlaySFX
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: CollectCart
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 203355758}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: IncreaseNumOfCartsWithItem
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: CollectCart
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &766013848
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 766013844}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: {fileID: 11400000, guid: 53bc1f737b4b6ea47a1ddcaf9047cb1a, type: 2}
+  Response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 203355758}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: AddBodyParts
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 6914780558269192623, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
+        m_TargetAssemblyTypeName: SfxManager, Assembly-CSharp
+        m_MethodName: PlaySFX
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: CollectCart
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &767239231
 GameObject:
   m_ObjectHideFlags: 0
@@ -33263,7 +33387,7 @@ Camera:
   far clip plane: 1000
   field of view: 30
   orthographic: 1
-  orthographic size: 7.7
+  orthographic size: 14
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -33287,8 +33411,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 797538514}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.23911765, y: 0.3696438, z: -0.09904577, w: 0.89239913}
-  m_LocalPosition: {x: 43.03627, y: 10.72, z: -479.0237}
+  m_LocalRotation: {x: 0.46193978, y: 0.33141357, z: -0.19134171, w: 0.8001032}
+  m_LocalPosition: {x: -41.935543, y: 11.310254, z: -490.6356}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -34955,6 +35079,184 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 894170056}
   m_CullTransparentMesh: 1
+--- !u!1 &895131875
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 895131876}
+  - component: {fileID: 895131879}
+  - component: {fileID: 895131878}
+  - component: {fileID: 895131877}
+  m_Layer: 0
+  m_Name: P1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &895131876
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 895131875}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 95738524}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &895131877
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 895131875}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: {fileID: 11400000, guid: 2aac4365b88a43c45b7f206bcdece31c, type: 2}
+  Response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1981863288}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: AddBodyParts
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 6914780558269192623, guid: ae3a5850992e5574392e8393b4347144, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
+        m_TargetAssemblyTypeName: SfxManager, Assembly-CSharp
+        m_MethodName: PlaySFX
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: CollectCart
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1981863288}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: IncreaseNumOfCartsWithItem
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: CollectCart
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &895131878
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 895131875}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: {fileID: 11400000, guid: d11083922a7dde644a6fbdf94ccfe0e9, type: 2}
+  Response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1981863288}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: AddBodyParts
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 6914780558269192623, guid: dc2031e035dc7d44e935f0bb65fb45b4, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
+        m_TargetAssemblyTypeName: SfxManager, Assembly-CSharp
+        m_MethodName: PlaySFX
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: CollectCart
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1981863288}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: IncreaseNumOfCartsWithItem
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: CollectCart
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &895131879
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 895131875}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: {fileID: 11400000, guid: 1c2f6ba77010d5645894c2545add5964, type: 2}
+  Response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1981863288}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: AddBodyParts
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 6914780558269192623, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
+        m_TargetAssemblyTypeName: SfxManager, Assembly-CSharp
+        m_MethodName: PlaySFX
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: CollectCart
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &904092516
 GameObject:
   m_ObjectHideFlags: 0
@@ -62924,7 +63226,7 @@ MonoBehaviour:
   - {fileID: 6597024514049572970, guid: eb604ccf023d8ae44a3f75176632b652, type: 3}
   snakeBody: []
   cartsWithOutItem: []
-  playerIndex: 1
+  playerIndex: 3
   setupCamera: {fileID: 11400000, guid: ac80406201c49794989b643d47ea750a, type: 2}
   playerInputManager: {fileID: 447031817}
   cashScoreManager: {fileID: 1773933218}
@@ -64201,7 +64503,7 @@ Transform:
   m_GameObject: {fileID: 1531898264}
   serializedVersion: 2
   m_LocalRotation: {x: 0.23911765, y: 0.3696438, z: -0.09904577, w: 0.89239913}
-  m_LocalPosition: {x: 36.13627, y: 7.6699996, z: -479.02374}
+  m_LocalPosition: {x: 43.03627, y: 10.72, z: -479.0237}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -91626,6 +91928,184 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d5d1c41c249b928469a3f35b282ca984, type: 3}
+--- !u!1 &1842272434
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1842272435}
+  - component: {fileID: 1842272438}
+  - component: {fileID: 1842272437}
+  - component: {fileID: 1842272436}
+  m_Layer: 0
+  m_Name: P4
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1842272435
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1842272434}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 95738524}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1842272436
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1842272434}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: {fileID: 11400000, guid: 60ab87266561dcc49a1dc35a7906ab25, type: 2}
+  Response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 635788455}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: AddBodyParts
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 6914780558269192623, guid: ae3a5850992e5574392e8393b4347144, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
+        m_TargetAssemblyTypeName: SfxManager, Assembly-CSharp
+        m_MethodName: PlaySFX
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: CollectCart
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 635788455}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: IncreaseNumOfCartsWithItem
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: CollectCart
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &1842272437
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1842272434}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: {fileID: 11400000, guid: f4035e74315d597439b5bbf6ade4ebb0, type: 2}
+  Response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 635788455}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: AddBodyParts
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 6914780558269192623, guid: dc2031e035dc7d44e935f0bb65fb45b4, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
+        m_TargetAssemblyTypeName: SfxManager, Assembly-CSharp
+        m_MethodName: PlaySFX
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: CollectCart
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 635788455}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: IncreaseNumOfCartsWithItem
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: CollectCart
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &1842272438
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1842272434}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c286299fe71df92458b153b90e7686a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: {fileID: 11400000, guid: d569cd80caee22c4fa835a6ca9b644a8, type: 2}
+  Response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 635788455}
+        m_TargetAssemblyTypeName: SnakeCartManager, Assembly-CSharp
+        m_MethodName: AddBodyParts
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 6914780558269192623, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
+        m_TargetAssemblyTypeName: SfxManager, Assembly-CSharp
+        m_MethodName: PlaySFX
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: CollectCart
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1856852821
 GameObject:
   m_ObjectHideFlags: 0
@@ -118969,6 +119449,7 @@ SceneRoots:
   - {fileID: 635788456}
   - {fileID: 591100670}
   - {fileID: 95738524}
+  - {fileID: 1409103362}
   - {fileID: 1773933215}
   - {fileID: 363363160}
   - {fileID: 1771990810}
@@ -118988,7 +119469,6 @@ SceneRoots:
   - {fileID: 1638260881}
   - {fileID: 1886278737}
   - {fileID: 594701849}
-  - {fileID: 1409103362}
   - {fileID: 1457522427}
   - {fileID: 961382016}
   - {fileID: 6813010474954365217}
