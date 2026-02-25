@@ -177,11 +177,11 @@ public class MapEventManager : MonoBehaviour
         yield return StartCoroutine(WarningPhase(
             section,
             rareSaleConfig.warningDuration,
-            "Section " + section.sectionId + "\nFlash sale starts in "
+            "Section " + section.sectionId + "\nis about to drop rare items in "
         ));
 
         section.SetActive();
-        ShowRollingText("Section " + section.sectionId + "\nFlash sale!!!");
+        ShowRollingText("Section " + section.sectionId + "\nRare items incoming!!!");
 
         int total = rareSaleConfig.GetRandomTotal();
         float interval = rareSaleConfig.spawnInterval;
@@ -219,11 +219,11 @@ public class MapEventManager : MonoBehaviour
         yield return StartCoroutine(WarningPhase(
             section,
             cartRainConfig.warningDuration,
-            "Section " + section.sectionId + "\nCart restock in "
+            "Section " + section.sectionId + "\nwill restock empty carts in "
         ));
 
         section.SetActive();
-        ShowRollingText("Section " + section.sectionId + "\nCart restocked!");
+        ShowRollingText("Section " + section.sectionId + "\nEmpty carts restocking!!!");
 
         int total = cartRainConfig.GetRandomTotal();
         float interval = cartRainConfig.spawnInterval;
@@ -261,11 +261,11 @@ public class MapEventManager : MonoBehaviour
         yield return StartCoroutine(WarningPhase(
             section,
             powerupStormConfig.warningDuration,
-            "Section " + section.sectionId + "\nSpecial delivery in "
+            "Section " + section.sectionId + "\nwill drop deadly powerups in "
         ));
 
         section.SetActive();
-        ShowRollingText("Section " + section.sectionId + "\nSpecial delivery!!! ");
+        ShowRollingText("Section " + section.sectionId + "\nDeadly powerups dropping!!!");
 
         int total = powerupStormConfig.GetRandomTotal();
         float interval = powerupStormConfig.spawnInterval;
@@ -303,11 +303,11 @@ public class MapEventManager : MonoBehaviour
         yield return StartCoroutine(WarningPhase(
             section,
             shopperRushConfig.warningDuration,
-            "Section " + section.sectionId + "\nShoppers breaking in "
+            "Section " + section.sectionId + "\nwill be filled by Shoppers in "
         ));
 
         section.SetActive();
-        ShowRollingText("Section " + section.sectionId + "\nShoppers breaking in!");
+        ShowRollingText("Section " + section.sectionId + "\nShoppers breaking in!!!");
 
         int total = shopperRushConfig.GetRandomTotal();
         float interval = shopperRushConfig.spawnInterval;

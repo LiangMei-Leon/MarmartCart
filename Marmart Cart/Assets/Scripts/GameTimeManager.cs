@@ -268,19 +268,19 @@ public class GameTimeManager : MonoBehaviour
         //CalculateFinalScore();
 
         // Show final score screen
-        scoreBreakdownTextP1.text = cashScoreManager.p1TotalScore.ToString();
-        scoreBreakdownTextP2.text = cashScoreManager.p2TotalScore.ToString();
-        finalScoreScreen.SetActive(true);
-        if(cashScoreManager.p1TotalScore > cashScoreManager.p2TotalScore)
-        {
-            p1WinResult.SetActive(true);
-            p2WinResult.SetActive(false);
-        }
-        else if(cashScoreManager.p2TotalScore > cashScoreManager.p1TotalScore)
-        {
-            p1WinResult.SetActive(false);
-            p2WinResult.SetActive(true);
-        }
+        //scoreBreakdownTextP1.text = cashScoreManager.p1TotalScore.ToString();
+        //scoreBreakdownTextP2.text = cashScoreManager.p2TotalScore.ToString();
+        //finalScoreScreen.SetActive(true);
+        //if(cashScoreManager.p1TotalScore > cashScoreManager.p2TotalScore)
+        //{
+        //    p1WinResult.SetActive(true);
+        //    p2WinResult.SetActive(false);
+        //}
+        //else if(cashScoreManager.p2TotalScore > cashScoreManager.p1TotalScore)
+        //{
+        //    p1WinResult.SetActive(false);
+        //    p2WinResult.SetActive(true);
+        //}
         //DisplayScoreBreakdown();
     }
 
