@@ -49,12 +49,10 @@ public class GameTimeManager : MonoBehaviour
     private int itemCartsP1 = 0;
     [SerializeField] private TextMeshProUGUI currentTotalCartCountP1Text;
     [SerializeField] private TextMeshProUGUI currentItemCartCountP1Text;
-    //[SerializeField] private TextMeshProUGUI cartCountCommonP1;
-    //[SerializeField] private TextMeshProUGUI cartCountRareP1;
-    //[SerializeField] private TextMeshProUGUI cartCountEpicP1;
-    //[SerializeField] private TextMeshProUGUI cartCountLegendaryP1;
-    //private int hitCountP1 = 0;
-    //[SerializeField] private TextMeshProUGUI hitCountP1Text; // TMP for hit count display
+    [SerializeField] private TextMeshProUGUI currentTotalCartCountP1TextFor4pMode;
+    [SerializeField] private TextMeshProUGUI currentItemCartCountP1TextFor4pMode;
+    [SerializeField] private TextMeshProUGUI finalRefToCurrentTotalCartCountP1Text;
+    [SerializeField] private TextMeshProUGUI finalRefToCurrentItemCartCountP1Text;
 
     //Player 2
     [SerializeField] private SnakeCartManager snakeCartManagerP2;
@@ -62,12 +60,24 @@ public class GameTimeManager : MonoBehaviour
     private int itemCartsP2 = 0;
     [SerializeField] private TextMeshProUGUI currentTotalCartCountP2Text;
     [SerializeField] private TextMeshProUGUI currentItemCartCountP2Text;
-    //[SerializeField] private TextMeshProUGUI cartCountCommonP2;
-    //[SerializeField] private TextMeshProUGUI cartCountRareP2;
-    //[SerializeField] private TextMeshProUGUI cartCountEpicP2;
-    //[SerializeField] private TextMeshProUGUI cartCountLegendaryP2;
-    //private int hitCountP2 = 0;
-    //[SerializeField] private TextMeshProUGUI hitCountP2Text; // TMP for hit count display
+    [SerializeField] private TextMeshProUGUI currentTotalCartCountP2TextFor4pMode;
+    [SerializeField] private TextMeshProUGUI currentItemCartCountP2TextFor4pMode;
+    [SerializeField] private TextMeshProUGUI finalRefToCurrentTotalCartCountP2Text;
+    [SerializeField] private TextMeshProUGUI finalRefToCurrentItemCartCountP2Text;
+
+    //Player 3
+    [SerializeField] private SnakeCartManager snakeCartManagerP3;
+    private int cartCountP3 = 0;
+    private int itemCartsP3 = 0;
+    [SerializeField] private TextMeshProUGUI currentTotalCartCountP3Text;
+    [SerializeField] private TextMeshProUGUI currentItemCartCountP3Text;
+
+    //Player 4
+    [SerializeField] private SnakeCartManager snakeCartManagerP4;
+    private int cartCountP4 = 0;
+    private int itemCartsP4 = 0;
+    [SerializeField] private TextMeshProUGUI currentTotalCartCountP4Text;
+    [SerializeField] private TextMeshProUGUI currentItemCartCountP4Text;
 
     private bool isAnimatingHitCount = false; // Flag for hit count text animation
     private bool isAnimatingCartCount = false; // Flag for cart count text animation
@@ -90,20 +100,34 @@ public class GameTimeManager : MonoBehaviour
         // Pause game and show title screen at the beginning
         PauseGame();
         titleScreen.SetActive(true);
-        //hitCountP1Text.text = "0";
-        //hitCountP2Text.text = "0";
-        currentTotalCartCountP1Text.text = "0";
-        currentItemCartCountP1Text.text = "0";
-        currentTotalCartCountP2Text.text = "0";
-        currentItemCartCountP2Text.text = "0";
-        //cartCountCommonP1.text = "0";
-        //cartCountCommonP2.text = "0";
-        //cartCountRareP1.text = "0";
-        //cartCountRareP2.text = "0";
-        //cartCountEpicP1.text = "0";
-        //cartCountEpicP2.text = "0";
-        //cartCountLegendaryP1.text = "0";
-        //cartCountLegendaryP2.text = "0";
+        //Switch text reference for player 1&2 depending on which game mode they are in (player 3&4 would only be in 4 player mode)
+        if (GMode.Instance.PlayerCount() == 2)
+        {
+            // p1
+            finalRefToCurrentTotalCartCountP1Text = currentTotalCartCountP1Text;
+            finalRefToCurrentItemCartCountP1Text = currentItemCartCountP1Text;
+            // p2
+            finalRefToCurrentTotalCartCountP2Text = currentTotalCartCountP2Text;
+            finalRefToCurrentItemCartCountP2Text = currentItemCartCountP2Text;
+        }
+        else if (GMode.Instance.PlayerCount() == 4)
+        {
+            // p1
+            finalRefToCurrentTotalCartCountP1Text = currentTotalCartCountP1TextFor4pMode;
+            finalRefToCurrentItemCartCountP1Text = currentItemCartCountP1TextFor4pMode;
+            // p2
+            finalRefToCurrentTotalCartCountP2Text = currentTotalCartCountP2TextFor4pMode;
+            finalRefToCurrentItemCartCountP2Text = currentItemCartCountP2TextFor4pMode;
+        }
+
+        finalRefToCurrentTotalCartCountP1Text.text = "0";
+        finalRefToCurrentItemCartCountP1Text.text = "0";
+        finalRefToCurrentTotalCartCountP2Text.text = "0";
+        finalRefToCurrentItemCartCountP2Text.text = "0";
+        currentTotalCartCountP3Text.text = "0";
+        currentItemCartCountP3Text.text = "0";
+        currentTotalCartCountP4Text.text = "0";
+        currentItemCartCountP4Text.text = "0";
 
         // Initialize camera zoom
         if (cinemachineCameraP1 != null)
@@ -122,6 +146,8 @@ public class GameTimeManager : MonoBehaviour
         {
             cinemachineCameraP4.Lens.OrthographicSize = defaultOrthographicSize;
         }
+
+        
     }
 
     private void Update()
@@ -142,6 +168,7 @@ public class GameTimeManager : MonoBehaviour
 
         // Update timer display
         UpdateTimerDisplay();
+
         //Update Player1 Cart Count display and adjust camera
         int newTotalP1 = snakeCartManagerP1.GetSnakeBodyLength() - 1;
         int newItemCartsP1 = snakeCartManagerP1.GetCurrentNumOfCartsWithItem();
@@ -151,10 +178,10 @@ public class GameTimeManager : MonoBehaviour
             cartCountP1 = newTotalP1;
             itemCartsP1 = newItemCartsP1;
 
-            currentTotalCartCountP1Text.text = cartCountP1.ToString();
-            currentItemCartCountP1Text.text = itemCartsP1.ToString();
+            finalRefToCurrentTotalCartCountP1Text.text = cartCountP1.ToString();
+            finalRefToCurrentItemCartCountP1Text.text = itemCartsP1.ToString();
             //StartCoroutine(AnimateText(currentTotalCartCountP1Text, false));
-            StartCoroutine(AnimateText(currentItemCartCountP1Text, false));
+            StartCoroutine(AnimateText(finalRefToCurrentItemCartCountP1Text, false));
             UpdateCameraZoomP1();
         }
 
@@ -167,13 +194,44 @@ public class GameTimeManager : MonoBehaviour
             cartCountP2 = newTotalP2;
             itemCartsP2 = newItemCartsP2;
 
-            currentTotalCartCountP2Text.text = cartCountP2.ToString();
-            currentItemCartCountP2Text.text = itemCartsP2.ToString();
+            finalRefToCurrentTotalCartCountP2Text.text = cartCountP2.ToString();
+            finalRefToCurrentItemCartCountP2Text.text = itemCartsP2.ToString();
             //StartCoroutine(AnimateText(currentTotalCartCountP2Text, false));
-            StartCoroutine(AnimateText(currentItemCartCountP2Text, false));
+            StartCoroutine(AnimateText(finalRefToCurrentItemCartCountP2Text, false));
             UpdateCameraZoomP2();
         }
 
+        //Update Player1 Cart Count display and adjust camera
+        int newTotalP3 = snakeCartManagerP3.GetSnakeBodyLength() - 1;
+        int newItemCartsP3 = snakeCartManagerP3.GetCurrentNumOfCartsWithItem();
+
+        if (newTotalP3 != cartCountP3 || itemCartsP3 != newItemCartsP3)
+        {
+            cartCountP3 = newTotalP3;
+            itemCartsP3 = newItemCartsP3;
+
+            currentTotalCartCountP3Text.text = cartCountP3.ToString();
+            currentItemCartCountP3Text.text = itemCartsP3.ToString();
+            //StartCoroutine(AnimateText(currentTotalCartCountP3Text, false));
+            StartCoroutine(AnimateText(currentItemCartCountP3Text, false));
+            UpdateCameraZoomP3();
+        }
+
+        //Update Player4 Cart Count display and adjust camera
+        int newTotalP4 = snakeCartManagerP4.GetSnakeBodyLength() - 1;
+        int newItemCartsP4 = snakeCartManagerP4.GetCurrentNumOfCartsWithItem();
+
+        if (newTotalP4 != cartCountP4 || itemCartsP4 != newItemCartsP4)
+        {
+            cartCountP4 = newTotalP4;
+            itemCartsP4 = newItemCartsP4;
+
+            currentTotalCartCountP4Text.text = cartCountP4.ToString();
+            currentItemCartCountP4Text.text = itemCartsP4.ToString();
+            //StartCoroutine(AnimateText(currentTotalCartCountP1Text, false));
+            StartCoroutine(AnimateText(currentItemCartCountP4Text, false));
+            UpdateCameraZoomP4();
+        }
         // Check if game time has ended
         if (elapsedTime >= totalGameDuration)
         {
@@ -319,6 +377,28 @@ public class GameTimeManager : MonoBehaviour
 
         // Apply the new orthographic size
         cinemachineCameraP2.Lens.OrthographicSize = newOrthographicSize;
+    }
+    private void UpdateCameraZoomP3()
+    {
+        if (cinemachineCameraP3 == null) return;
+
+        // Calculate new orthographic size based on cart count
+        float newOrthographicSize = defaultOrthographicSize + (cartCountP3 / cartsPerZoomIncrement) * orthographicSizeIncrement;
+        newOrthographicSize = Mathf.Clamp(newOrthographicSize, defaultOrthographicSize, maxOrthographicSize);
+
+        // Apply the new orthographic size
+        cinemachineCameraP3.Lens.OrthographicSize = newOrthographicSize;
+    }
+    private void UpdateCameraZoomP4()
+    {
+        if (cinemachineCameraP4 == null) return;
+
+        // Calculate new orthographic size based on cart count
+        float newOrthographicSize = defaultOrthographicSize + (cartCountP4 / cartsPerZoomIncrement) * orthographicSizeIncrement;
+        newOrthographicSize = Mathf.Clamp(newOrthographicSize, defaultOrthographicSize, maxOrthographicSize);
+
+        // Apply the new orthographic size
+        cinemachineCameraP4.Lens.OrthographicSize = newOrthographicSize;
     }
     //private void CalculateFinalScore()
     //{

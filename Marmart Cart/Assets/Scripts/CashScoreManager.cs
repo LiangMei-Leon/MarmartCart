@@ -441,4 +441,28 @@ public class CashScoreManager : MonoBehaviour
         if (laneUI.subtotalText != null)
             laneUI.subtotalText.text = "0";
     }
+    public int GetPlayerScore(int playerIndex)
+    {
+        return playerIndex switch
+        {
+            1 => Mathf.RoundToInt(p1TotalScore),
+            2 => Mathf.RoundToInt(p2TotalScore),
+            // TODO: when you add p3/p4 totals, return them here
+            3 => 0,
+            4 => 0,
+            _ => 0
+        };
+    }
+
+    // Team score from a list of player indices (supports any team mapping)
+    public int GetTeamScore(int[] teamPlayers)
+    {
+        int sum = 0;
+        if (teamPlayers == null) return 0;
+
+        foreach (int p in teamPlayers)
+            sum += GetPlayerScore(p);
+
+        return sum;
+    }
 }

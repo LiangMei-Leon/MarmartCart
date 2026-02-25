@@ -1,5 +1,4 @@
 using UnityEngine;
-
 public enum GameMode { duel2P, freeForAll4P, teamBattle4P }
 public class GMode : MonoBehaviour
 {
