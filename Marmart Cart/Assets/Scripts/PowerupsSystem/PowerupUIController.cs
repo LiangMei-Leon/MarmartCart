@@ -6,6 +6,7 @@ public class PowerupUIController : MonoBehaviour
 {
     [SerializeField] private PowerupsManager powerupManager;
     [SerializeField] private TextMeshProUGUI powerupText;
+    [SerializeField] private TextMeshProUGUI powerupTextForEmpty;
 
     [Header("Powerup Icons")]
     [SerializeField] private GameObject noPowerupIcon;
@@ -25,7 +26,8 @@ public class PowerupUIController : MonoBehaviour
         // Hide all icons before showing the active one
         SetAllIconsActive(false);
 
-        string displayName = "LOOK FOR BASKETS";
+        string displayName = "";
+        powerupTextForEmpty.text = "NO POWERUP!" + "\nLOOK FOR BASKETS";
 
         if (current != null)
         {
@@ -33,31 +35,37 @@ public class PowerupUIController : MonoBehaviour
             {
                 case PowerupsManager.PowerupType.Boost:
                     displayName = "CHARGE AND DESTORY!";
+                    powerupTextForEmpty.text = "";
                     SetIconActive(boostIcon, true);
                     break;
 
                 case PowerupsManager.PowerupType.Scale:
                     displayName = "GROW THE CARTS";
+                    powerupTextForEmpty.text = "";
                     SetIconActive(scaleIcon, true);
                     break;
 
                 case PowerupsManager.PowerupType.BowlingBall:
                     displayName = "BOWLING STRIKE!";
+                    powerupTextForEmpty.text = "";
                     SetIconActive(projectileIcon, true);
                     break;
 
                 case PowerupsManager.PowerupType.Tomato:
                     displayName = "THROW A TOMATO";
+                    powerupTextForEmpty.text = "";
                     SetIconActive(tomatoIcon, true);
                     break;
 
                 case PowerupsManager.PowerupType.Grabber:
                     displayName = "GRABBER ARM";
+                    powerupTextForEmpty.text = "";
                     SetIconActive(grabberIcon, true);
                     break;
 
                 default:
-                    displayName = "LOOK FOR BASKETS";
+                    displayName = "";
+                    powerupTextForEmpty.text = "NO POWERUP!" +"\nLOOK FOR BASKETS";
                     SetIconActive(noPowerupIcon, true);
                     break;
             }

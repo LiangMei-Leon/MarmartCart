@@ -29,8 +29,12 @@ public class MapEventManager : MonoBehaviour
     [Header("UI - Rolling Text (Per Player)")]
     [SerializeField] private GameObject rollingTextRootP1;
     [SerializeField] private GameObject rollingTextRootP2;
+    [SerializeField] private GameObject rollingTextRootP3;
+    [SerializeField] private GameObject rollingTextRootP4;
     [SerializeField] private TextMeshProUGUI rollingTextP1;
     [SerializeField] private TextMeshProUGUI rollingTextP2;
+    [SerializeField] private TextMeshProUGUI rollingTextP3;
+    [SerializeField] private TextMeshProUGUI rollingTextP4;
 
     private Coroutine eventLoopRoutine;
     private bool isRunningEvent = false;
@@ -177,11 +181,11 @@ public class MapEventManager : MonoBehaviour
         yield return StartCoroutine(WarningPhase(
             section,
             rareSaleConfig.warningDuration,
-            "Section " + section.sectionId + "\nis about to drop rare items in "
+            "Section " + section.sectionId + "\ndrop extremely valuable items in "
         ));
 
         section.SetActive();
-        ShowRollingText("Section " + section.sectionId + "\nRare items incoming!!!");
+        ShowRollingText("Section " + section.sectionId + "\nValuable items incoming!!!");
 
         int total = rareSaleConfig.GetRandomTotal();
         float interval = rareSaleConfig.spawnInterval;
@@ -219,7 +223,7 @@ public class MapEventManager : MonoBehaviour
         yield return StartCoroutine(WarningPhase(
             section,
             cartRainConfig.warningDuration,
-            "Section " + section.sectionId + "\nwill restock empty carts in "
+            "Section " + section.sectionId + "\nrestock empty carts in "
         ));
 
         section.SetActive();
@@ -261,7 +265,7 @@ public class MapEventManager : MonoBehaviour
         yield return StartCoroutine(WarningPhase(
             section,
             powerupStormConfig.warningDuration,
-            "Section " + section.sectionId + "\nwill drop deadly powerups in "
+            "Section " + section.sectionId + "\ndrop deadly powerups in "
         ));
 
         section.SetActive();
@@ -374,15 +378,22 @@ public class MapEventManager : MonoBehaviour
     {
         if (rollingTextRootP1 != null) rollingTextRootP1.SetActive(true);
         if (rollingTextRootP2 != null) rollingTextRootP2.SetActive(true);
+        if (rollingTextRootP3 != null) rollingTextRootP3.SetActive(true);
+        if (rollingTextRootP4 != null) rollingTextRootP4.SetActive(true);
+
 
         if (rollingTextP1 != null) rollingTextP1.text = msg;
         if (rollingTextP2 != null) rollingTextP2.text = msg;
+        if (rollingTextP3 != null) rollingTextP3.text = msg;
+        if (rollingTextP4 != null) rollingTextP4.text = msg;
     }
 
     private void HideRollingText()
     {
         if (rollingTextRootP1 != null) rollingTextRootP1.SetActive(false);
         if (rollingTextRootP2 != null) rollingTextRootP2.SetActive(false);
+        if (rollingTextRootP3 != null) rollingTextRootP3.SetActive(false);
+        if (rollingTextRootP4 != null) rollingTextRootP4.SetActive(false);
     }
 
     private void SetAllSectionsNormal()

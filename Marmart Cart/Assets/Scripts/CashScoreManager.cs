@@ -265,7 +265,7 @@ public class CashScoreManager : MonoBehaviour
     {
         if (itemsCount <= 10) return 1f;
         if (itemsCount <= 20) return 1f + 0.1f * (itemsCount - 10);
-        if (itemsCount <= 30) return 2f + 0.2f * (itemsCount - 20);
+        if (itemsCount <= 30) return 2f + 0.15f * (itemsCount - 20);
         return 4f;
     }
 

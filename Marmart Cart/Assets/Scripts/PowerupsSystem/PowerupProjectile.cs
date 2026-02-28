@@ -7,7 +7,6 @@ public class PowerupProjectile : MonoBehaviour
     [SerializeField] private float speed = 30f;
     [SerializeField] private float lifeTime = 5f;
     [SerializeField] private LayerMask hitMask;
-    [SerializeField] private bool isPlayer1 = true;
 
     private Rigidbody rb;
     public string ownerTag;
@@ -17,10 +16,9 @@ public class PowerupProjectile : MonoBehaviour
         rb = GetComponent<Rigidbody>();
     }
 
-    public void Launch(Vector3 direction, bool isP1)
+    public void Launch(Vector3 direction, int ownerPlayerIndex)
     {
-        isPlayer1 = isP1;
-        ownerTag = isP1 ? "Player1" : "Player2";
+        ownerTag = "Player" + ownerPlayerIndex;
         rb.linearVelocity = direction.normalized * speed;
         Destroy(gameObject, lifeTime);
     }

@@ -672,7 +672,7 @@ RectTransform:
   m_GameObject: {fileID: 2434250171841127366}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 275741015757530076}
@@ -710,7 +710,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1146,7 +1146,7 @@ MonoBehaviour:
   highlightGraphicForRank: {fileID: 6055031675778740988}
   slider: {fileID: 7328229360804876329}
   handleRect: {fileID: 5570017090072138302}
-  barStartNormalized: 0.02
+  barStartNormalized: 0
   handleTextPadding: 3
   minFillPx: 0
 --- !u!1 &7276150697813061818

@@ -56,5 +56,31 @@ public class PowerupItem : MonoBehaviour, ISpawnerHoldable
             sfxManager.PlaySFX("CollectPowerup");
             Destroy(this.gameObject);
         }
+
+        if (other.gameObject.CompareTag("Player3"))
+        {
+            PowerupsManager p3PowerupManager = other.GetComponentInChildren<PowerupsManager>();
+            if (p3PowerupManager == null)
+            {
+                return;
+            }
+
+            p3PowerupManager.RollRandomPowerup(powerupTier);   // NEW: pass tier
+            sfxManager.PlaySFX("CollectPowerup");
+            Destroy(this.gameObject);
+        }
+
+        if (other.gameObject.CompareTag("Player4"))
+        {
+            PowerupsManager p4PowerupManager = other.GetComponentInChildren<PowerupsManager>();
+            if (p4PowerupManager == null)
+            {
+                return;
+            }
+
+            p4PowerupManager.RollRandomPowerup(powerupTier);   // NEW: pass tier
+            sfxManager.PlaySFX("CollectPowerup");
+            Destroy(this.gameObject);
+        }
     }
 }
