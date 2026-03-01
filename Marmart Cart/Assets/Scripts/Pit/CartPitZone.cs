@@ -33,7 +33,7 @@ public class CartPitZone : MonoBehaviour
         checkOutManager = GetComponent<CheckOutManager>();
         checkOutManager.SetMyPitZone(this);
 
-        requiredEntryDirection = transform.forward;
+        //requiredEntryDirection = transform.forward;
     }
 
     private void OnTriggerEnter(Collider other)
