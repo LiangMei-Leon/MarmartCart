@@ -11,12 +11,15 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/Liang/ChainedCartControlScene.unity
     guid: bcdcd133d157c894b9866cfa97bc7c7b
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Liang/TutorialScene.unity
     guid: 3ac58e611a46a79449e276646a50c49f
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Liang/CompetitiveModeTestScene.unity
     guid: caa5322d171b459448c80a06ba1b61bc
+  - enabled: 1
+    path: Assets/Scenes/Liang/4playerTestScene.unity
+    guid: e38d7d2ce2fc039409b1c730188d2095
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 3d75d177ecca0494d8a00b55bc90705d, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

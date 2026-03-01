@@ -3159,7 +3159,7 @@ MonoBehaviour:
   disableDetachEvent: {fileID: 11400000, guid: 9577c87a5470ba24bb0b52c553553622, type: 2}
   sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
   chargingVFX: {fileID: 890071643070153643}
-  tomatoSplashEffect: {fileID: 0}
+  tomatoSplashEffect: {fileID: 1731890468987573151}
   splashFadeDelay: 2
   splashFadeDuration: 3
 --- !u!114 &6575914362257146396
