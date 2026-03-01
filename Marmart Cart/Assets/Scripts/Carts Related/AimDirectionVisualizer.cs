@@ -3,75 +3,80 @@ using UnityEngine;
 [RequireComponent(typeof(LineRenderer))]
 public class AimDirectionVisualizer : MonoBehaviour
 {
+    [Header("Identity")]
+    [Range(1, 4)]
+    [SerializeField] private int playerIndex = 1; // 1..4
+
     [Header("Settings")]
-    [SerializeField] private bool isForPlayer1 = true;
-    [SerializeField] private CartControlScript cartControllerP1;
-    [SerializeField] private CartControlScript cartControllerP2;
     [SerializeField] private float lineLength = 5f;
+    [SerializeField] private Vector3 startOffset = new Vector3(0f, 0.2f, 0f);
+
+    [Header("Runtime Refs")]
     [SerializeField] private Transform playerTransform;
+    [SerializeField] private CartControlScript cartController;
 
     private LineRenderer lineRenderer;
 
-    void Awake()
+    private void Awake()
     {
         lineRenderer = GetComponent<LineRenderer>();
+        lineRenderer.enabled = false;
     }
+
     private void Start()
     {
-        Invoke(nameof(RegisterPlayer), 2f);
+        Invoke(nameof(RegisterPlayer), 0.1f);
     }
+
     public void RegisterPlayer()
     {
-        GameObject playerRef;
-        if (isForPlayer1)
-            playerRef = GameObject.FindGameObjectWithTag("Player1");
-        else
-            playerRef = GameObject.FindGameObjectWithTag("Player2");
-
-        playerTransform = isForPlayer1 ? playerRef?.transform : playerRef?.transform;
-        if (playerTransform == null)
+        var playerRef = GameObject.FindGameObjectWithTag($"Player{playerIndex}");
+        if (!playerRef)
         {
-            Debug.LogError("Player not found for AimDirectionVisualizer.");
+            Debug.LogError($"AimDirectionVisualizer: Player{playerIndex} not found.");
             return;
         }
-        cartControllerP1 = playerTransform.GetComponentInChildren<CartControlScript>();
-        cartControllerP2 = playerTransform.GetComponentInChildren<CartControlScript>();
+
+        playerTransform = playerRef.transform;
+        cartController = playerRef.GetComponentInChildren<CartControlScript>(true);
+
+        if (!cartController)
+            Debug.LogError($"AimDirectionVisualizer: CartControlScript not found under Player{playerIndex}.");
     }
-    void Update()
+
+    private void Update()
     {
-        if (isForPlayer1)
+        if (!cartController || !cartController.enabled || !playerTransform)
         {
-            if (cartControllerP1 == null || !cartControllerP1.enabled) return;
-
-            if (cartControllerP1.GetCanAim())
-            {
-                Vector3 start = playerTransform.position;
-                Vector3 end = start + cartControllerP1.AimDirection * lineLength;
-                lineRenderer.enabled = true;
-                lineRenderer.SetPosition(0, start);
-                lineRenderer.SetPosition(1, end);
-            }
-            else
-            {
-                lineRenderer.enabled = false;
-            }
+            lineRenderer.enabled = false;
+            return;
         }
-        else
+
+        if (!cartController.GetCanAim())
         {
-            if (cartControllerP2 == null || !cartControllerP2.enabled) return;
-
-            if (cartControllerP2.GetCanAim())
-            {
-                Vector3 start = playerTransform.position;
-                Vector3 end = start + cartControllerP2.AimDirection * lineLength;
-                lineRenderer.enabled = true;
-                lineRenderer.SetPosition(0, start);
-                lineRenderer.SetPosition(1, end);
-            }
-            else
-            {
-                lineRenderer.enabled = false;
-            }
+            lineRenderer.enabled = false;
+            return;
         }
+
+        Vector3 dir = cartController.AimDirection;
+        if (dir.sqrMagnitude < 0.0001f)
+            dir = new Vector3(0f, 0f, 0f);
+
+        dir.y = 0f;
+
+        dir.Normalize();
+
+        Vector3 start = playerTransform.position + startOffset;
+        Vector3 end = start + dir * lineLength;
+
+        lineRenderer.enabled = true;
+        lineRenderer.SetPosition(0, start);
+        lineRenderer.SetPosition(1, end);
+    }
+
+    public void SetPlayerIndex(int idx)
+    {
+        playerIndex = Mathf.Clamp(idx, 1, 4);
+        RegisterPlayer();
     }
 }

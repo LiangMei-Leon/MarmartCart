@@ -99,6 +99,56 @@ public class AIShopperPhysics : MonoBehaviour
             shopperBehaviour.OnKnockOut(playerIndex);
             KnockOut(playerIndex);
         }
+        else if (other.gameObject.CompareTag("Player3"))
+        {
+            if (other.gameObject.GetComponentInChildren<CartControlScript>() != null)
+            {
+                other.gameObject.GetComponentInChildren<CartControlScript>().RefillSpeedUpMeter(rewardMeterAmount);
+            }
+            // If that fails then the hiter is a chained cart
+            else if (other.transform.parent.GetChild(0).GetComponentInChildren<CartControlScript>() != null)
+            {
+                other.transform.parent.GetChild(0).GetComponentInChildren<CartControlScript>().RefillSpeedUpMeter(rewardMeterAmount);
+            }
+            // Play one of the two sound effects randomly
+            if (Random.value < 0.5f) // Random.value gives a float between 0 and 1
+            {
+                sfxManager.PlaySFX("HitCharacter1");
+            }
+            else
+            {
+                sfxManager.PlaySFX("HitCharacter2");
+            }
+            rb.isKinematic = false;
+            int playerIndex = 3;
+            shopperBehaviour.OnKnockOut(playerIndex);
+            KnockOut(playerIndex);
+        }
+        else if (other.gameObject.CompareTag("Player4"))
+        {
+            if (other.gameObject.GetComponentInChildren<CartControlScript>() != null)
+            {
+                other.gameObject.GetComponentInChildren<CartControlScript>().RefillSpeedUpMeter(rewardMeterAmount);
+            }
+            // If that fails then the hiter is a chained cart
+            else if (other.transform.parent.GetChild(0).GetComponentInChildren<CartControlScript>() != null)
+            {
+                other.transform.parent.GetChild(0).GetComponentInChildren<CartControlScript>().RefillSpeedUpMeter(rewardMeterAmount);
+            }
+            // Play one of the two sound effects randomly
+            if (Random.value < 0.5f) // Random.value gives a float between 0 and 1
+            {
+                sfxManager.PlaySFX("HitCharacter1");
+            }
+            else
+            {
+                sfxManager.PlaySFX("HitCharacter2");
+            }
+            rb.isKinematic = false;
+            int playerIndex = 4;
+            shopperBehaviour.OnKnockOut(playerIndex);
+            KnockOut(playerIndex);
+        }
     }
 
     private void KnockOut(int playerIndex)
@@ -106,7 +156,7 @@ public class AIShopperPhysics : MonoBehaviour
         if (rb == null) return;
 
         isKnockedOut = true;
-        gameManager.IncreaseHitCount(playerIndex);
+        //gameManager.IncreaseHitCount(playerIndex);
         // Generate a random direction for knockback
         Vector3 randomDirection = new Vector3(
             Random.Range(-1f, 1f),

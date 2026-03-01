@@ -47,9 +47,10 @@ public class CheckoutTask : MonoBehaviour
 
     private float GetPlayerScore()
     {
-        return playerIndex == 1
-            ? cashScoreManager.p1TotalScore
-            : cashScoreManager.p2TotalScore;
+        return 0;
+        //return playerIndex == 1
+        //    ? cashScoreManager.p1TotalScore
+        //    : cashScoreManager.p2TotalScore;
     }
 
     // Optional reset

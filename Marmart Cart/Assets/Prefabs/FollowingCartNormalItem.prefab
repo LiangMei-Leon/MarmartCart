@@ -992,24 +992,35 @@ MonoBehaviour:
   collectVFX: {fileID: 1106169482944890282}
   <isCollectedByPlayer>k__BackingField: 0
   <isCollectedByAI>k__BackingField: 0
-  p1Snake: {fileID: 0}
-  p2Snake: {fileID: 0}
+  playerRaycasters:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   disappearTime: 20
   countTimer: 0
   cartRenderer: {fileID: 5131415986485558397}
   defaultColor: {r: 0.32156864, g: 0.3372549, b: 0.3647059, a: 1}
-  player1TeamColor: {r: 0.24705882, g: 0.6784314, b: 0.84313726, a: 1}
-  player2TeamColor: {r: 0.77254903, g: 0.18431373, b: 0.20392157, a: 1}
-  commonColor: {r: 0.38364768, g: 0.38364768, b: 0.38364768, a: 1}
-  rareColor: {r: 0.054469083, g: 0.7169812, b: 0.029310422, a: 1}
-  epicColor: {r: 0.7951557, g: 0.15513617, b: 0.9308176, a: 1}
-  legendaryColor: {r: 0.9622642, g: 0.51515055, b: 0.09380547, a: 1}
-  p1CollectEmptyCartEvent: {fileID: 11400000, guid: 1c2f6ba77010d5645894c2545add5964, type: 2}
-  p1CollectNormalGroceryItemCartEvent: {fileID: 11400000, guid: d11083922a7dde644a6fbdf94ccfe0e9, type: 2}
-  p1CollectExpensiveGroceryItemCartEvent: {fileID: 11400000, guid: 2aac4365b88a43c45b7f206bcdece31c, type: 2}
-  p2CollectEmptyCartEvent: {fileID: 11400000, guid: 53bc1f737b4b6ea47a1ddcaf9047cb1a, type: 2}
-  p2CollectNormalGroceryItemCartEvent: {fileID: 11400000, guid: ed91acab010b54f49a35288a9c636c04, type: 2}
-  p2CollectExpensiveGroceryItemCartEvent: {fileID: 11400000, guid: 3870df526ee277849912f5f979d3502b, type: 2}
+  playerTeamColors:
+  - {r: 0, g: 0.7529412, b: 1, a: 1}
+  - {r: 1, g: 0, b: 0, a: 1}
+  - {r: 0, g: 1, b: 0, a: 1}
+  - {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  collectEmptyCartEvent:
+  - {fileID: 11400000, guid: 1c2f6ba77010d5645894c2545add5964, type: 2}
+  - {fileID: 11400000, guid: 53bc1f737b4b6ea47a1ddcaf9047cb1a, type: 2}
+  - {fileID: 11400000, guid: 0a7b976f82a6c0446b0a2982cb4d09f6, type: 2}
+  - {fileID: 11400000, guid: d569cd80caee22c4fa835a6ca9b644a8, type: 2}
+  collectNormalGroceryItemCartEvent:
+  - {fileID: 11400000, guid: d11083922a7dde644a6fbdf94ccfe0e9, type: 2}
+  - {fileID: 11400000, guid: ed91acab010b54f49a35288a9c636c04, type: 2}
+  - {fileID: 11400000, guid: b50516b6b8a021241a45cc835589d8d9, type: 2}
+  - {fileID: 11400000, guid: f4035e74315d597439b5bbf6ade4ebb0, type: 2}
+  collectExpensiveGroceryItemCartEvent:
+  - {fileID: 11400000, guid: 2aac4365b88a43c45b7f206bcdece31c, type: 2}
+  - {fileID: 11400000, guid: 3870df526ee277849912f5f979d3502b, type: 2}
+  - {fileID: 11400000, guid: d75c8bb3a2921234da5351bacc7f412e, type: 2}
+  - {fileID: 11400000, guid: 60ab87266561dcc49a1dc35a7906ab25, type: 2}
   hasGroceryItem: 1
   hasNormalGroceryItem: 1
   hasExpensiveGroceryItem: 0

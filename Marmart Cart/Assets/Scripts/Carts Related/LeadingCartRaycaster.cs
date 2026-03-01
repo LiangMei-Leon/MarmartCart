@@ -69,128 +69,90 @@ public class LeadingCartRaycaster : MonoBehaviour
     {
         Vector3 rayStartPosition = transform.position + transform.forward * raycastZOffset + transform.up * raycastYOffset;
         RaycastHit hit;
-        if(GMode.Instance.IsCoop)
-        {
-            if (Physics.Raycast(rayStartPosition, transform.forward, out hit, distance, layerMask))
-            {
-                // Debug.Log(hit.transform.gameObject.name);
-                if (hit.transform.gameObject.GetComponent<ChainedCartManager>() != null)
-                {
-                    ChainedCartManager cartInfo = hit.transform.gameObject.GetComponent<ChainedCartManager>();
-                    if (cartInfo.isCollectedByPlayer && cooldownTimer <= 0f)
-                    {
-                        hitDirection = -1 * hit.normal;
-                        cartInfo.OnDetach(hitDirection);
-                        sfxManager.PlaySFX("Detach");
-                    }
-                }
 
-                if (hit.transform.gameObject.CompareTag("Obstacles"))
-                {
-                    //Debug.Log("Raised");
-                    disableDetachEvent.Raise();
-                }
-            }
-        }
-        else if (GMode.Instance.IsCompetitive)
+        if (Physics.Raycast(rayStartPosition, transform.forward, out hit, distance, layerMask))
         {
-            if (Physics.Raycast(rayStartPosition, transform.forward, out hit, distance, layerMask))
-            {
-                // Debug.Log(hit.transform.gameObject.name);
-                // Check if the hit object is a Chained Cart
-                if (hit.transform.gameObject.GetComponent<ChainedCartManager>() != null)
-                {
-                    GameObject hitObject = hit.transform.gameObject;
-                    ChainedCartManager hitCartInfo = hitObject.GetComponent<ChainedCartManager>();
-                    // Todo:if the other player is in pit, despite charging or not, destroy self
-                    if(hitCartInfo.isCollectedByPlayer && !hitCartInfo.CompareTag(this.tag))
-                    {
-                        if (hit.transform.parent.GetChild(0).GetComponentInChildren<CartControlScript>() != null)
-                        {
-                            CartControlScript hitCartController = hit.transform.parent.GetChild(0).GetComponentInChildren<CartControlScript>();
-                            if (hitCartController.GetIsInPit())
-                            {
-                                Debug.Log("hitted cart was in pit");
-                                return;
-                            }
-                        }
-                    }
+            // Debug.Log(hit.transform.gameObject.name);
 
-                    if (cartControlInput.IsCharing())
-                    {
-                        // If the player is charging, we can detach any cart it hits along the way
-                        if (hitCartInfo.isCollectedByPlayer && cooldownTimer <= 0f)
-                        {
-                            hitDirection = -1 * hit.normal;
-                            hitCartInfo.OnDetach(hitDirection);
-                            sfxManager.PlaySFX("Detach");
-                        }
-                    }
-                    else
-                    {
-                        // If the player is not charging, detach itself from the begining if it hits the opponent's cart
-                        if (!hitObject.CompareTag(this.gameObject.tag))
-                        {
-                            if (hitCartInfo.isCollectedByPlayer && cooldownTimer <= 0f)
-                            {
-                                DetachSelfCompletely();
-                            }
-                        }
-                        // If the player is not charging, detach all carts if it hits its own cart
-                        if (hitObject.CompareTag(this.gameObject.tag))
-                        {
-                            if (hitCartInfo.isCollectedByPlayer && cooldownTimer <= 0f)
-                            {
-                                DetachSelfCompletely();
-                                //hitDirection = -1 * hit.normal;
-                                //hitCartInfo.OnDetach(hitDirection);
-                                //sfxManager.PlaySFX("Detach");
-                            }
-                        }
-                    }
-                    
-                }
-                // If the hit object is the leading cart of the other player
-                else if (hit.transform.gameObject.GetComponent<LeadingCartRaycaster>() != null)
+            // Check if the hit object is a Chained Cart
+            if (hit.transform.gameObject.GetComponent<ChainedCartManager>() != null)
+            {
+                GameObject hitObject = hit.transform.gameObject;
+                ChainedCartManager hitCartInfo = hitObject.GetComponent<ChainedCartManager>();
+
+                // If the other player is in pit, despite charging or not, destroy self
+                if (hitCartInfo.isCollectedByPlayer && !hitCartInfo.CompareTag(this.tag))
                 {
-                    // Todo:if the other player is in pit, despite charging or not, destroy self
                     if (hit.transform.parent.GetChild(0).GetComponentInChildren<CartControlScript>() != null)
                     {
                         CartControlScript hitCartController = hit.transform.parent.GetChild(0).GetComponentInChildren<CartControlScript>();
                         if (hitCartController.GetIsInPit())
                         {
-                            Debug.Log("hitted cart was in pit");
+                            DetachSelfCompletely();
                             return;
                         }
                     }
-                    // If charging, destory all the carts of that player
-                    if (cartControlInput.IsCharing())
-                    {
-                        if(hit.transform.parent.GetComponent<SnakeCartManager>().GetSnakeBody().Count >= 2)
-                        {
-                            ChainedCartManager secondCartOnOtherPlayer = hit.transform.parent.GetComponent<SnakeCartManager>().GetSnakeBody()[1].GetComponent<ChainedCartManager>();
-                            if (cooldownTimer <= 0f)
-                            {
-                                hitDirection = -1 * hit.normal;
-                                secondCartOnOtherPlayer.OnDetach(hitDirection);
-                                sfxManager.PlaySFX("Detach");
-                            }
-                        }
-                    }
-                    // If not charging, destory itself while that cart is not in ghost mode, if in, dont destory self
-                    else
-                    {
-                        if (cooldownTimer <= 0f && !hit.transform.gameObject.GetComponent<LeadingCartRaycaster>().getIfInGhostMode())
-                        {
-                            DetachSelfCompletely();
-                        }
-                    }
                 }
-                // Check if the hit object is an obstacle, destroy them when charing
-                if (hit.transform.gameObject.CompareTag("Obstacles") && cartControlInput.IsCharing())
+                // Case when the player is charging (a strong powerup ability), they can detach any cart it hits along the way, ignoring the norms
+                if (cartControlInput.IsCharing())
                 {
-                    Destroy(hit.transform.gameObject);
+                    if (hitCartInfo.isCollectedByPlayer && cooldownTimer <= 0f)
+                    {
+                        hitDirection = -1 * hit.normal;
+                        hitCartInfo.OnDetach(hitDirection);
+                        sfxManager.PlaySFX("Detach");
+                    }
                 }
+                else
+                {
+                    // Case when the player is not charging, they would always lose all of their carts when they hit other player's chained cart or themselves as long as not in ghost mode cooldown
+                    if (hitCartInfo.isCollectedByPlayer && cooldownTimer <= 0f)
+                    {
+                        DetachSelfCompletely();
+                    }
+                }
+
+            }
+            // If the hit object is the leading cart of the other player
+            else if (hit.transform.gameObject.GetComponent<LeadingCartRaycaster>() != null)
+            {
+                // If the other player is in pit, despite charging or not, destroy self
+                if (hit.transform.parent.GetChild(0).GetComponentInChildren<CartControlScript>() != null)
+                {
+                    CartControlScript hitCartController = hit.transform.parent.GetChild(0).GetComponentInChildren<CartControlScript>();
+                    if (hitCartController.GetIsInPit())
+                    {
+                        DetachSelfCompletely();
+                        return;
+                    }
+                }
+                // If charging, destory all the carts of that player
+                if (cartControlInput.IsCharing())
+                {
+                    if (hit.transform.parent.GetComponent<SnakeCartManager>().GetSnakeBody().Count >= 2)
+                    {
+                        ChainedCartManager secondCartOnOtherPlayer = hit.transform.parent.GetComponent<SnakeCartManager>().GetSnakeBody()[1].GetComponent<ChainedCartManager>();
+                        if (cooldownTimer <= 0f)
+                        {
+                            hitDirection = -1 * hit.normal;
+                            secondCartOnOtherPlayer.OnDetach(hitDirection);
+                            sfxManager.PlaySFX("Detach");
+                        }
+                    }
+                }
+                // If not charging, destory itself while that cart is not in ghost mode
+                else
+                {
+                    if (cooldownTimer <= 0f && !hit.transform.gameObject.GetComponent<LeadingCartRaycaster>().getIfInGhostMode())
+                    {
+                        DetachSelfCompletely();
+                    }
+                }
+            }
+            // Check if the hit object is an obstacle, destroy them when charing
+            if (hit.transform.gameObject.CompareTag("Obstacles") && cartControlInput.IsCharing())
+            {
+                Destroy(hit.transform.gameObject);
             }
         }
     }
@@ -239,15 +201,13 @@ public class LeadingCartRaycaster : MonoBehaviour
         if(collision.gameObject.CompareTag("Obstacles"))
         {
             sfxManager.PlaySFX("CrashWalls");
-            if(GMode.Instance.IsCompetitive)
-            {
-                cartControlInput.AllowFlip();
-                cartControlInput.DisallowActivatePowerUp();
 
-                if (cartControlInput.IsCharing())
-                {
-                    Destroy(collision.gameObject);
-                }
+            cartControlInput.AllowFlip();
+            cartControlInput.DisallowActivatePowerUp();
+
+            if (cartControlInput.IsCharing())
+            {
+                Destroy(collision.gameObject);
             }
         }
 
@@ -263,13 +223,10 @@ public class LeadingCartRaycaster : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Obstacles") || collision.gameObject.CompareTag("Walls"))
         {
-            if (GMode.Instance.IsCompetitive)
+            if (cartControlInput.GetCanFlip())
             {
-                if (cartControlInput.GetCanFlip())
-                {
-                    cartControlInput.DisallowFlip();
-                    cartControlInput.AllowActivatePowerUp();
-                }
+                cartControlInput.DisallowFlip();
+                cartControlInput.AllowActivatePowerUp();
             }
         }
     }
@@ -278,9 +235,7 @@ public class LeadingCartRaycaster : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Obstacles"))
         {
-            //sfxManager.PlaySFX("CrashWalls");
-            //cartControlInput.AllowFlip();
-            if (GMode.Instance.IsCompetitive && cartControlInput.IsCharing())
+            if (cartControlInput.IsCharing())
                 Destroy(collision.gameObject);
         }
         if (collision.gameObject.CompareTag("Walls"))

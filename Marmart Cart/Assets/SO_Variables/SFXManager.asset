@@ -21,13 +21,13 @@ MonoBehaviour:
     volume: 1
   - name: CrashWalls
     clip: {fileID: 8300000, guid: cb98f158c3277c74d8b115494e3f93a2, type: 3}
-    volume: 1
+    volume: 0.3
   - name: Detach
     clip: {fileID: 8300000, guid: 10fa46f7857d7984ea471145091684e4, type: 3}
     volume: 1
   - name: CollectCart
     clip: {fileID: 8300000, guid: f4e6e3307a2daa94fb48ac855f47fa3c, type: 3}
-    volume: 1
+    volume: 0.5
   - name: CheckoutCarts
     clip: {fileID: 8300000, guid: 8878a4cf636125f46bbab41533d0da49, type: 3}
     volume: 1
