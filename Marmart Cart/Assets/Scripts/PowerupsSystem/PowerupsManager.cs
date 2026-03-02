@@ -239,10 +239,9 @@ public class PowerupsManager : MonoBehaviour
 
         if (scaleBuffCount == 1)
         {
-            var carts = snakeCartManager.GetSnakeBody();
-            foreach (var cart in carts)
-                cart.transform.localScale = Vector3.one * 10f;
-
+            // send needed scale signal to SnakeCartManager to manage rest of bodies
+            var leadingcart = snakeCartManager.GetSnakeBody()[0];
+            leadingcart.transform.localScale = Vector3.one * 10f;
             snakeCartManager.needScaleup = true;
         }
 
@@ -252,11 +251,10 @@ public class PowerupsManager : MonoBehaviour
 
         if (scaleBuffCount == 0)
         {
+            // send reset scale signal to SnakeCartManager to manage rest of bodies
+            var leadingcart = snakeCartManager.GetSnakeBody()[0];
+            leadingcart.transform.localScale = Vector3.one * 5f;
             snakeCartManager.needScaleup = false;
-
-            var carts = snakeCartManager.GetSnakeBody();
-            foreach (var cart in carts)
-                cart.transform.localScale = Vector3.one * 5f;
         }
     }
 

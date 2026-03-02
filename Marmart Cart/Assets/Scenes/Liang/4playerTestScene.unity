@@ -5645,6 +5645,8 @@ MonoBehaviour:
   yOffset: 20
   snakeCartManager1: {fileID: 0}
   snakeCartManager2: {fileID: 0}
+  snakeCartManager3: {fileID: 0}
+  snakeCartManager4: {fileID: 0}
   applyPrefabScaleFix: 0
 --- !u!4 &297019894
 Transform:
@@ -7338,6 +7340,8 @@ MonoBehaviour:
   yOffset: 20
   snakeCartManager1: {fileID: 1981863288}
   snakeCartManager2: {fileID: 203355758}
+  snakeCartManager3: {fileID: 1417757267}
+  snakeCartManager4: {fileID: 635788455}
   applyPrefabScaleFix: 1
 --- !u!4 &440442713
 Transform:
@@ -9768,7 +9772,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7588822205061987150, guid: c1780cd0d06179f45aa0fa13b1a963c6, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 45.600006
+      value: 44.4
       objectReference: {fileID: 0}
     - target: {fileID: 7588822205061987150, guid: c1780cd0d06179f45aa0fa13b1a963c6, type: 3}
       propertyPath: m_LocalRotation.w
@@ -12182,7 +12186,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7588822205061987150, guid: c1780cd0d06179f45aa0fa13b1a963c6, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 34.99
+      value: 36.26
       objectReference: {fileID: 0}
     - target: {fileID: 7588822205061987150, guid: c1780cd0d06179f45aa0fa13b1a963c6, type: 3}
       propertyPath: m_LocalRotation.w
@@ -13430,6 +13434,8 @@ MonoBehaviour:
   yOffset: 20
   snakeCartManager1: {fileID: 0}
   snakeCartManager2: {fileID: 0}
+  snakeCartManager3: {fileID: 0}
+  snakeCartManager4: {fileID: 0}
   applyPrefabScaleFix: 0
 --- !u!4 &707475391
 Transform:
@@ -67092,7 +67098,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7588822205061987150, guid: c1780cd0d06179f45aa0fa13b1a963c6, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 34.99
+      value: 36.26
       objectReference: {fileID: 0}
     - target: {fileID: 7588822205061987150, guid: c1780cd0d06179f45aa0fa13b1a963c6, type: 3}
       propertyPath: m_LocalRotation.w
@@ -68500,7 +68506,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da079b917b9691a4296d98c8fdaab99e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CurrentMode: 2
+  CurrentMode: 1
 --- !u!4 &1409103362
 Transform:
   m_ObjectHideFlags: 0
@@ -99450,6 +99456,8 @@ MonoBehaviour:
   yOffset: 20
   snakeCartManager1: {fileID: 0}
   snakeCartManager2: {fileID: 0}
+  snakeCartManager3: {fileID: 0}
+  snakeCartManager4: {fileID: 0}
   applyPrefabScaleFix: 0
 --- !u!4 &1866954924
 Transform:
@@ -125799,7 +125807,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7588822205061987150, guid: c1780cd0d06179f45aa0fa13b1a963c6, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 45.600006
+      value: 44.4
       objectReference: {fileID: 0}
     - target: {fileID: 7588822205061987150, guid: c1780cd0d06179f45aa0fa13b1a963c6, type: 3}
       propertyPath: m_LocalRotation.w

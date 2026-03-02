@@ -3191,7 +3191,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c276d069bebab924aa9a5b4ff8284b3b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerIndex: 3
+  playerIndex: 4
   snakeCartManager: {fileID: 0}
   cartControlScript: {fileID: 0}
   bowlingBallPrefab: {fileID: 7540862284275205987, guid: 9459978c0ac72e94b9ece11b6396f3bf, type: 3}

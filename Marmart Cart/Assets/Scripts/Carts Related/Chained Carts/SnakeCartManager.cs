@@ -57,6 +57,17 @@ public class SnakeCartManager : MonoBehaviour
         {
             for (int i = 1; i < snakeBody.Count; i++)
             {
+                if (needScaleup) // this bool get written by PowerupManager class
+                {
+                    // Apply scale multiplier to current carts (the leading cart is handles in PowerupManager class
+                    snakeBody[i].transform.transform.localScale = new Vector3(10f, 10f, 10f); 
+                }
+                else
+                {
+                    // Revert scale multiplier to normal
+                    snakeBody[i].transform.transform.localScale = new Vector3(5f, 5f, 5f);
+                }
+
                 MarkerManager markM = snakeBody[i - 1].GetComponent<MarkerManager>();
                 snakeBody[i].transform.position = markM.markerList[0].position;
                 snakeBody[i].transform.rotation = markM.markerList[0].rotation;
@@ -187,16 +198,8 @@ public class SnakeCartManager : MonoBehaviour
 
     public void AddBodyParts(GameObject addedObj)
     {
-        if(needScaleup)
-        {
-            addedObj.transform.localScale = new Vector3(10f, 10f, 10f); // Apply scale multiplier to the new cart
-        }
-        else
-            addedObj.transform.localScale = new Vector3(5f, 5f, 5f);
-
         bodyParts.Add(addedObj);
         StartCoroutine(DelayedPlayVFX());
-        
     }
 
     private IEnumerator DelayedPlayVFX()
