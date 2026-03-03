@@ -19,6 +19,9 @@ public class LeaderboardEntryUI : MonoBehaviour
     [Header("Bar (Slider as handle anchor)")]
     [SerializeField] private Slider slider;              // used only for handle positioning
     [SerializeField] private RectTransform handleRect;
+    [Header("Handle Lerp")]
+    [SerializeField] private float valueLerpSpeed = 12f; // bigger = snappier
+    private float _targetSliderValue = 0f;
 
     [Header("Layout Tuning")]
     [Tooltip("Reserve some bar space so score text doesn't overlap the left label.")]
@@ -34,9 +37,21 @@ public class LeaderboardEntryUI : MonoBehaviour
     {
         _rt = transform as RectTransform;
         if (slider != null && handleRect == null)
+        {
             handleRect = slider.handleRect;
+            _targetSliderValue = slider.value;
+        }
     }
+    private void Update()
+    {
+        if (slider == null) return;
 
+        // frame-rate independent smoothing
+        float t = 1f - Mathf.Exp(-valueLerpSpeed * Time.deltaTime);
+        slider.value = Mathf.Lerp(slider.value, _targetSliderValue, t);
+
+        UpdateHandleAnchoredTexts();
+    }
     public void SetId(int newId) => id = newId;
 
     public void SetLeftLabel(string s)
@@ -73,19 +88,7 @@ public class LeaderboardEntryUI : MonoBehaviour
     public void SetBarNormalized(float score01)
     {
         score01 = Mathf.Clamp01(score01);
-
-        float remapped = Mathf.Lerp(barStartNormalized, 1f, score01);
-
-        if (slider != null)
-        {
-            // Keep slider in 0..1 mode; use normalizedValue directly.
-            slider.minValue = 0f;
-            slider.maxValue = 1f;
-            slider.wholeNumbers = false;
-            slider.value = remapped;
-        }
-
-        UpdateHandleAnchoredTexts();
+        _targetSliderValue = Mathf.Lerp(barStartNormalized, 1f, score01);
     }
 
     /// <summary>

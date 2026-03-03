@@ -45,6 +45,18 @@ public class LeadingCartBehaviour : MonoBehaviour
     private Vector3 finalSteeringForce;
     private Vector3 finalBrakeForce;
 
+    [Header("Dynamic Speed by Chain Length")]
+    [SerializeField] private SnakeCartManager snakeCartManager;
+
+    [SerializeField] private int fullSpeedUntilCarts = 5;
+    [SerializeField] private float fullSpeed = 25f;
+
+    [SerializeField] private float speedLossPerCart = 0.3f;
+    [SerializeField] private float minBaseSpeed = 10f;
+
+    [SerializeField] private float upSpeedBonus = 5f; // upSpeed = base + 5
+    [SerializeField] private bool excludeLeadingCartFromCount = false;
+
     [Header("Boost Settings")]
     [SerializeField] private float boostedSpeed = 20f;
     [SerializeField] private float boostDuration = 2f;
@@ -68,25 +80,31 @@ public class LeadingCartBehaviour : MonoBehaviour
 
     void Start()
     {
+        if (!snakeCartManager)
+            snakeCartManager = GetComponentInParent<SnakeCartManager>();
     }
     void Update()
     {
         if (cartControlInput.GetIsInPit() || isStopping || isBoosting)
             return;
 
+        int carts = GetEffectiveCartCount();
+        float baseSpeed = ComputeBaseSpeed(carts);
+        float dynamicUpSpeed = baseSpeed + upSpeedBonus;
+
         if (cartControlInput.IsSpeedingUp() && cartControlInput.CanSpeedingUp())
-        {
-            targetSpeed = upSpeed;
-        }
+            targetSpeed = dynamicUpSpeed;
         else
-        {
-            targetSpeed = 20f;
-        }
-        //if(cartControlInput.IsSpeedingUp() && cartControlInput.CanSpeedingUp())
+            targetSpeed = baseSpeed;
+        ////old fixed target speed logic
+        //if (cartControlInput.GetIsInPit() || isStopping || isBoosting)
+        //    return;
+
+        //if (cartControlInput.IsSpeedingUp() && cartControlInput.CanSpeedingUp())
         //{
         //    targetSpeed = upSpeed;
         //}
-        //else if(!cartControlInput.GetIsInPit() && !isStopping && !isBoosting)
+        //else
         //{
         //    targetSpeed = 20f;
         //}
@@ -276,7 +294,14 @@ public class LeadingCartBehaviour : MonoBehaviour
         cartBody.gameObject.transform.rotation = Quaternion.LookRotation(desiredFacingDirection);
 
     }
+    private float ComputeBaseSpeed(int carts)
+    {
+        if (carts <= fullSpeedUntilCarts)
+            return fullSpeed;
 
+        float raw = fullSpeed - speedLossPerCart * (carts - fullSpeedUntilCarts);
+        return Mathf.Max(minBaseSpeed, raw);
+    }
     public void SetSpeedToZero(float duration)
     {
         isStopping = true;
@@ -304,9 +329,20 @@ public class LeadingCartBehaviour : MonoBehaviour
     {
         isStopping = false;
         //Debug.Log("ResetSpeed executed");
-        targetSpeed = 20f;
+        //targetSpeed = 20f;
         //cartControlInput.AllowBoost();
     }
+    private int GetEffectiveCartCount()
+    {
+        if (!snakeCartManager) return 0;
+
+        int count = snakeCartManager.GetSnakeBodyLength(); // includes leading cart
+        if (excludeLeadingCartFromCount)
+            count = Mathf.Max(0, count - 1);
+
+        return count;
+    }
+
     void OnDrawGizmos()
     {
         // Calculate the RayStartPosition in OnDrawGizmos so it updates in the editor

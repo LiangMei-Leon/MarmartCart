@@ -182,14 +182,32 @@ public class DynamicLeaderboardUI : MonoBehaviour
             .Select(id => (id: id, score: cashScoreManager.GetPlayerScore(id)))
             .ToList();
 
-        // fill bars
-        foreach (var s in scored)
-        {
-            var e = GetEntry(s.id);
-            if (!e) continue;
+        // Dynamic max = current leader score (avoid divide by 0)
+        int leaderScore = scored.Max(x => x.score);
 
-            e.SetBarNormalized(maxScore <= 0 ? 0f : (float)s.score / maxScore);
+        if (leaderScore <= 0)
+        {
+            // Game start: everyone is 0, show full bars
+            foreach (var s in scored)
+            {
+                var e = GetEntry(s.id);
+                if (!e) continue;
+                e.SetBarNormalized(1f);
+            }
         }
+        else
+        {
+            int dynamicMax = leaderScore; // leader always full
+            foreach (var s in scored)
+            {
+                var e = GetEntry(s.id);
+                if (!e) continue;
+
+                float score01 = (float)s.score / dynamicMax;
+                e.SetBarNormalized(score01);
+            }
+        }
+
         // Ranking with ties
         var ranked = BuildRanking(scored);
 
@@ -225,6 +243,21 @@ public class DynamicLeaderboardUI : MonoBehaviour
     {
         int team1Score = cashScoreManager.GetTeamScore(team1Players);
         int team2Score = cashScoreManager.GetTeamScore(team2Players);
+
+        int leaderScore = Mathf.Max(team1Score, team2Score);
+
+        if (leaderScore <= 0)
+        {
+            // Game start: both teams 0, show full bars
+            GetEntry(1)?.SetBarNormalized(1f);
+            GetEntry(2)?.SetBarNormalized(1f);
+        }
+        else
+        {
+            int dynamicMax = leaderScore; // leader team always full
+            GetEntry(1)?.SetBarNormalized((float)team1Score / dynamicMax);
+            GetEntry(2)?.SetBarNormalized((float)team2Score / dynamicMax);
+        }
 
         var scoredTeams = new List<(int id, int score)>
         {

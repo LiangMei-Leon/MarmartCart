@@ -13,6 +13,20 @@ public class CashScoreManager : MonoBehaviour
     [SerializeField] private int normalItemValue = 10;
     [SerializeField] private int expensiveItemValue = 50;
 
+    [Header("Checkout Milestone Bonuses")]
+    [SerializeField] private int streakThresholdLvl1 = 10;
+    [SerializeField] private int streakThresholdLvl2 = 20;
+    [SerializeField] private int streakThresholdLvl3 = 30;
+    [SerializeField] private int streakThresholdLvl4 = 30;
+    [SerializeField] private int streakThresholdLvl5 = 30;
+    [SerializeField] private int streakThresholdLvl6 = 30;
+    [SerializeField] private int streakThresholdBonusPts1 = 50;
+    [SerializeField] private int streakThresholdBonusPts2 = 70;
+    [SerializeField] private int streakThresholdBonusPts3 = 100;
+    [SerializeField] private int streakThresholdBonusPts4 = 140;
+    [SerializeField] private int streakThresholdBonusPts5 = 190;
+    [SerializeField] private int streakThresholdBonusPts6 = 250;
+
     [Header("Team Mapping (used only in TeamBattle mode)")]
     [Tooltip("Example: Team 1 = players 1 & 3")]
     [SerializeField] private int[] team1Players = new[] { 1, 3 };
@@ -36,7 +50,9 @@ public class CashScoreManager : MonoBehaviour
     {
         public TextMeshPro itemsCountText;
         public GameObject streakTextUI;
-        public TextMeshPro subtotalText;
+        public TextMeshPro bonusPointText;
+        public GameObject bonusPointUI;
+        public TextMeshPro basePointText;
     }
 
     private Coroutine[,] subtotalPulseAnims = new Coroutine[MaxPlayers, MaxLanes];
@@ -54,6 +70,7 @@ public class CashScoreManager : MonoBehaviour
 
         public float basePoints;
         public float multiplier;
+        public float bonusPoints;   // NEW: milestone bonuses
         public float subtotal;
 
         public void Reset()
@@ -64,6 +81,7 @@ public class CashScoreManager : MonoBehaviour
             expensiveCount = 0;
             basePoints = 0f;
             multiplier = 1f;
+            bonusPoints = 0f;
             subtotal = 0f;
             laneIndex = -1;
         }
@@ -139,8 +157,8 @@ public class CashScoreManager : MonoBehaviour
             session.basePoints += normalItemValue;
         }
 
-        session.multiplier = GetComboMultiplier(session.itemsCount);
-        session.subtotal = session.basePoints * session.multiplier;
+        session.bonusPoints = GetMilestoneBonus(session.itemsCount);
+        session.subtotal = session.basePoints + session.bonusPoints;
 
         UpdateCheckoutSessionUI(playerIndex, session);
     }
@@ -186,6 +204,7 @@ public class CashScoreManager : MonoBehaviour
         last.expensiveCount = session.expensiveCount;
         last.basePoints = session.basePoints;
         last.multiplier = session.multiplier;
+        last.bonusPoints = session.bonusPoints;
         last.subtotal = session.subtotal;
         last.laneIndex = session.laneIndex;
 
@@ -268,7 +287,19 @@ public class CashScoreManager : MonoBehaviour
         if (itemsCount <= 30) return 2f + 0.15f * (itemsCount - 20);
         return 4f;
     }
+    private int GetMilestoneBonus(int itemsCount)
+    {
+        int bonus = 0;
 
+        if (itemsCount >= streakThresholdLvl1) bonus += streakThresholdBonusPts1;
+        if (itemsCount >= streakThresholdLvl2) bonus += streakThresholdBonusPts2;
+        if (itemsCount >= streakThresholdLvl3) bonus += streakThresholdBonusPts3;
+        if (itemsCount >= streakThresholdLvl4) bonus += streakThresholdBonusPts4;
+        if (itemsCount >= streakThresholdLvl5) bonus += streakThresholdBonusPts5;
+        if (itemsCount >= streakThresholdLvl6) bonus += streakThresholdBonusPts6;
+
+        return bonus;
+    }
     private void UpdateCheckoutSessionUI(int playerIndex, CheckoutSessionData session)
     {
         if (session.laneIndex < 0) return;
@@ -283,6 +314,8 @@ public class CashScoreManager : MonoBehaviour
             {
                 if (ui.streakTextUI) ui.streakTextUI.SetActive(true);
                 ui.itemsCountText.text = session.itemsCount.ToString();
+                if (ui.bonusPointUI) ui.bonusPointUI.SetActive(true);
+                ui.bonusPointText.text = "+" + session.bonusPoints.ToString();
             }
             else
             {
@@ -290,16 +323,16 @@ public class CashScoreManager : MonoBehaviour
             }
         }
 
-        if (ui.subtotalText != null)
+        if (ui.basePointText != null)
         {
-            ui.subtotalText.text = "+" + session.subtotal.ToString("F0");
+            ui.basePointText.text = "+" + session.basePoints.ToString("F0");
 
             int pIdx = playerIndex - 1;
             if (subtotalPulseAnims[pIdx, laneIdx] != null)
                 StopCoroutine(subtotalPulseAnims[pIdx, laneIdx]);
 
             subtotalPulseAnims[pIdx, laneIdx] = StartCoroutine(
-                AnimateTextPulse(ui.subtotalText.transform, 1.4f)
+                AnimateTextPulse(ui.basePointText.transform, 1.4f)
             );
         }
     }
@@ -318,7 +351,9 @@ public class CashScoreManager : MonoBehaviour
 
         if (ui.itemsCountText != null) ui.itemsCountText.text = "0";
         if (ui.streakTextUI != null) ui.streakTextUI.SetActive(false);
-        if (ui.subtotalText != null) ui.subtotalText.text = "0";
+        if (ui.basePointText != null) ui.basePointText.text = "0";
+        if (ui.bonusPointUI != null) ui.bonusPointUI.SetActive(false);
+        if (ui.bonusPointText != null) ui.bonusPointText.text = "0";
     }
 
     private IEnumerator AnimateTextPulse(Transform target, float scaleMultiplier = 1.5f, float duration = 0.3f)

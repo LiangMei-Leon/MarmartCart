@@ -3,7 +3,6 @@ using UnityEngine.SceneManagement;
 
 public class Debuggers : MonoBehaviour
 {
-
     [Header("Restart Game")]
     [SerializeField] private bool enableRestartHotkey = true;
     [SerializeField] private KeyCode restartKey = KeyCode.F9;
@@ -11,69 +10,97 @@ public class Debuggers : MonoBehaviour
     [Header("Player Roots (auto-assigned)")]
     [SerializeField] private Transform p1Root;
     [SerializeField] private Transform p2Root;
+    [SerializeField] private Transform p3Root;
+    [SerializeField] private Transform p4Root;
 
     [Header("Player Rigidbodies (auto-assigned)")]
     [SerializeField] private Rigidbody p1Rigidbody;
     [SerializeField] private Rigidbody p2Rigidbody;
+    [SerializeField] private Rigidbody p3Rigidbody;
+    [SerializeField] private Rigidbody p4Rigidbody;
 
     [Header("Player CartControl (auto-assigned)")]
     [SerializeField] private CartControlScript p1CartControl;
     [SerializeField] private CartControlScript p2CartControl;
+    [SerializeField] private CartControlScript p3CartControl;
+    [SerializeField] private CartControlScript p4CartControl;
 
     [Header("Teleport Targets (set in Inspector)")]
     [SerializeField] private Transform p1TeleportPoint;
     [SerializeField] private Transform p2TeleportPoint;
+    [SerializeField] private Transform p3TeleportPoint;
+    [SerializeField] private Transform p4TeleportPoint;
 
     [Header("Debug Hotkeys")]
     [SerializeField] private KeyCode p1TeleportKey = KeyCode.Alpha1; // 1
     [SerializeField] private KeyCode p2TeleportKey = KeyCode.Alpha2; // 2
-    [SerializeField] private KeyCode p1AllowFlipKey = KeyCode.Alpha3; // 3
-    [SerializeField] private KeyCode p2AllowFlipKey = KeyCode.Alpha4; // 4
+    [SerializeField] private KeyCode p3TeleportKey = KeyCode.Alpha3; // 3
+    [SerializeField] private KeyCode p4TeleportKey = KeyCode.Alpha4; // 4
 
-    void Start()
+    [SerializeField] private KeyCode p1AllowFlipKey = KeyCode.Q;
+    [SerializeField] private KeyCode p2AllowFlipKey = KeyCode.W;
+    [SerializeField] private KeyCode p3AllowFlipKey = KeyCode.E;
+    [SerializeField] private KeyCode p4AllowFlipKey = KeyCode.R;
+
+    [Header("Add Empty Cart Events")]
+    [SerializeField] private GameEvent p1AddEmptyCartEvent;
+    [SerializeField] private GameEvent p2AddEmptyCartEvent;
+    [SerializeField] private GameEvent p3AddEmptyCartEvent;
+    [SerializeField] private GameEvent p4AddEmptyCartEvent;
+
+    [Header("Add Empty Cart Hotkeys")]
+    [SerializeField] private KeyCode p1AddCartKey = KeyCode.Z;
+    [SerializeField] private KeyCode p2AddCartKey = KeyCode.X;
+    [SerializeField] private KeyCode p3AddCartKey = KeyCode.C;
+    [SerializeField] private KeyCode p4AddCartKey = KeyCode.V;
+
+    private void Start()
     {
-        // Let the scene finish spawning everything first
         Invoke(nameof(RegisterPlayers), 2f);
     }
 
     private void RegisterPlayers()
     {
-        GameObject p1 = GameObject.FindGameObjectWithTag("Player1");
-        GameObject p2 = GameObject.FindGameObjectWithTag("Player2");
-
-        if (p1 == null || p2 == null)
-        {
-            Debug.LogWarning("[Debuggers] Could not find Player1 or Player2 by tag.");
-            return;
-        }
-
-        p1Root = p1.transform;
-        p2Root = p2.transform;
-
-        p1Rigidbody = p1.GetComponentInChildren<Rigidbody>();
-        p2Rigidbody = p2.GetComponentInChildren<Rigidbody>();
-
-        p1CartControl = p1.GetComponentInChildren<CartControlScript>();
-        p2CartControl = p2.GetComponentInChildren<CartControlScript>();
-
-        if (p1Rigidbody == null || p2Rigidbody == null)
-            Debug.LogWarning("[Debuggers] Missing Rigidbody on players.");
-
-        if (p1CartControl == null || p2CartControl == null)
-            Debug.LogWarning("[Debuggers] Missing CartControlScript on players.");
+        RegisterOnePlayer(1, out p1Root, out p1Rigidbody, out p1CartControl);
+        RegisterOnePlayer(2, out p2Root, out p2Rigidbody, out p2CartControl);
+        RegisterOnePlayer(3, out p3Root, out p3Rigidbody, out p3CartControl);
+        RegisterOnePlayer(4, out p4Root, out p4Rigidbody, out p4CartControl);
 
         Debug.Log("[Debuggers] Player refs registered.");
     }
 
-    void Update()
+    private void RegisterOnePlayer(int index, out Transform root, out Rigidbody rb, out CartControlScript control)
+    {
+        root = null;
+        rb = null;
+        control = null;
+
+        var go = GameObject.FindGameObjectWithTag($"Player{index}");
+        if (!go)
+        {
+            // In 2P mode P3/P4 may not exist—don't warn loudly.
+            return;
+        }
+
+        root = go.transform;
+        rb = go.GetComponentInChildren<Rigidbody>();
+        control = go.GetComponentInChildren<CartControlScript>();
+
+        if (!rb) Debug.LogWarning($"[Debuggers] Missing Rigidbody on Player{index}.");
+        if (!control) Debug.LogWarning($"[Debuggers] Missing CartControlScript on Player{index}.");
+    }
+
+    private void Update()
     {
         RestartDebug();
         TeleportDebug();
         FlipDebug();
+        AddEmptyCartDebug();
     }
+
     // ----------------- RESTART GAME -----------------
 
-    void RestartDebug()
+    private void RestartDebug()
     {
         if (!enableRestartHotkey) return;
 
@@ -86,79 +113,82 @@ public class Debuggers : MonoBehaviour
 
     // ----------------- TELEPORT PLAYERS -----------------
 
-    void TeleportDebug()
+    private void TeleportDebug()
     {
-        // Teleport Player 1
-        if (Input.GetKeyDown(p1TeleportKey))
-        {
-            if (p1Root != null && p1TeleportPoint != null)
-            {
-                p1Root.position = p1TeleportPoint.position;
-                p1Root.rotation = p1TeleportPoint.rotation;
+        TryTeleport(p1TeleportKey, p1Root, p1Rigidbody, p1TeleportPoint, 1);
+        TryTeleport(p2TeleportKey, p2Root, p2Rigidbody, p2TeleportPoint, 2);
+        TryTeleport(p3TeleportKey, p3Root, p3Rigidbody, p3TeleportPoint, 3);
+        TryTeleport(p4TeleportKey, p4Root, p4Rigidbody, p4TeleportPoint, 4);
+    }
 
-                if (p1Rigidbody != null)
-                {
-                    p1Rigidbody.linearVelocity = Vector3.zero;
-                    p1Rigidbody.angularVelocity = Vector3.zero;
-                }
-            }
-            else
+    private void TryTeleport(KeyCode key, Transform root, Rigidbody rb, Transform target, int index)
+    {
+        if (!Input.GetKeyDown(key)) return;
+
+        if (root != null && target != null)
+        {
+            root.position = target.position;
+            root.rotation = target.rotation;
+
+            if (rb != null)
             {
-                Debug.LogWarning("[Debuggers] P1 teleport refs missing.");
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
             }
         }
-
-        // Teleport Player 2
-        if (Input.GetKeyDown(p2TeleportKey))
+        else
         {
-            if (p2Root != null && p2TeleportPoint != null)
-            {
-                p2Root.position = p2TeleportPoint.position;
-                p2Root.rotation = p2TeleportPoint.rotation;
-
-                if (p2Rigidbody != null)
-                {
-                    p2Rigidbody.linearVelocity = Vector3.zero;
-                    p2Rigidbody.angularVelocity = Vector3.zero;
-                }
-            }
-            else
-            {
-                Debug.LogWarning("[Debuggers] P2 teleport refs missing.");
-            }
+            Debug.LogWarning($"[Debuggers] P{index} teleport refs missing.");
         }
     }
 
     // ----------------- ALLOW FLIP -----------------
 
-    void FlipDebug()
+    private void FlipDebug()
     {
-        // Allow P1 flip
-        if (Input.GetKeyDown(p1AllowFlipKey))
-        {
-            if (p1CartControl != null)
-            {
-                p1CartControl.AllowFlip();
-                Debug.Log("[Debuggers] P1 allowed to flip.");
-            }
-            else
-            {
-                Debug.LogWarning("[Debuggers] p1CartControl not assigned.");
-            }
-        }
+        TryAllowFlip(p1AllowFlipKey, p1CartControl, 1);
+        TryAllowFlip(p2AllowFlipKey, p2CartControl, 2);
+        TryAllowFlip(p3AllowFlipKey, p3CartControl, 3);
+        TryAllowFlip(p4AllowFlipKey, p4CartControl, 4);
+    }
 
-        // Allow P2 flip
-        if (Input.GetKeyDown(p2AllowFlipKey))
+    private void TryAllowFlip(KeyCode key, CartControlScript control, int index)
+    {
+        if (!Input.GetKeyDown(key)) return;
+
+        if (control != null)
         {
-            if (p2CartControl != null)
-            {
-                p2CartControl.AllowFlip();
-                Debug.Log("[Debuggers] P2 allowed to flip.");
-            }
-            else
-            {
-                Debug.LogWarning("[Debuggers] p2CartControl not assigned.");
-            }
+            control.AllowFlip();
+            Debug.Log($"[Debuggers] P{index} allowed to flip.");
+        }
+        else
+        {
+            Debug.LogWarning($"[Debuggers] p{index}CartControl not assigned.");
+        }
+    }
+
+    // ----------------- ADD EMPTY CART (EVENT) -----------------
+
+    private void AddEmptyCartDebug()
+    {
+        TryRaiseAddCart(p1AddCartKey, p1AddEmptyCartEvent, 1);
+        TryRaiseAddCart(p2AddCartKey, p2AddEmptyCartEvent, 2);
+        TryRaiseAddCart(p3AddCartKey, p3AddEmptyCartEvent, 3);
+        TryRaiseAddCart(p4AddCartKey, p4AddEmptyCartEvent, 4);
+    }
+
+    private void TryRaiseAddCart(KeyCode key, GameEvent evt, int index)
+    {
+        if (!Input.GetKeyDown(key)) return;
+
+        if (evt != null)
+        {
+            evt.Raise();
+            Debug.Log($"[Debuggers] Raised P{index} AddEmptyCart event.");
+        }
+        else
+        {
+            Debug.LogWarning($"[Debuggers] P{index} AddEmptyCart event not assigned.");
         }
     }
 }

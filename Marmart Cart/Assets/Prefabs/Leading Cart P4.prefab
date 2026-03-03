@@ -1768,6 +1768,13 @@ MonoBehaviour:
   maxBrakeForce: 50
   targetSpeed: 20
   upSpeed: 25
+  snakeCartManager: {fileID: 0}
+  fullSpeedUntilCarts: 5
+  fullSpeed: 25
+  speedLossPerCart: 0.3
+  minBaseSpeed: 15
+  upSpeedBonus: 5
+  excludeLeadingCartFromCount: 1
   boostedSpeed: 27.5
   boostDuration: 1.25
   speedLerpRate: 50
@@ -2043,6 +2050,13 @@ MonoBehaviour:
   maxBrakeForce: 50
   targetSpeed: 20
   upSpeed: 25
+  snakeCartManager: {fileID: 0}
+  fullSpeedUntilCarts: 5
+  fullSpeed: 25
+  speedLossPerCart: 0.3
+  minBaseSpeed: 15
+  upSpeedBonus: 5
+  excludeLeadingCartFromCount: 1
   boostedSpeed: 27.5
   boostDuration: 1.25
   speedLerpRate: 50
@@ -3326,6 +3340,13 @@ MonoBehaviour:
   maxBrakeForce: 50
   targetSpeed: 20
   upSpeed: 25
+  snakeCartManager: {fileID: 0}
+  fullSpeedUntilCarts: 5
+  fullSpeed: 25
+  speedLossPerCart: 0.3
+  minBaseSpeed: 15
+  upSpeedBonus: 5
+  excludeLeadingCartFromCount: 1
   boostedSpeed: 27.5
   boostDuration: 1.25
   speedLerpRate: 50
@@ -3749,6 +3770,13 @@ MonoBehaviour:
   maxBrakeForce: 50
   targetSpeed: 20
   upSpeed: 25
+  snakeCartManager: {fileID: 0}
+  fullSpeedUntilCarts: 5
+  fullSpeed: 25
+  speedLossPerCart: 0.3
+  minBaseSpeed: 15
+  upSpeedBonus: 5
+  excludeLeadingCartFromCount: 1
   boostedSpeed: 27.5
   boostDuration: 1.25
   speedLerpRate: 50
