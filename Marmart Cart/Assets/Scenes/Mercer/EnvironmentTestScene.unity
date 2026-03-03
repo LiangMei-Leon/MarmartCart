@@ -2728,10 +2728,9 @@ MonoBehaviour:
   - {fileID: 6597024514049572970, guid: c6c12bfc1b7ace847be00ecc6a8d5d79, type: 3}
   snakeBody: []
   cartsWithOutItem: []
-  isPlayer1: 0
+  playerIndex: 1
   setupCamera: {fileID: 11400000, guid: a2aa89cd59a0c8f40966246bd2b2532a, type: 2}
   playerInputManager: {fileID: 447031817}
-  dinoIndictor: {fileID: 0}
   cashScoreManager: {fileID: 1773933218}
   needScaleup: 0
   numOfCartsWithGroceryItem: 0
@@ -6210,9 +6209,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9a92409e7362f2469ebeb100d718cee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mode: 2
   player1: {fileID: 1981863287}
   player2: {fileID: 203355757}
-  enableDebugMode: 1
+  player3: {fileID: 0}
+  player4: {fileID: 0}
+  enableKeyboardInput: 1
 --- !u!4 &447031818
 Transform:
   m_ObjectHideFlags: 0
@@ -65849,8 +65851,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   chainedCartsP1: {fileID: 1981863287}
   chainedCartsP2: {fileID: 203355757}
+  chainedCartsP3: {fileID: 0}
+  chainedCartsP4: {fileID: 0}
   topDownCameraP1: {fileID: 1035736240}
   topDownCameraP2: {fileID: 2078120475}
+  topDownCameraP3: {fileID: 0}
+  topDownCameraP4: {fileID: 0}
 --- !u!4 &1653367398
 Transform:
   m_ObjectHideFlags: 0
@@ -68109,8 +68115,12 @@ MonoBehaviour:
   scriptedEvents: 02000000
   rollingTextRootP1: {fileID: 2145234597}
   rollingTextRootP2: {fileID: 1150095382}
+  rollingTextRootP3: {fileID: 0}
+  rollingTextRootP4: {fileID: 0}
   rollingTextP1: {fileID: 1656434664}
   rollingTextP2: {fileID: 1305179103}
+  rollingTextP3: {fileID: 0}
+  rollingTextP4: {fileID: 0}
 --- !u!4 &1771990810
 Transform:
   m_ObjectHideFlags: 0
@@ -68182,20 +68192,30 @@ MonoBehaviour:
   cashScoreManager: {fileID: 1773933218}
   p1WinResult: {fileID: 1526560108}
   p2WinResult: {fileID: 1489423155}
-  pointsPerHit: 10
-  pointsPerNormalItem: 25
-  pointsPerBonusItem: 50
-  martConditionManager: {fileID: 0}
   snakeCartManagerP1: {fileID: 1981863288}
-  hitCountP1Text: {fileID: 1696372988}
   currentTotalCartCountP1Text: {fileID: 1779764239}
   currentItemCartCountP1Text: {fileID: 1556833639}
+  currentTotalCartCountP1TextFor4pMode: {fileID: 0}
+  currentItemCartCountP1TextFor4pMode: {fileID: 0}
+  finalRefToCurrentTotalCartCountP1Text: {fileID: 0}
+  finalRefToCurrentItemCartCountP1Text: {fileID: 0}
   snakeCartManagerP2: {fileID: 203355758}
-  hitCountP2Text: {fileID: 707170696}
   currentTotalCartCountP2Text: {fileID: 1043297174}
   currentItemCartCountP2Text: {fileID: 1363511736}
+  currentTotalCartCountP2TextFor4pMode: {fileID: 0}
+  currentItemCartCountP2TextFor4pMode: {fileID: 0}
+  finalRefToCurrentTotalCartCountP2Text: {fileID: 0}
+  finalRefToCurrentItemCartCountP2Text: {fileID: 0}
+  snakeCartManagerP3: {fileID: 0}
+  currentTotalCartCountP3Text: {fileID: 0}
+  currentItemCartCountP3Text: {fileID: 0}
+  snakeCartManagerP4: {fileID: 0}
+  currentTotalCartCountP4Text: {fileID: 0}
+  currentItemCartCountP4Text: {fileID: 0}
   cinemachineCameraP1: {fileID: 1035736240}
   cinemachineCameraP2: {fileID: 2078120475}
+  cinemachineCameraP3: {fileID: 0}
+  cinemachineCameraP4: {fileID: 0}
   defaultOrthographicSize: 36
   orthographicSizeIncrement: 0.5
   cartsPerZoomIncrement: 2
@@ -68241,30 +68261,47 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   normalItemValue: 10
   expensiveItemValue: 100
-  p1TotalScore: 0
-  p2TotalScore: 0
-  totalScoreP1TMP: {fileID: 1373766004}
-  totalScoreP2TMP: {fileID: 1696440410}
-  p1LastGainTMP: {fileID: 1963191740}
-  p2LastGainTMP: {fileID: 667409298}
-  p1CheckoutLane1UIRoot: {fileID: 2104520401}
-  p1CheckoutLane2UIRoot: {fileID: 378456575}
-  p2CheckoutLane1UIRoot: {fileID: 1872725136}
-  p2CheckoutLane2UIRoot: {fileID: 2083829671}
-  p1LaneUIs:
-  - itemsCountText: {fileID: 207601825}
-    streakTextUI: {fileID: 1553783032}
-    subtotalText: {fileID: 2025442327}
-  - itemsCountText: {fileID: 411558550}
-    streakTextUI: {fileID: 366921622}
-    subtotalText: {fileID: 858382579}
-  p2LaneUIs:
-  - itemsCountText: {fileID: 2039592501}
-    streakTextUI: {fileID: 212060571}
-    subtotalText: {fileID: 1718938140}
-  - itemsCountText: {fileID: 1830617128}
-    streakTextUI: {fileID: 1665577181}
-    subtotalText: {fileID: 460020251}
+  team1Players: 0100000003000000
+  team2Players: 0200000004000000
+  playerTotalScore:
+  - 0
+  - 0
+  - 0
+  - 0
+  checkoutLaneUIRoots:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  laneUIs:
+  - itemsCountText: {fileID: 0}
+    streakTextUI: {fileID: 0}
+    subtotalText: {fileID: 0}
+  - itemsCountText: {fileID: 0}
+    streakTextUI: {fileID: 0}
+    subtotalText: {fileID: 0}
+  - itemsCountText: {fileID: 0}
+    streakTextUI: {fileID: 0}
+    subtotalText: {fileID: 0}
+  - itemsCountText: {fileID: 0}
+    streakTextUI: {fileID: 0}
+    subtotalText: {fileID: 0}
+  - itemsCountText: {fileID: 0}
+    streakTextUI: {fileID: 0}
+    subtotalText: {fileID: 0}
+  - itemsCountText: {fileID: 0}
+    streakTextUI: {fileID: 0}
+    subtotalText: {fileID: 0}
+  - itemsCountText: {fileID: 0}
+    streakTextUI: {fileID: 0}
+    subtotalText: {fileID: 0}
+  - itemsCountText: {fileID: 0}
+    streakTextUI: {fileID: 0}
+    subtotalText: {fileID: 0}
 --- !u!1 &1777114522
 GameObject:
   m_ObjectHideFlags: 0
@@ -91076,11 +91113,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30d2a686cdbe5aa478d8c80f2956110d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isForPlayer1: 0
-  cartControllerP1: {fileID: 0}
-  cartControllerP2: {fileID: 0}
+  playerIndex: 1
   lineLength: 5
+  startOffset: {x: 0, y: 0.2, z: 0}
   playerTransform: {fileID: 0}
+  cartController: {fileID: 0}
 --- !u!120 &1886278740
 LineRenderer:
   serializedVersion: 2
@@ -114203,10 +114240,9 @@ MonoBehaviour:
   - {fileID: 6597024514049572970, guid: 8b73817db514d35448f8eae48c6e04fb, type: 3}
   snakeBody: []
   cartsWithOutItem: []
-  isPlayer1: 1
+  playerIndex: 1
   setupCamera: {fileID: 11400000, guid: c694c52992c7f5f4fbfb31d18772ac53, type: 2}
   playerInputManager: {fileID: 447031817}
-  dinoIndictor: {fileID: 0}
   cashScoreManager: {fileID: 1773933218}
   needScaleup: 0
   numOfCartsWithGroceryItem: 0
@@ -114911,11 +114947,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30d2a686cdbe5aa478d8c80f2956110d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isForPlayer1: 1
-  cartControllerP1: {fileID: 0}
-  cartControllerP2: {fileID: 0}
+  playerIndex: 1
   lineLength: 5
+  startOffset: {x: 0, y: 0.2, z: 0}
   playerTransform: {fileID: 0}
+  cartController: {fileID: 0}
 --- !u!120 &2022898329
 LineRenderer:
   serializedVersion: 2
