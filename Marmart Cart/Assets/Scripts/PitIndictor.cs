@@ -2,64 +2,81 @@ using UnityEngine;
 
 public class PitIndictor : MonoBehaviour
 {
-    [Header("Settings")]
-    [SerializeField] private bool isForPlayer1 = true;
-    [SerializeField] private float offsetDistance = 2f;
+    [Header("Identity")]
+    [Range(1, 4)]
+    [SerializeField] private int playerIndex = 1; // 1..4
 
+    [Header("Settings")]
+    [SerializeField] private float offsetDistance = 2f;
+    [SerializeField] private float yOffset = -1f; // your old Vector3.up * -1f
+
+    [Header("Refs (auto)")]
     [SerializeField] private Transform player;
-    private Transform pitT;
     [SerializeField] private GameObject pit;
+
     [Header("Rotation")]
     [Tooltip("Extra rotation around Y to fine-tune arrow facing")]
     [SerializeField] private float yRotationOffset = 0f;
 
     [Tooltip("Base X rotation needed for the mesh to look correct (your -90)")]
     [SerializeField] private float baseXRotation = -90f;
+
+    private MeshRenderer _mr;
+
+    private void Awake()
+    {
+        _mr = GetComponent<MeshRenderer>();
+    }
+
     private void Start()
     {
         pit = GameObject.FindGameObjectWithTag("CheckOutStation");
-        Invoke(nameof(RegisterPlayer), 2f);
+        Invoke(nameof(RegisterPlayer), 0.1f);
     }
+
     public void RegisterPlayer()
     {
-        GameObject playerRef;
-        if (isForPlayer1)
-            playerRef = GameObject.FindGameObjectWithTag("Player1");
-        else
-            playerRef = GameObject.FindGameObjectWithTag("Player2");
+        var playerRef = GameObject.FindGameObjectWithTag($"Player{playerIndex}");
+        player = playerRef ? playerRef.transform : null;
 
-        player = isForPlayer1 ? playerRef?.transform : playerRef?.transform;
+        if (!player)
+            Debug.LogWarning($"PitIndictor: Player{playerIndex} not found.");
     }
+
     private void Update()
     {
         if (pit == null || player == null)
         {
-            // Optional: hide if data missing
-            GetComponent<MeshRenderer>().enabled = false;
+            if (_mr) _mr.enabled = false;
             return;
         }
 
-        pitT = pit.transform;
-        GetComponent<MeshRenderer>().enabled = true;
+        if (_mr) _mr.enabled = true;
 
-        // --- POSITION: same as your previous approach ---
-        Vector3 direction = pitT.position - player.position;
-        direction.y = 0f;              // ignore height
+        Vector3 pitPos = pit.transform.position;
+
+        // Direction from player to pit (XZ only)
+        Vector3 direction = pitPos - player.position;
+        direction.y = 0f;
+
         if (direction.sqrMagnitude < 0.0001f)
-            return;                    // avoid NaN when very close
+            return;
 
         direction.Normalize();
-        transform.position = player.position + direction * offsetDistance + Vector3.up * -1f;
 
-        // --- ROTATION: point arrow head toward pit, yaw only + offset ---
+        // Position: offset toward pit from player
+        transform.position = player.position + direction * offsetDistance + Vector3.up * yOffset;
 
-        // Angle on XZ plane, using Z as forward
+        // Rotation: yaw toward pit + optional tweak
         float angleY = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
-
-        // Add manual tweak
         angleY += yRotationOffset;
 
-        // Final rotation: your mesh needs -90 on X, and we rotate on Y
         transform.rotation = Quaternion.Euler(baseXRotation, angleY, 0f);
+    }
+
+    public void SetPlayerIndex(int idx)
+    {
+        playerIndex = Mathf.Clamp(idx, 1, 4);
+        RegisterPlayer();
     }
 }
