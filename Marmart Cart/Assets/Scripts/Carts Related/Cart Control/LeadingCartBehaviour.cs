@@ -328,6 +328,7 @@ public class LeadingCartBehaviour : MonoBehaviour
     public void ResetSpeed()
     {
         isStopping = false;
+        isBoosting = false;
         //Debug.Log("ResetSpeed executed");
         //targetSpeed = 20f;
         //cartControlInput.AllowBoost();

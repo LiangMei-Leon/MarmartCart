@@ -115,13 +115,13 @@ public class Debuggers : MonoBehaviour
 
     private void TeleportDebug()
     {
-        TryTeleport(p1TeleportKey, p1Root, p1Rigidbody, p1TeleportPoint, 1);
-        TryTeleport(p2TeleportKey, p2Root, p2Rigidbody, p2TeleportPoint, 2);
-        TryTeleport(p3TeleportKey, p3Root, p3Rigidbody, p3TeleportPoint, 3);
-        TryTeleport(p4TeleportKey, p4Root, p4Rigidbody, p4TeleportPoint, 4);
+        TryTeleport(p1TeleportKey, p1Root, p1Rigidbody, p1TeleportPoint, 1, p1CartControl);
+        TryTeleport(p2TeleportKey, p2Root, p2Rigidbody, p2TeleportPoint, 2, p2CartControl);
+        TryTeleport(p3TeleportKey, p3Root, p3Rigidbody, p3TeleportPoint, 3, p3CartControl);
+        TryTeleport(p4TeleportKey, p4Root, p4Rigidbody, p4TeleportPoint, 4, p4CartControl);
     }
 
-    private void TryTeleport(KeyCode key, Transform root, Rigidbody rb, Transform target, int index)
+    private void TryTeleport(KeyCode key, Transform root, Rigidbody rb, Transform target, int index, CartControlScript control)
     {
         if (!Input.GetKeyDown(key)) return;
 
@@ -134,6 +134,15 @@ public class Debuggers : MonoBehaviour
             {
                 rb.linearVelocity = Vector3.zero;
                 rb.angularVelocity = Vector3.zero;
+            }
+            control.SetOutPit();
+            LeadingCartBehaviour[] behaviours = control.gameObject.transform.parent.GetComponentsInChildren<LeadingCartBehaviour>();
+            if(behaviours.Length > 0)
+            {
+                for(int i = 0; i < behaviours.Length; i++)
+                {
+                    behaviours[i].ResetSpeed();
+                }
             }
         }
         else
