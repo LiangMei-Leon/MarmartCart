@@ -868,7 +868,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &93707696
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1128,7 +1128,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &102568704
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4792,7 +4792,7 @@ Camera:
   far clip plane: 1000
   field of view: 30
   orthographic: 1
-  orthographic size: 14
+  orthographic size: 6.5
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -4816,8 +4816,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 300062265}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.46193978, y: 0.33141357, z: -0.19134171, w: 0.8001032}
-  m_LocalPosition: {x: -41.935543, y: 11.310254, z: -490.6356}
+  m_LocalRotation: {x: 0.19198428, y: 0.45080337, z: -0.09994069, w: 0.8659852}
+  m_LocalPosition: {x: 69.23597, y: 3.6461556, z: -507.93845}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -5884,7 +5884,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &431328475
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6976,7 +6976,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &508894102
 RectTransform:
   m_ObjectHideFlags: 0
@@ -7975,7 +7975,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &547350257
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8528,6 +8528,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f645edb344c9e5c479258a7084921622, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &564803856 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 912478814203268726, guid: 12ac951b58fdc9d47b295ad70d64bb5c, type: 3}
+  m_PrefabInstance: {fileID: 727129169}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1001 &564920144
@@ -34025,7 +34036,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &768843362
 RectTransform:
   m_ObjectHideFlags: 0
@@ -34919,7 +34930,7 @@ Camera:
   far clip plane: 1000
   field of view: 30
   orthographic: 1
-  orthographic size: 6.5
+  orthographic size: 14
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -34943,8 +34954,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 797802257}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.19198428, y: 0.45080337, z: -0.09994069, w: 0.8659852}
-  m_LocalPosition: {x: 69.23597, y: 3.6461556, z: -507.93845}
+  m_LocalRotation: {x: 0.46193978, y: 0.33141357, z: -0.19134171, w: 0.8001032}
+  m_LocalPosition: {x: -22, y: 122.6, z: -490.6356}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -35324,7 +35335,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &839067659
 RectTransform:
   m_ObjectHideFlags: 0
@@ -40018,7 +40029,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1135323648
 RectTransform:
   m_ObjectHideFlags: 0
@@ -62679,7 +62690,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1229256246
 RectTransform:
   m_ObjectHideFlags: 0
@@ -65892,8 +65903,8 @@ Camera:
     y: 0
     width: 1
     height: 0.5
-  near clip plane: -100
-  far clip plane: 1000
+  near clip plane: -69.3
+  far clip plane: 1100.1
   field of view: 30
   orthographic: 1
   orthographic size: 6.5
@@ -65921,7 +65932,7 @@ Transform:
   m_GameObject: {fileID: 1531898264}
   serializedVersion: 2
   m_LocalRotation: {x: 0.19198428, y: 0.45080337, z: -0.09994069, w: 0.8659852}
-  m_LocalPosition: {x: 69.23597, y: 3.6461556, z: -507.93845}
+  m_LocalPosition: {x: 50.525955, y: 6.0061617, z: -508.60846}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -67689,6 +67700,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 9004776390941418229, guid: 7a4970bb99233da41a38183f70865b73, type: 3}
   m_PrefabInstance: {fileID: 1844198759}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1605087524 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 912478814203268726, guid: 12ac951b58fdc9d47b295ad70d64bb5c, type: 3}
+  m_PrefabInstance: {fileID: 652831127}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1609508482
 GameObject:
   m_ObjectHideFlags: 0
@@ -70122,7 +70144,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1759806087
 RectTransform:
   m_ObjectHideFlags: 0
@@ -70467,6 +70489,8 @@ MonoBehaviour:
   titleScreen: {fileID: 863516544}
   timerTextP1: {fileID: 1553768670}
   timerTextP2: {fileID: 564920146}
+  timerTextP3: {fileID: 564803856}
+  timerTextP4: {fileID: 1605087524}
   finalScoreScreen: {fileID: 431328474}
   scoreBreakdownTextP1: {fileID: 102568705}
   scoreBreakdownTextP2: {fileID: 508894103}
@@ -116959,7 +116983,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1972669357
 RectTransform:
   m_ObjectHideFlags: 0
@@ -119404,7 +119428,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2134789658
 RectTransform:
   m_ObjectHideFlags: 0

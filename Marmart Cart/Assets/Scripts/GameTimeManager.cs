@@ -16,6 +16,8 @@ public class GameTimeManager : MonoBehaviour
     [SerializeField] private GameObject titleScreen; // Title screen object
     [SerializeField] private TextMeshProUGUI timerTextP1; // TMP for time display p1
     [SerializeField] private TextMeshProUGUI timerTextP2; // TMP for time display p2
+    [SerializeField] private TextMeshProUGUI timerTextP3; // TMP for time display p3
+    [SerializeField] private TextMeshProUGUI timerTextP4; // TMP for time display p4
     [SerializeField] private GameObject finalScoreScreen; // Final score screen object
     //[SerializeField] private TextMeshProUGUI finalHitCountText; // TMP for hit count display
     //[SerializeField] private TextMeshProUGUI finalScoreText; // TMP for final score display
@@ -246,6 +248,8 @@ public class GameTimeManager : MonoBehaviour
         int seconds = Mathf.FloorToInt(timeRemaining % 60);
         timerTextP1.text = $"{minutes:D2}:{seconds:D2}";
         timerTextP2.text = $"{minutes:D2}:{seconds:D2}";
+        timerTextP3.text = $"{minutes:D2}:{seconds:D2}";
+        timerTextP4.text = $"{minutes:D2}:{seconds:D2}";
     }
 
     private void StartGame()
