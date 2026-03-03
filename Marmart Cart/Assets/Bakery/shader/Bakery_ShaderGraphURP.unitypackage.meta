@@ -1,7 +1,15 @@
 fileFormatVersion: 2
 guid: ec3754b09ac1517429546e96e7b25708
+timeCreated: 1606124300
+licenseType: Store
 DefaultImporter:
-  externalObjects: {}
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 122218
+  packageName: Bakery - GPU Lightmapper
+  packageVersion: 1.98
+  assetPath: Assets/Bakery/shader/Bakery_ShaderGraphURP.unitypackage
+  uploadId: 838814
