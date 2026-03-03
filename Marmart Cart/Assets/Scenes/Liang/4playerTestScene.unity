@@ -4602,9 +4602,17 @@ MonoBehaviour:
   phase2Duration: 90
   phase2SpawnInterval: 10
   phase2ItemsPerSpawn: 1
+  phase3Duration: 60
   phase3SpawnInterval: 10
   phase3ItemsPerSpawn: 2
-  cartPrefab: {fileID: 7705262396943972690, guid: 86e59ca9b08bae34189cf00486e4e5af, type: 3}
+  phase4SpawnInterval: 10
+  phase4ItemsPerSpawn: 6
+  normalPrefab: {fileID: 0}
+  rarePrefab: {fileID: 0}
+  phase1RareChance: 0
+  phase2RareChance: 0.05
+  phase3RareChance: 0.08
+  phase4RareChance: 0.12
   yOffset: 20
   snakeCartManager1: {fileID: 0}
   snakeCartManager2: {fileID: 0}
@@ -5854,7 +5862,7 @@ Transform:
   m_GameObject: {fileID: 426139365}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -13.15, y: -9.65, z: 101.166214}
+  m_LocalPosition: {x: -10.2, y: -9.65, z: 82.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5940,14 +5948,22 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   phase1Duration: 30
-  phase1SpawnInterval: 4
+  phase1SpawnInterval: 1
   phase1ItemsPerSpawn: 1
-  phase2Duration: 90
-  phase2SpawnInterval: 5
+  phase2Duration: 60
+  phase2SpawnInterval: 2
   phase2ItemsPerSpawn: 2
+  phase3Duration: 150
   phase3SpawnInterval: 2
-  phase3ItemsPerSpawn: 2
-  cartPrefab: {fileID: 6914780558269192623, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
+  phase3ItemsPerSpawn: 3
+  phase4SpawnInterval: 1
+  phase4ItemsPerSpawn: 3
+  normalPrefab: {fileID: 6914780558269192623, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
+  rarePrefab: {fileID: 0}
+  phase1RareChance: 0
+  phase2RareChance: 0.05
+  phase3RareChance: 0.08
+  phase4RareChance: 0.12
   yOffset: 20
   snakeCartManager1: {fileID: 1981863288}
   snakeCartManager2: {fileID: 203355758}
@@ -9375,11 +9391,11 @@ MonoBehaviour:
   phase1Duration: 30
   phase1SpawnInterval: 5
   phase1AIsPerWave: 2
-  phase2Duration: 90
-  phase2SpawnInterval: 5
+  phase2Duration: 210
+  phase2SpawnInterval: 3
   phase2AIsPerWave: 3
-  phase3SpawnInterval: 5
-  phase3AIsPerWave: 4
+  phase3SpawnInterval: 1
+  phase3AIsPerWave: 2
   aiPools:
   - {fileID: 11400000, guid: 0d8e17767b483314990dca3aeb27508e, type: 2}
   - {fileID: 11400000, guid: fd1cb1e9d1e25214880df2c2146dc8ac, type: 2}
@@ -11298,14 +11314,22 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   phase1Duration: 30
-  phase1SpawnInterval: 4
+  phase1SpawnInterval: 5
   phase1ItemsPerSpawn: 1
-  phase2Duration: 90
-  phase2SpawnInterval: 3
+  phase2Duration: 60
+  phase2SpawnInterval: 1
   phase2ItemsPerSpawn: 1
-  phase3SpawnInterval: 4
+  phase3Duration: 150
+  phase3SpawnInterval: 2
   phase3ItemsPerSpawn: 2
-  cartPrefab: {fileID: 319821544491134380, guid: 5f722ec503c1c1b429c44eaebcb4a9ed, type: 3}
+  phase4SpawnInterval: 1
+  phase4ItemsPerSpawn: 2
+  normalPrefab: {fileID: 319821544491134380, guid: 5f722ec503c1c1b429c44eaebcb4a9ed, type: 3}
+  rarePrefab: {fileID: 7705262396943972690, guid: 86e59ca9b08bae34189cf00486e4e5af, type: 3}
+  phase1RareChance: 0
+  phase2RareChance: 0.05
+  phase3RareChance: 0.15
+  phase4RareChance: 0.35
   yOffset: 20
   snakeCartManager1: {fileID: 0}
   snakeCartManager2: {fileID: 0}
@@ -63857,7 +63881,7 @@ Transform:
   m_GameObject: {fileID: 1288510186}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 69.3, y: -10.73, z: 108.266205}
+  m_LocalPosition: {x: 85.89, y: -10.73, z: 105.69}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -69429,7 +69453,7 @@ Transform:
   m_GameObject: {fileID: 1727005893}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 88.7, y: -10.51, z: 17.46}
+  m_LocalPosition: {x: 86.07, y: -10.51, z: 17.46}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -70439,7 +70463,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2647bdc77cfafca40841eac24b1dd78a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  totalGameDuration: 240
+  totalGameDuration: 300
   titleScreen: {fileID: 863516544}
   timerTextP1: {fileID: 1553768670}
   timerTextP2: {fileID: 564920146}
@@ -93844,13 +93868,21 @@ MonoBehaviour:
     m_Bits: 64
   phase1Duration: 30
   phase1SpawnInterval: 10
-  phase1ItemsPerSpawn: 0
-  phase2Duration: 90
-  phase2SpawnInterval: 10
-  phase2ItemsPerSpawn: 2
-  phase3SpawnInterval: 5
-  phase3ItemsPerSpawn: 1
-  cartPrefab: {fileID: 6231759305289963231, guid: c0e0d6bf9993d4a46ad42395087c1d98, type: 3}
+  phase1ItemsPerSpawn: 1
+  phase2Duration: 60
+  phase2SpawnInterval: 6
+  phase2ItemsPerSpawn: 4
+  phase3Duration: 150
+  phase3SpawnInterval: 2
+  phase3ItemsPerSpawn: 2
+  phase4SpawnInterval: 2
+  phase4ItemsPerSpawn: 2
+  normalPrefab: {fileID: 6231759305289963231, guid: c0e0d6bf9993d4a46ad42395087c1d98, type: 3}
+  rarePrefab: {fileID: 0}
+  phase1RareChance: 0
+  phase2RareChance: 0
+  phase3RareChance: 0
+  phase4RareChance: 0
   yOffset: 20
   snakeCartManager1: {fileID: 0}
   snakeCartManager2: {fileID: 0}
@@ -117010,7 +117042,7 @@ Transform:
   m_GameObject: {fileID: 1975370199}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -11.43, y: -10.1, z: -3.96}
+  m_LocalPosition: {x: 7.62, y: -10.1, z: -24.06}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

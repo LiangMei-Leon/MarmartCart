@@ -23,18 +23,33 @@ public class ItemGenerationManager : MonoBehaviour
     [SerializeField] private int phase2ItemsPerSpawn = 6;
 
     [Header("Phase 3 Settings")]
+    [SerializeField] private float phase3Duration = 60f; // Phase 3 starts after Phase 2
     [SerializeField] private float phase3SpawnInterval = 10f;
     [SerializeField] private int phase3ItemsPerSpawn = 8;
+
+    [Header("Phase 4 Settings")]
+    [SerializeField] private float phase4SpawnInterval = 10f;
+    [SerializeField] private int phase4ItemsPerSpawn = 6;
 
     private int currentPhase = 0;
     private float elapsedGameTime = 0f;
     private float spawnInterval;
     private int itemsPerSpawn;
 
+    [Header("Optional Rarity Spawning (leave rarePrefab null to disable)")]
+    [SerializeField] private GameObject normalPrefab; // default = cartPrefab
+    [SerializeField] private GameObject rarePrefab;   // optional
 
-    [Header("Cart Prefabs")]
-    [SerializeField] private GameObject cartPrefab;
+    [Range(0f, 1f)]
+    [SerializeField] private float phase1RareChance = 0.00f;
+    [Range(0f, 1f)]
+    [SerializeField] private float phase2RareChance = 0.05f;
+    [Range(0f, 1f)]
+    [SerializeField] private float phase3RareChance = 0.08f;
+    [Range(0f, 1f)]
+    [SerializeField] private float phase4RareChance = 0.12f;
 
+    private float currentRareChance = 0f;
     [SerializeField] private float yOffset = 20f;
 
     [Header("Poor and Temp fix on prefab scale issue")]
@@ -72,24 +87,31 @@ public class ItemGenerationManager : MonoBehaviour
     {
         if (elapsedGameTime < phase1Duration && currentPhase != 1)
         {
-            // Phase 1
             currentPhase = 1;
             spawnInterval = phase1SpawnInterval;
             itemsPerSpawn = phase1ItemsPerSpawn;
+            currentRareChance = phase1RareChance;
         }
         else if (elapsedGameTime >= phase1Duration && elapsedGameTime < phase1Duration + phase2Duration && currentPhase != 2)
         {
-            // Phase 2
             currentPhase = 2;
             spawnInterval = phase2SpawnInterval;
             itemsPerSpawn = phase2ItemsPerSpawn;
+            currentRareChance = phase2RareChance;
         }
-        else if (elapsedGameTime >= phase1Duration + phase2Duration && currentPhase != 3)
+        else if (elapsedGameTime >= phase1Duration + phase2Duration && elapsedGameTime < phase1Duration + phase2Duration + phase3Duration && currentPhase != 3)
         {
-            // Phase 3
             currentPhase = 3;
             spawnInterval = phase3SpawnInterval;
             itemsPerSpawn = phase3ItemsPerSpawn;
+            currentRareChance = phase3RareChance;
+        }
+        else if (elapsedGameTime >= phase1Duration + phase2Duration + phase3Duration && currentPhase != 4)
+        {
+            currentPhase = 4;
+            spawnInterval = phase4SpawnInterval;
+            itemsPerSpawn = phase4ItemsPerSpawn;
+            currentRareChance = phase4RareChance;
         }
     }
 
@@ -100,7 +122,7 @@ public class ItemGenerationManager : MonoBehaviour
             Vector3 spawnPosition = GetValidSpawnPosition();
             if (spawnPosition != Vector3.zero)
             {
-                GameObject prefabToSpawn = cartPrefab; 
+                GameObject prefabToSpawn = PickPrefabToSpawn();
                 // Instantiate the item
                 GameObject spawned = Instantiate(prefabToSpawn, spawnPosition + new Vector3(0, 10f, 0), prefabToSpawn.transform.rotation);
                 //spawned.transform.localScale = new Vector3(5f, 5f, 5f);
@@ -155,5 +177,14 @@ public class ItemGenerationManager : MonoBehaviour
         Vector3 size = new Vector3(boxWidth, 20f, boxLength);
 
         Gizmos.DrawWireCube(center, size);
+    }
+
+    private GameObject PickPrefabToSpawn()
+    {
+        // If rarePrefab isn't provided, always spawn normal
+        if (rarePrefab == null)
+            return normalPrefab;
+;
+        return (Random.value < currentRareChance) ? rarePrefab : normalPrefab;
     }
 }
