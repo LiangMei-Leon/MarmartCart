@@ -54317,7 +54317,7 @@ MonoBehaviour:
   phase3SpawnInterval: 2
   phase3ItemsPerSpawn: 3
   phase4SpawnInterval: 1
-  phase4ItemsPerSpawn: 3
+  phase4ItemsPerSpawn: 2
   normalPrefab: {fileID: 6914780558269192623, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
   rarePrefab: {fileID: 0}
   phase1RareChance: 0
@@ -62254,10 +62254,10 @@ MonoBehaviour:
   phase1SpawnInterval: 5
   phase1AIsPerWave: 2
   phase2Duration: 210
-  phase2SpawnInterval: 3
+  phase2SpawnInterval: 4
   phase2AIsPerWave: 3
-  phase3SpawnInterval: 1
-  phase3AIsPerWave: 2
+  phase3SpawnInterval: 2
+  phase3AIsPerWave: 1
   aiPools:
   - {fileID: 11400000, guid: 0d8e17767b483314990dca3aeb27508e, type: 2}
   - {fileID: 11400000, guid: fd1cb1e9d1e25214880df2c2146dc8ac, type: 2}
@@ -67537,7 +67537,7 @@ MonoBehaviour:
   phase3SpawnInterval: 2
   phase3ItemsPerSpawn: 2
   phase4SpawnInterval: 1
-  phase4ItemsPerSpawn: 2
+  phase4ItemsPerSpawn: 1
   normalPrefab: {fileID: 319821544491134380, guid: 5f722ec503c1c1b429c44eaebcb4a9ed, type: 3}
   rarePrefab: {fileID: 7705262396943972690, guid: 86e59ca9b08bae34189cf00486e4e5af, type: 3}
   phase1RareChance: 0
@@ -149952,7 +149952,7 @@ MonoBehaviour:
   minTimeBetweenEvents: 10
   maxTimeBetweenEvents: 20
   useScriptedSequence: 1
-  scriptedEvents: 0200000002000000
+  scriptedEvents: 02000000
   rollingTextRootP1: {fileID: 459009845}
   rollingTextRootP2: {fileID: 126620223}
   rollingTextRootP3: {fileID: 1548905794}
@@ -176725,9 +176725,9 @@ MonoBehaviour:
   phase2SpawnInterval: 6
   phase2ItemsPerSpawn: 2
   phase3Duration: 150
-  phase3SpawnInterval: 4
+  phase3SpawnInterval: 5
   phase3ItemsPerSpawn: 2
-  phase4SpawnInterval: 3
+  phase4SpawnInterval: 4
   phase4ItemsPerSpawn: 2
   normalPrefab: {fileID: 6231759305289963231, guid: c0e0d6bf9993d4a46ad42395087c1d98, type: 3}
   rarePrefab: {fileID: 0}
@@ -209545,11 +209545,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1723657871191759030, guid: 12ac951b58fdc9d47b295ad70d64bb5c, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -509.99997
+      value: -511.8
       objectReference: {fileID: 0}
     - target: {fileID: 1723657871191759030, guid: 12ac951b58fdc9d47b295ad70d64bb5c, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 528
+      value: 528.4
       objectReference: {fileID: 0}
     - target: {fileID: 1723657871191759030, guid: 12ac951b58fdc9d47b295ad70d64bb5c, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
