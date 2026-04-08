@@ -5187,7 +5187,7 @@ MonoBehaviour:
   <hitDirection>k__BackingField: {x: 0, y: 0, z: 0}
   detachCooldown: 1.25
   cooldownTimer: 0
-  disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
+  disableDetachEvent: {fileID: 11400000, guid: 87a9fb9219fdbba4ea0baff15a1c840a, type: 2}
   sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
   chargingVFX: {fileID: 890071643070153643}
   tomatoSplashEffect: {fileID: 8834838143724092033}

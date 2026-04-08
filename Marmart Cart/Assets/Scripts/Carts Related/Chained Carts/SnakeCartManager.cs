@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-public class SnakeCartManager : MonoBehaviour
+public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 {
     [SerializeField] float distanceBetween = 0.2f; // The spawn rate time difference that creates an illusion of distance in between snake bodies
     //[SerializeField] float cartSpacing = 1f; // world space units
@@ -378,5 +379,21 @@ public class SnakeCartManager : MonoBehaviour
         // Make sure these tags exist in Unity Tag Manager:
         // Player1, Player2, Player3, Player4
         return $"Player{playerIndex}";
+    }
+
+    /// IAssistPlayerDataSource implementation for MatchBalanceManager
+    public int GetPlayerId()
+    {
+        return playerIndex;
+    }
+
+    public int GetCurrentScore()
+    {
+        return cashScoreManager.GetPlayerScore(playerIndex);
+    }
+
+    public int GetCurrentCartCount()
+    {
+        return snakeBody.Count;
     }
 }

@@ -2,13 +2,19 @@
 using UnityEngine;
 using TMPro;
 
-
+[System.Serializable]
+public class WeightedMapEventEntry
+{
+    public MapEventType eventType;
+    [Min(0)] public int weight = 1;
+    public bool enabled = true;
+}
 public class MapEventManager : MonoBehaviour
 {
     [Header("Sections")]
     [SerializeField] private MapSection[] sections;
 
-    [Header("Rare Item Sale Config")]
+    [Header("Event Config")]
     [SerializeField] private RareItemSaleConfig normalSaleConfig = new RareItemSaleConfig();
     [SerializeField] private RareItemSaleConfig rareSaleConfig = new RareItemSaleConfig();
     [SerializeField] private CartRainConfig cartRainConfig = new CartRainConfig();
@@ -20,6 +26,16 @@ public class MapEventManager : MonoBehaviour
     [SerializeField] private float firstEventDelay = 30f;
     [SerializeField] private float minTimeBetweenEvents = 15f;
     [SerializeField] private float maxTimeBetweenEvents = 30f;
+
+    [Header("Weighted Random Events")]
+    [SerializeField] private WeightedMapEventEntry[] weightedEvents;
+    [Header("Repetition Control")]
+    [SerializeField] private bool limitConsecutiveRepeats = true;
+    [SerializeField] private int maxConsecutiveSameEvent = 2;
+
+    private MapEventType lastRandomEventType;
+    private int currentSameEventStreak = 0;
+    private bool hasPickedRandomEventBefore = false;
 
     [Header("Scripted Event Sequence (Optional)")]
     [SerializeField] private bool useScriptedSequence = false;
@@ -86,9 +102,9 @@ public class MapEventManager : MonoBehaviour
                     yield return StartCoroutine(RunShopperRushEvent());
                     break;
 
-                //case MapEventType.NormalItemSale:                      
-                //    yield return StartCoroutine(RunNormalItemSaleEvent());
-                //    break;
+                case MapEventType.NormalItemSale:                      
+                    yield return StartCoroutine(RunNormalItemSaleEvent());
+                    break;
             }
             // Wait some time before next event
             float wait = Random.Range(minTimeBetweenEvents, maxTimeBetweenEvents);
@@ -98,15 +114,13 @@ public class MapEventManager : MonoBehaviour
 
     private MapEventType GetNextEventType()
     {
-        // If scripted list has events AND we are still using it
+        // Scripted sequence has priority if enabled
         if (useScriptedSequence && scriptedEvents != null && scriptedEvents.Length > 0)
         {
-            // Get the current scripted event
             var t = scriptedEvents[scriptedIndex];
 
             scriptedIndex++;
 
-            // If we've used ALL scripted events, disable scripted mode
             if (scriptedIndex >= scriptedEvents.Length)
             {
                 useScriptedSequence = false;
@@ -114,9 +128,10 @@ public class MapEventManager : MonoBehaviour
 
             return t;
         }
-        // Simple random between all four types for now
-        int v = Random.Range(0, 4);
-        return (MapEventType)v;
+
+        MapEventType selected = GetWeightedRandomEventTypeWithRepeatLimit();
+        RegisterRandomEventPick(selected);
+        return selected;
     }
 
     // ------------------------------------------------------
@@ -332,6 +347,131 @@ public class MapEventManager : MonoBehaviour
     // ------------------------------------------------------
     // COMMON HELPERS
     // ------------------------------------------------------
+    private MapEventType GetWeightedRandomEventTypeWithRepeatLimit()
+    {
+        if (weightedEvents == null || weightedEvents.Length == 0)
+        {
+            Debug.LogWarning("[MapEventManager] No weighted events configured. Falling back to RareItemSale.");
+            return MapEventType.RareItemSale;
+        }
+
+        int totalWeight = 0;
+
+        for (int i = 0; i < weightedEvents.Length; i++)
+        {
+            var entry = weightedEvents[i];
+            if (entry == null || !entry.enabled || entry.weight <= 0)
+                continue;
+
+            if (WouldExceedRepeatLimit(entry.eventType))
+                continue;
+
+            totalWeight += entry.weight;
+        }
+
+        // Fallback: if repeat limit filtered everything out, ignore the limit once
+        if (totalWeight <= 0)
+        {
+            totalWeight = 0;
+
+            for (int i = 0; i < weightedEvents.Length; i++)
+            {
+                var entry = weightedEvents[i];
+                if (entry == null || !entry.enabled || entry.weight <= 0)
+                    continue;
+
+                totalWeight += entry.weight;
+            }
+
+            if (totalWeight <= 0)
+            {
+                Debug.LogWarning("[MapEventManager] All weighted events are disabled or have 0 weight. Falling back to RareItemSale.");
+                return MapEventType.RareItemSale;
+            }
+
+            Debug.LogWarning("[MapEventManager] Repeat limit filtered out all events. Ignoring repeat limit for this roll.");
+        }
+
+        int roll = Random.Range(0, totalWeight);
+        int running = 0;
+
+        for (int i = 0; i < weightedEvents.Length; i++)
+        {
+            var entry = weightedEvents[i];
+            if (entry == null || !entry.enabled || entry.weight <= 0)
+                continue;
+
+            if (totalWeight > 0 && !CanUseEntryForCurrentRoll(entry.eventType, totalWeight))
+                continue;
+
+            running += entry.weight;
+
+            if (roll < running)
+                return entry.eventType;
+        }
+
+        Debug.LogWarning("[MapEventManager] Weighted selection failed unexpectedly. Falling back to RareItemSale.");
+        return MapEventType.RareItemSale;
+    }
+
+    private bool WouldExceedRepeatLimit(MapEventType candidate)
+    {
+        if (!limitConsecutiveRepeats)
+            return false;
+
+        if (!hasPickedRandomEventBefore)
+            return false;
+
+        if (candidate != lastRandomEventType)
+            return false;
+
+        return currentSameEventStreak >= maxConsecutiveSameEvent;
+    }
+
+    private bool CanUseEntryForCurrentRoll(MapEventType candidate, int filteredTotalWeight)
+    {
+        // If at least one valid filtered option exists, enforce the repeat rule
+        bool filteredModeActive = false;
+
+        for (int i = 0; i < weightedEvents.Length; i++)
+        {
+            var entry = weightedEvents[i];
+            if (entry == null || !entry.enabled || entry.weight <= 0)
+                continue;
+
+            if (!WouldExceedRepeatLimit(entry.eventType))
+            {
+                filteredModeActive = true;
+                break;
+            }
+        }
+
+        if (!filteredModeActive)
+            return true;
+
+        return !WouldExceedRepeatLimit(candidate);
+    }
+
+    private void RegisterRandomEventPick(MapEventType picked)
+    {
+        if (!hasPickedRandomEventBefore)
+        {
+            hasPickedRandomEventBefore = true;
+            lastRandomEventType = picked;
+            currentSameEventStreak = 1;
+            return;
+        }
+
+        if (picked == lastRandomEventType)
+        {
+            currentSameEventStreak++;
+        }
+        else
+        {
+            lastRandomEventType = picked;
+            currentSameEventStreak = 1;
+        }
+    }
     private MapSection PickRandomSectionWithGenerator()
     {
         if (sections == null || sections.Length == 0) return null;

@@ -237,6 +237,8 @@ public class LeadingCartRaycaster : MonoBehaviour
         {
             if (cartControlInput.IsCharing())
                 Destroy(collision.gameObject);
+            cartControlInput.AllowFlip();
+            cartControlInput.DisallowActivatePowerUp();
         }
         if (collision.gameObject.CompareTag("Walls"))
         {
