@@ -2,9 +2,6 @@ using UnityEngine;
 using Unity.Cinemachine;
 public class CameraManager : MonoBehaviour
 {
-    /// <summary>
-    /// hi i made changes.
-    /// </summary>
     [SerializeField] private GameObject chainedCartsP1;
     [SerializeField] private GameObject chainedCartsP2;
     [SerializeField] private GameObject chainedCartsP3;

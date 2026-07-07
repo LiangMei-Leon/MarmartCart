@@ -66,26 +66,9 @@ public class LeadingCartBehaviour : MonoBehaviour
     //[SerializeField] private float decelerationRate = 10f; // Rate at which the cart returns to normal speed
     public bool isBoosting = false;                       // Flag to track if boost is active
 
+
     [Header("Events")]
     [SerializeField] GameEvent disableDetachEvent;
-
-    [Header("Debug - Lateral Velocity")]
-    [SerializeField] private bool debugLateralVelocity = false;
-    [SerializeField] private float debugLogInterval = 0.5f;
-
-    [SerializeField] private float currentLateralVel;
-    [SerializeField] private float currentAbsLateralVel;
-    [SerializeField] private float currentNormalizedLateralVelocity;
-    [SerializeField] private float currentGripFactor;
-    [SerializeField] private float currentForwardVel;
-
-    [SerializeField] private float maxAbsLateralVelSeen;
-    [SerializeField] private float maxNormalizedLateralVelocitySeen;
-    [SerializeField] private float minLateralVelSeen;
-    [SerializeField] private float maxLateralVelSeen;
-
-    private float lateralDebugTimer;
-
     void Awake()
     {
         // Warn the user if the Rigidbody is not assigned
@@ -159,63 +142,30 @@ public class LeadingCartBehaviour : MonoBehaviour
             #endregion
 
             #region Steering System Code
+            
+                // Set right as the steering direction (lateral sliding axis).
+                steeringDirection = transform.right;
 
-            // Set right as the steering direction (lateral sliding axis).
-            steeringDirection = transform.right;
+                // Calculate the velocity of the wheel along the steering direction (sideways).
+                float lateralVel = Vector3.Dot(steeringDirection, wheelVelocity);
+                // Debug.Log(lateralVel);
+                // Normalize lateral velocity by max steering velocity
+                float normalizedLateralVelocity = Mathf.Clamp01(Mathf.Abs(lateralVel) / maxLateralVelocity);
 
-            // Calculate the velocity of the wheel along the steering direction (sideways).
-            float lateralVel = Vector3.Dot(steeringDirection, wheelVelocity);
-            // Debug.Log(lateralVel);
-            // Normalize lateral velocity by max steering velocity
-            float normalizedLateralVelocity = Mathf.Clamp01(Mathf.Abs(lateralVel) / maxLateralVelocity);
+                // Evaluate grip factor from curve (0 = no grip, 1 = full grip)
+                float gripFactor = wheelGripCurve.Evaluate(normalizedLateralVelocity);
 
-            // Evaluate grip factor from curve (0 = no grip, 1 = full grip)
-            float gripFactor = wheelGripCurve.Evaluate(normalizedLateralVelocity);
-            if (debugLateralVelocity)
-            {
-                float forwardVel = Vector3.Dot(transform.forward, wheelVelocity);
-                float absLateralVel = Mathf.Abs(lateralVel);
+                // Calculate the desired velocity change to stop sliding.
+                float desiredVelChange = -1 * lateralVel * gripFactor;
 
-                currentLateralVel = lateralVel;
-                currentAbsLateralVel = absLateralVel;
-                currentNormalizedLateralVelocity = normalizedLateralVelocity;
-                currentGripFactor = gripFactor;
-                currentForwardVel = forwardVel;
+                // Calculate the acceleration needed to stop sliding within the fixed time step.
+                float desiredAccelration = desiredVelChange / Time.fixedDeltaTime;
 
-                maxAbsLateralVelSeen = Mathf.Max(maxAbsLateralVelSeen, absLateralVel);
-                maxNormalizedLateralVelocitySeen = Mathf.Max(maxNormalizedLateralVelocitySeen, normalizedLateralVelocity);
-                minLateralVelSeen = Mathf.Min(minLateralVelSeen, lateralVel);
-                maxLateralVelSeen = Mathf.Max(maxLateralVelSeen, lateralVel);
+                // Apply the force to cancel sliding (F = m * a), in the direction opposite to sliding.
+                finalSteeringForce = steeringDirection * wheelMass * desiredAccelration;
 
-                lateralDebugTimer += Time.fixedDeltaTime;
-
-                if (lateralDebugTimer >= debugLogInterval)
-                {
-                    lateralDebugTimer = 0f;
-
-                    Debug.Log(
-                        $"[{gameObject.name}] " +
-                        $"lat: {lateralVel:F2}, " +
-                        $"absLat: {absLateralVel:F2}, " +
-                        $"norm: {normalizedLateralVelocity:F2}, " +
-                        $"grip: {gripFactor:F2}, " +
-                        $"fwd: {forwardVel:F2}, " +
-                        $"maxAbsLatSeen: {maxAbsLateralVelSeen:F2}, " +
-                        $"latRangeSeen: {minLateralVelSeen:F2} to {maxLateralVelSeen:F2}"
-                    );
-                }
-            }
-            // Calculate the desired velocity change to stop sliding.
-            float desiredVelChange = -1 * lateralVel * gripFactor;
-
-            // Calculate the acceleration needed to stop sliding within the fixed time step.
-            float desiredAccelration = desiredVelChange / Time.fixedDeltaTime;
-
-            // Apply the force to cancel sliding (F = m * a), in the direction opposite to sliding.
-            finalSteeringForce = steeringDirection * wheelMass * desiredAccelration;
-
-            // Apply the force at the wheel's position to counteract the lateral sliding.
-            cartBody.AddForceAtPosition(finalSteeringForce, transform.position);
+                // Apply the force at the wheel's position to counteract the lateral sliding.
+                cartBody.AddForceAtPosition(finalSteeringForce, transform.position);
 
             #endregion
 
@@ -367,7 +317,7 @@ public class LeadingCartBehaviour : MonoBehaviour
         cartBody.AddForceAtPosition(knockbackDir * knockbackForce, transform.position, ForceMode.Impulse);
         Invoke(nameof(ResetSpeed), duration);
     }
-
+    
     public void SetSpeedToZero()
     {
         isStopping = true;
