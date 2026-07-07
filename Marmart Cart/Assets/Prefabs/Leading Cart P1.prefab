@@ -3452,26 +3452,26 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.7520523
-      inSlope: -0.11393653
-      outSlope: -0.11393653
+      value: 0.5
+      inSlope: -0.35039297
+      outSlope: -0.35039297
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.08088762
+      outWeight: 0.14000551
     - serializedVersion: 3
-      time: 1.0007324
-      value: 0.49945253
-      inSlope: -0.40493578
+      time: 1
+      value: 0.3
+      inSlope: -0.13116248
       outSlope: -0.3780344
       tangentMode: 1
       weightedMode: 0
-      inWeight: 0.13528982
+      inWeight: 0.16506803
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  maxLateralVelocity: 20
+  maxLateralVelocity: 25
   wheelMass: 1
   engineTorqueCurve:
     serializedVersion: 2
@@ -3526,6 +3526,17 @@ MonoBehaviour:
   speedLerpRate: 100
   isBoosting: 0
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
+  debugLateralVelocity: 1
+  debugLogInterval: 0.1
+  currentLateralVel: 0
+  currentAbsLateralVel: 0
+  currentNormalizedLateralVelocity: 0
+  currentGripFactor: 0
+  currentForwardVel: 0
+  maxAbsLateralVelSeen: 0
+  maxNormalizedLateralVelocitySeen: 0
+  minLateralVelSeen: 0
+  maxLateralVelSeen: 0
 --- !u!1 &4253039612629027847
 GameObject:
   m_ObjectHideFlags: 0
@@ -3822,7 +3833,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  maxLateralVelocity: 20
+  maxLateralVelocity: 25
   wheelMass: 1
   engineTorqueCurve:
     serializedVersion: 2
@@ -3877,6 +3888,17 @@ MonoBehaviour:
   speedLerpRate: 100
   isBoosting: 0
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
+  debugLateralVelocity: 0
+  debugLogInterval: 0.1
+  currentLateralVel: 0
+  currentAbsLateralVel: 0
+  currentNormalizedLateralVelocity: 0
+  currentGripFactor: 0
+  currentForwardVel: 0
+  maxAbsLateralVelSeen: 0
+  maxNormalizedLateralVelocitySeen: 0
+  minLateralVelSeen: 0
+  maxLateralVelSeen: 0
 --- !u!1 &4678763875614643136
 GameObject:
   m_ObjectHideFlags: 0
@@ -4792,8 +4814,8 @@ MonoBehaviour:
   - {fileID: 6739513257674474393}
   - {fileID: 56782952564412908}
   - {fileID: 2937625834076403769}
-  maxRotationAngle: 90
-  rotationSpeed: 120
+  maxRotationAngle: 30
+  rotationSpeed: 80
 --- !u!114 &357763201747243696
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5598,7 +5620,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  maxLateralVelocity: 20
+  maxLateralVelocity: 25
   wheelMass: 1
   engineTorqueCurve:
     serializedVersion: 2
@@ -5653,6 +5675,17 @@ MonoBehaviour:
   speedLerpRate: 100
   isBoosting: 0
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
+  debugLateralVelocity: 0
+  debugLogInterval: 0.1
+  currentLateralVel: 0
+  currentAbsLateralVel: 0
+  currentNormalizedLateralVelocity: 0
+  currentGripFactor: 0
+  currentForwardVel: 0
+  maxAbsLateralVelSeen: 0
+  maxNormalizedLateralVelocitySeen: 0
+  minLateralVelSeen: 0
+  maxLateralVelSeen: 0
 --- !u!1 &6790623035213392116
 GameObject:
   m_ObjectHideFlags: 0
@@ -5997,26 +6030,26 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.7520523
-      inSlope: -0.11393653
-      outSlope: -0.11393653
+      value: 0.5
+      inSlope: -0.35039297
+      outSlope: -0.35039297
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.08088762
+      outWeight: 0.14000551
     - serializedVersion: 3
-      time: 1.0007324
-      value: 0.49945253
-      inSlope: -0.40493578
+      time: 1
+      value: 0.3
+      inSlope: -0.13116248
       outSlope: -0.3780344
       tangentMode: 1
       weightedMode: 0
-      inWeight: 0.13528982
+      inWeight: 0.16506803
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  maxLateralVelocity: 20
+  maxLateralVelocity: 25
   wheelMass: 1
   engineTorqueCurve:
     serializedVersion: 2
@@ -6071,6 +6104,17 @@ MonoBehaviour:
   speedLerpRate: 100
   isBoosting: 0
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
+  debugLateralVelocity: 1
+  debugLogInterval: 0.1
+  currentLateralVel: 0
+  currentAbsLateralVel: 0
+  currentNormalizedLateralVelocity: 0
+  currentGripFactor: 0
+  currentForwardVel: 0
+  maxAbsLateralVelSeen: 0
+  maxNormalizedLateralVelocitySeen: 0
+  minLateralVelSeen: 0
+  maxLateralVelSeen: 0
 --- !u!1 &7111295833209295783
 GameObject:
   m_ObjectHideFlags: 0
