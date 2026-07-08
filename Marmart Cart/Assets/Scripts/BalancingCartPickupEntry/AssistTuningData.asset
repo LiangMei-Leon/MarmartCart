@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 781ef8cec18ba2f40b9d692c3e6f5a30, type: 3}
   m_Name: AssistTuningData
   m_EditorClassIdentifier: 
-  maxCartCountToBeEligible: 10
-  claimCooldown: 20
+  maxCartCountToBeEligible: 15
+  claimCooldown: 10
   minNeedScoreToQualify: 3
-  firstPlaceScore: 0
-  secondPlaceScore: 1
-  thirdPlaceScore: 2
-  fourthPlaceScore: 3
+  firstPlaceScore: 1
+  secondPlaceScore: 2
+  thirdPlaceScore: 3
+  fourthPlaceScore: 4
   mediumGapThreshold: 200
   largeGapThreshold: 500
   hugeGapThreshold: 800
@@ -30,7 +30,7 @@ MonoBehaviour:
   lowCartScore: 2
   veryLowCartScore: 3
   globalCloseSpreadThreshold: 500
-  globalClosePenalty: 2
+  globalClosePenalty: 1
   lowNeedClaimAmount: 2
   mediumNeedClaimAmount: 4
   highNeedClaimAmount: 9

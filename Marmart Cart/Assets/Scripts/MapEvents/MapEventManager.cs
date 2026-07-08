@@ -9,6 +9,18 @@ public class WeightedMapEventEntry
     [Min(0)] public int weight = 1;
     public bool enabled = true;
 }
+
+[System.Serializable]
+public class MapEventAnnouncementClip
+{
+    public MapEventType eventType;
+
+    [Tooltip("Use the exact MapSection sectionId enum name, for example: Red, Green, Blue, Purple.")]
+    public string sectionId = "Red";
+
+    public AudioClip clip;
+}
+
 public class MapEventManager : MonoBehaviour
 {
     [Header("Sections")]
@@ -52,8 +64,21 @@ public class MapEventManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI rollingTextP3;
     [SerializeField] private TextMeshProUGUI rollingTextP4;
 
+    [Header("Announcement Audio")]
+    [Tooltip("Optional template only. Do NOT assign your music source here. If assigned, its mixer/volume settings are copied to a dedicated runtime announcement source.")]
+    [SerializeField] private AudioSource announcementAudioSource;
+    [SerializeField] private bool playAnnouncementOnWarningStart = true;
+    [SerializeField] private bool interruptCurrentAnnouncement = true;
+    [SerializeField] private MapEventAnnouncementClip[] announcementClips;
+
+    private AudioSource runtimeAnnouncementAudioSource;
     private Coroutine eventLoopRoutine;
     private bool isRunningEvent = false;
+
+    private void Awake()
+    {
+        EnsureRuntimeAnnouncementAudioSource();
+    }
 
     private void Start()
     {
@@ -81,7 +106,7 @@ public class MapEventManager : MonoBehaviour
             yield return new WaitForSeconds(firstEventDelay);
 
         while (true)
-        { 
+        {
             MapEventType nextType = GetNextEventType();
 
             switch (nextType)
@@ -102,7 +127,7 @@ public class MapEventManager : MonoBehaviour
                     yield return StartCoroutine(RunShopperRushEvent());
                     break;
 
-                case MapEventType.NormalItemSale:                      
+                case MapEventType.NormalItemSale:
                     yield return StartCoroutine(RunNormalItemSaleEvent());
                     break;
             }
@@ -153,6 +178,7 @@ public class MapEventManager : MonoBehaviour
 
         yield return StartCoroutine(WarningPhase(
             section,
+            MapEventType.NormalItemSale,
             normalSaleConfig.warningDuration,
             "Section " + section.sectionId + "\nClearance sale in "
         ));
@@ -195,6 +221,7 @@ public class MapEventManager : MonoBehaviour
 
         yield return StartCoroutine(WarningPhase(
             section,
+            MapEventType.RareItemSale,
             rareSaleConfig.warningDuration,
             "Section " + section.sectionId + "\ndrop extremely valuable items in "
         ));
@@ -237,6 +264,7 @@ public class MapEventManager : MonoBehaviour
 
         yield return StartCoroutine(WarningPhase(
             section,
+            MapEventType.CartRain,
             cartRainConfig.warningDuration,
             "Section " + section.sectionId + "\nrestock empty carts in "
         ));
@@ -279,6 +307,7 @@ public class MapEventManager : MonoBehaviour
 
         yield return StartCoroutine(WarningPhase(
             section,
+            MapEventType.PowerupStorm,
             powerupStormConfig.warningDuration,
             "Section " + section.sectionId + "\ndrop deadly powerups in "
         ));
@@ -321,6 +350,7 @@ public class MapEventManager : MonoBehaviour
 
         yield return StartCoroutine(WarningPhase(
             section,
+            MapEventType.ShopperRush,
             shopperRushConfig.warningDuration,
             "Section " + section.sectionId + "\nwill be filled by Shoppers in "
         ));
@@ -490,9 +520,10 @@ public class MapEventManager : MonoBehaviour
         return valid[idx];
     }
 
-    private IEnumerator WarningPhase(MapSection section, float duration, string prefix)
+    private IEnumerator WarningPhase(MapSection section, MapEventType eventType, float duration, string prefix)
     {
         section.SetWarning();
+        PlayWarningAnnouncement(eventType, section);
 
         float remaining = duration;
 
@@ -506,6 +537,81 @@ public class MapEventManager : MonoBehaviour
             remaining -= Time.deltaTime;
             yield return null;
         }
+    }
+
+    private void PlayWarningAnnouncement(MapEventType eventType, MapSection section)
+    {
+        if (!playAnnouncementOnWarningStart || section == null)
+            return;
+
+        AudioClip clip = FindAnnouncementClip(eventType, section.sectionId.ToString());
+        if (clip == null)
+            return;
+
+        AudioSource source = EnsureRuntimeAnnouncementAudioSource();
+        if (source == null)
+        {
+            Debug.LogWarning($"[MapEventManager] Announcement clip found for {eventType} / {section.sectionId}, but no runtime AudioSource could be created.");
+            return;
+        }
+
+        // This source is dedicated to announcements only, so Stop() will not kill music or other SFX.
+        if (interruptCurrentAnnouncement)
+        {
+            source.Stop();
+        }
+
+        // Important: PlayOneShot ignores the AudioSource.clip/loop setup, so announcement clips cannot loop
+        // even if the template/source used elsewhere had loop enabled.
+        source.loop = false;
+        source.clip = null;
+        source.PlayOneShot(clip);
+    }
+
+    private AudioSource EnsureRuntimeAnnouncementAudioSource()
+    {
+        if (runtimeAnnouncementAudioSource != null)
+            return runtimeAnnouncementAudioSource;
+
+        GameObject audioObject = new GameObject("Map Event Announcement Audio");
+        audioObject.transform.SetParent(transform);
+        audioObject.transform.localPosition = Vector3.zero;
+        audioObject.transform.localRotation = Quaternion.identity;
+        audioObject.transform.localScale = Vector3.one;
+
+        runtimeAnnouncementAudioSource = audioObject.AddComponent<AudioSource>();
+        runtimeAnnouncementAudioSource.playOnAwake = false;
+        runtimeAnnouncementAudioSource.loop = false;
+        runtimeAnnouncementAudioSource.spatialBlend = 0f;
+
+        // Copy only safe routing/volume settings from the optional Inspector source.
+        // We do not play on or stop the Inspector source, because it might be your music source.
+        if (announcementAudioSource != null)
+        {
+            runtimeAnnouncementAudioSource.outputAudioMixerGroup = announcementAudioSource.outputAudioMixerGroup;
+            runtimeAnnouncementAudioSource.volume = announcementAudioSource.volume;
+            runtimeAnnouncementAudioSource.priority = announcementAudioSource.priority;
+        }
+
+        return runtimeAnnouncementAudioSource;
+    }
+
+    private AudioClip FindAnnouncementClip(MapEventType eventType, string sectionId)
+    {
+        if (announcementClips == null || announcementClips.Length == 0)
+            return null;
+
+        for (int i = 0; i < announcementClips.Length; i++)
+        {
+            MapEventAnnouncementClip entry = announcementClips[i];
+            if (entry == null || entry.clip == null)
+                continue;
+
+            if (entry.eventType == eventType && entry.sectionId == sectionId)
+                return entry.clip;
+        }
+
+        return null;
     }
 
     private float ComputeDuration(int total, float interval, int perSpawn)

@@ -1,7 +1,7 @@
 using UnityEngine;
 using TMPro;
 
-public enum SectionId { A, B, C, D }
+public enum SectionId { Red, Green, Blue, Purple }
 
 public class MapSection : MonoBehaviour
 {
