@@ -54168,12 +54168,12 @@ MonoBehaviour:
   phase1SpawnInterval: 2
   phase1ItemsPerSpawn: 1
   phase2Duration: 30
-  phase2SpawnInterval: 3
+  phase2SpawnInterval: 2
   phase2ItemsPerSpawn: 1
   phase3Duration: 60
-  phase3SpawnInterval: 3
+  phase3SpawnInterval: 2
   phase3ItemsPerSpawn: 1
-  phase4SpawnInterval: 3
+  phase4SpawnInterval: 2
   phase4ItemsPerSpawn: 1
   normalPrefab: {fileID: 6914780558269192623, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
   rarePrefab: {fileID: 0}
