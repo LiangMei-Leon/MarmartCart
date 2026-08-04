@@ -6,6 +6,12 @@ using UnityEngine;
 
 public class LeadingCartBehaviour : MonoBehaviour
 {
+    public enum WheelRole
+    {
+        Front,
+        Rear
+    }
+
     [Tooltip("Refer to the script that read/gather the new input system")]
     [SerializeField] CartControlScript cartControlInput;
     [SerializeField] private Rigidbody cartBody;
@@ -28,6 +34,25 @@ public class LeadingCartBehaviour : MonoBehaviour
     [SerializeField] AnimationCurve wheelGripCurve;
     [SerializeField] float maxLateralVelocity = 6f;
     [SerializeField] float wheelMass = 1.5f;
+
+    [Header("Drift Grip Experiment")]
+    [SerializeField] private CartDriftController driftController;
+    [SerializeField] private WheelRole wheelRole = WheelRole.Front;
+    [Tooltip("Master toggle for this physics experiment.")]
+    [SerializeField] private bool enableDriftGripExperiment = false;
+    [Tooltip("0 = keep original path. 1 = full drift grip effect.")]
+    [SerializeField, Range(0f, 1f)] private float driftGripInfluence = 0f;
+    [Tooltip("Front wheels usually stay planted so the cart remains controllable.")]
+    [SerializeField, Range(0f, 1.5f)] private float frontDriftGripMultiplier = 1f;
+    [Tooltip("Rear grip when CurrentTightness is 0. Lower = looser wide drift.")]
+    [SerializeField, Range(0f, 1.5f)] private float rearGripAtWideDrift = 0.55f;
+    [Tooltip("Rear grip when CurrentTightness is 1. Higher = more controlled tight drift.")]
+    [SerializeField, Range(0f, 1.5f)] private float rearGripAtTightDrift = 0.75f;
+    [Header("Drift Grip Debug")]
+    [SerializeField] private bool debugDriftGrip = false;
+    [SerializeField] private float debugDriftGripLogInterval = 0.35f;
+    private float currentDriftGripMultiplier = 1f;
+    private float driftGripDebugTimer = 0f;
 
     [Header("Acceleration and Brake Settings")]
     [SerializeField] AnimationCurve engineTorqueCurve;
@@ -66,9 +91,27 @@ public class LeadingCartBehaviour : MonoBehaviour
     //[SerializeField] private float decelerationRate = 10f; // Rate at which the cart returns to normal speed
     public bool isBoosting = false;                       // Flag to track if boost is active
 
-
     [Header("Events")]
     [SerializeField] GameEvent disableDetachEvent;
+
+    [Header("Runtime Grip Debug")]
+    [SerializeField] private string debugWheelName = "Wheel";
+
+    public string DebugWheelName => debugWheelName;
+    public WheelRole DebugWheelRole => wheelRole;
+
+    public float DebugLateralVelocity => debugLateralVelocity;
+    public float DebugNormalizedLateralVelocity => debugNormalizedLateralVelocity;
+    public float DebugBaseGripFactor => debugBaseGripFactor;
+    public float DebugDriftGripMultiplier => currentDriftGripMultiplier;
+    public float DebugFinalGripFactor => debugFinalGripFactor;
+    public float DebugSteeringForceMagnitude => debugSteeringForceMagnitude;
+
+    private float debugLateralVelocity = 0f;
+    private float debugNormalizedLateralVelocity = 0f;
+    private float debugBaseGripFactor = 0f;
+    private float debugFinalGripFactor = 0f;
+    private float debugSteeringForceMagnitude = 0f;
     void Awake()
     {
         // Warn the user if the Rigidbody is not assigned
@@ -154,6 +197,18 @@ public class LeadingCartBehaviour : MonoBehaviour
 
                 // Evaluate grip factor from curve (0 = no grip, 1 = full grip)
                 float gripFactor = wheelGripCurve.Evaluate(normalizedLateralVelocity);
+                debugBaseGripFactor = gripFactor;
+
+                // Drift experiment:
+                // This multiplier only affects lateral correction force.
+                // It does not change wheel angle, suspension, or forward drive.
+                currentDriftGripMultiplier = GetDriftGripMultiplier();
+                gripFactor *= currentDriftGripMultiplier;
+
+                // Runtime debug values.
+                debugLateralVelocity = lateralVel;
+                debugNormalizedLateralVelocity = normalizedLateralVelocity;
+                debugFinalGripFactor = gripFactor;
 
                 // Calculate the desired velocity change to stop sliding.
                 float desiredVelChange = -1 * lateralVel * gripFactor;
@@ -164,8 +219,12 @@ public class LeadingCartBehaviour : MonoBehaviour
                 // Apply the force to cancel sliding (F = m * a), in the direction opposite to sliding.
                 finalSteeringForce = steeringDirection * wheelMass * desiredAccelration;
 
+                debugSteeringForceMagnitude = finalSteeringForce.magnitude;
+
                 // Apply the force at the wheel's position to counteract the lateral sliding.
                 cartBody.AddForceAtPosition(finalSteeringForce, transform.position);
+
+                DebugDriftGrip(lateralVel, gripFactor);
 
             #endregion
 
@@ -343,7 +402,61 @@ public class LeadingCartBehaviour : MonoBehaviour
 
         return count;
     }
+    private float GetDriftGripMultiplier()
+    {
+        if (!enableDriftGripExperiment)
+            return 1f;
 
+        if (driftController == null || !driftController.IsDrifting)
+            return 1f;
+
+        float targetMultiplier;
+
+        if (wheelRole == WheelRole.Front)
+        {
+            targetMultiplier = frontDriftGripMultiplier;
+        }
+        else
+        {
+            float tightness = Mathf.Clamp01(driftController.CurrentTightness);
+
+            targetMultiplier = Mathf.Lerp(
+                rearGripAtWideDrift,
+                rearGripAtTightDrift,
+                tightness
+            );
+        }
+
+        // Safety blend:
+        // 0 influence = original grip
+        // 1 influence = full drift multiplier
+        return Mathf.Lerp(1f, targetMultiplier, driftGripInfluence);
+    }
+
+    private void DebugDriftGrip(float lateralVel, float finalGripFactor)
+    {
+        if (!debugDriftGrip)
+            return;
+
+        if (driftController == null || !driftController.IsDrifting)
+            return;
+
+        driftGripDebugTimer += Time.fixedDeltaTime;
+
+        if (driftGripDebugTimer < debugDriftGripLogInterval)
+            return;
+
+        driftGripDebugTimer = 0f;
+
+        Debug.Log(
+            $"[Drift Grip Experiment] {gameObject.name} | " +
+            $"role: {wheelRole}, " +
+            $"tightness: {driftController.CurrentTightness:F2}, " +
+            $"multiplier: {currentDriftGripMultiplier:F2}, " +
+            $"lateralVel: {lateralVel:F2}, " +
+            $"finalGripFactor: {finalGripFactor:F2}"
+        );
+    }
     void OnDrawGizmos()
     {
         // Calculate the RayStartPosition in OnDrawGizmos so it updates in the editor

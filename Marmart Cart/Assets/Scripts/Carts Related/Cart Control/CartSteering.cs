@@ -3,59 +3,135 @@ using UnityEngine;
 
 public class CartSteering : MonoBehaviour
 {
-    [SerializeField] CartControlScript cartControlInput; // Refer to the gathered player input
-    [SerializeField] Rigidbody cartBody; // The rigidbody of the leading cart
+    [SerializeField] CartControlScript cartControlInput;
+    [SerializeField] Rigidbody cartBody;
+
     public List<GameObject> objectsToRotate;
-    // Exposed variables to set maximum rotation angle and rotation speed
-    [SerializeField] float maxRotationAngle = 30f; // Maximum allowed angle in degrees
-    [SerializeField] float rotationSpeed = 80f;    // Speed at which the wheel rotates
 
-    private float currentRotationAngle = 0f; // Tracks the current rotation angle
+    [Header("Normal Direction-Seek Steering")]
+    [SerializeField] float maxRotationAngle = 30f;
+    [SerializeField] float rotationSpeed = 80f;
 
+    [Header("Prototype A - Left/Right Steering")]
+    [SerializeField] private bool enablePrototypeLeftRightSteering = false;
+    [SerializeField] private float prototypeMaxSteerAngle = 35f;
+    [SerializeField] private float prototypeSteerDegreesPerSecond = 180f;
+    [SerializeField] private bool debugPrototypeSteering = false;
 
-    void Start()
-    {
-        
-    }
+    [Header("Camera-Mapped Drift Steering")]
+    [SerializeField] private bool enableCameraMappedDriftSteering = true;
+    [SerializeField] private CartDriftController driftController;
+    [SerializeField] private float driftSteerDegreesPerSecond = 220f;
+    [SerializeField] private bool debugDriftSteering = false;
 
-    // Update is called once per frame
+    private float currentRotationAngle = 0f;
+
     void Update()
     {
+        if (ShouldUseDriftSteering())
+        {
+            UpdateDriftSteering();
+        }
+        else if (enablePrototypeLeftRightSteering)
+        {
+            UpdatePrototypeLeftRightSteering();
+        }
+        else
+        {
+            UpdateDirectionSeekSteering();
+        }
 
+        ApplyWheelRotation();
+    }
+
+    private bool ShouldUseDriftSteering()
+    {
+        return enableCameraMappedDriftSteering &&
+               driftController != null &&
+               driftController.IsDrifting &&
+               driftController.EnableDriftSteeringOutput;
+    }
+
+    private void UpdateDirectionSeekSteering()
+    {
         Vector3 desiredDirection = cartControlInput.desiredDirection;
 
         if (desiredDirection.sqrMagnitude > 0.001f)
         {
-            // Calculate the angle difference between current forward and desired direction
             float angleDifference = Vector3.SignedAngle(transform.forward, desiredDirection, Vector3.up);
-
-            // Determine target wheel angle based on max wheel angle limit
             float targetWheelAngle = Mathf.Clamp(angleDifference, -maxRotationAngle, maxRotationAngle);
 
-            // Smoothly adjust current wheel angle towards target wheel angle
-            currentRotationAngle = Mathf.Lerp(currentRotationAngle, targetWheelAngle, Time.deltaTime * rotationSpeed);
-
-            // Apply the rotation to each object in the list
-            foreach (GameObject obj in objectsToRotate)
-            {
-                if (obj != null) // Make sure the object reference is not null
-                {
-                    obj.transform.localRotation = Quaternion.Euler(0f, currentRotationAngle, 0f);
-                }
-            }
+            currentRotationAngle = Mathf.Lerp(
+                currentRotationAngle,
+                targetWheelAngle,
+                Time.deltaTime * rotationSpeed
+            );
         }
         else
         {
-            // If no input, smoothly snap back to 0 (going straight)
-            currentRotationAngle = Mathf.MoveTowards(currentRotationAngle, 0f, rotationSpeed * Time.deltaTime);
-            // Apply the rotation to each object in the list
-            foreach (GameObject obj in objectsToRotate)
+            currentRotationAngle = Mathf.MoveTowards(
+                currentRotationAngle,
+                0f,
+                rotationSpeed * Time.deltaTime
+            );
+        }
+    }
+
+    private void UpdatePrototypeLeftRightSteering()
+    {
+        float steerInput = cartControlInput.GetPrototypeSteerInput();
+        float targetWheelAngle = steerInput * prototypeMaxSteerAngle;
+
+        currentRotationAngle = Mathf.MoveTowards(
+            currentRotationAngle,
+            targetWheelAngle,
+            prototypeSteerDegreesPerSecond * Time.deltaTime
+        );
+
+        if (debugPrototypeSteering)
+        {
+            Debug.Log(
+                $"[Prototype Steering] input: {steerInput:F2}, " +
+                $"targetAngle: {targetWheelAngle:F1}, " +
+                $"currentAngle: {currentRotationAngle:F1}"
+            );
+        }
+    }
+
+    private void UpdateDriftSteering()
+    {
+        float targetWheelAngle = driftController.DriftSteeringAngle;
+
+        currentRotationAngle = Mathf.MoveTowards(
+            currentRotationAngle,
+            targetWheelAngle,
+            driftSteerDegreesPerSecond * Time.deltaTime
+        );
+
+        if (debugDriftSteering)
+        {
+            Debug.Log(
+                $"[Drift Steering] side: {driftController.DriftSideName}, " +
+                $"tightness: {driftController.CurrentTightness:F2}, " +
+                $"targetAngle: {targetWheelAngle:F1}, " +
+                $"currentAngle: {currentRotationAngle:F1}"
+            );
+        }
+    }
+
+    private void ApplyWheelRotation()
+    {
+        foreach (GameObject obj in objectsToRotate)
+        {
+            if (obj != null)
             {
-                if (obj != null) // Make sure the object reference is not null
-                {
-                    obj.transform.localRotation = Quaternion.Euler(0f, currentRotationAngle, 0f);
-                }
+                obj.transform.localRotation = Quaternion.Euler(0f, currentRotationAngle, 0f);
             }
         }
+    }
+
+    public float GetCurrentSteeringAngle()
+    {
+        return currentRotationAngle;
     }
 }

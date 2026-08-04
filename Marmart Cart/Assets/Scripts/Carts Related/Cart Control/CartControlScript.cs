@@ -13,6 +13,21 @@ public class CartControlScript : MonoBehaviour
     private InputDevice assignedDevice;
 
     public Vector3 desiredDirection { get; private set; } // Public property to provide desired direction
+    public Vector2 MoveInput => _inputVector;
+
+    [Header("Drift Prototype")]
+    [SerializeField] private bool canDrift = true;
+    private bool isDriftHeld = false;
+
+    // Prototype left and right cart control 
+    [SerializeField] private float prototypeSteerDeadzone = 0.15f;
+    public float GetPrototypeSteerInput()
+    {
+        if (Mathf.Abs(_inputVector.x) < prototypeSteerDeadzone)
+            return 0f;
+
+        return Mathf.Clamp(_inputVector.x, -1f, 1f);
+    }
     // Aiming input
     private Vector2 _aimInputVector;
     private Vector3 _aimDirection;
@@ -71,6 +86,18 @@ public class CartControlScript : MonoBehaviour
         {
             if (ctx.control.device == device)
                 _inputVector = Vector2.zero;
+        };
+        // for drift prototype
+        _inputActions.Player.Drift.performed += ctx =>
+        {
+            if (ctx.control.device == device && canDrift)
+                isDriftHeld = true;
+        };
+
+        _inputActions.Player.Drift.canceled += ctx =>
+        {
+            if (ctx.control.device == device)
+                isDriftHeld = false;
         };
         // Aim input for controller (right stick)
         _inputActions.Player.Aim.performed += ctx =>
@@ -171,6 +198,18 @@ public class CartControlScript : MonoBehaviour
             if (ctx.control.device == Keyboard.current)
                 _inputVector = Vector2.zero;
         };
+        // for drift prototype
+        _inputActions.Player.Drift.performed += ctx =>
+        {
+            if (ctx.control.device == Keyboard.current && canDrift)
+                isDriftHeld = true;
+        };
+
+        _inputActions.Player.Drift.canceled += ctx =>
+        {
+            if (ctx.control.device == Keyboard.current)
+                isDriftHeld = false;
+        };
         // Aim input for controller (mouse position)
         _inputActions.Player.Aim.performed += ctx =>
         {
@@ -261,7 +300,10 @@ public class CartControlScript : MonoBehaviour
         {
             GatherInput();
         }
-
+        if (!controllable || isInPit || !canDrift)
+        {
+            isDriftHeld = false;
+        }
         if (isSpeedingUp && speedUpMeter > 0f)
         {
             speedUpMeter -= speedUpConsumeRate * Time.deltaTime * 10f;
@@ -325,6 +367,26 @@ public class CartControlScript : MonoBehaviour
     {
         return canFlip;
     }
+    public bool IsDriftHeld()
+    {
+        return isDriftHeld;
+    }
+
+    public bool CanDrift()
+    {
+        return canDrift;
+    }
+
+    public void AllowDrift()
+    {
+        canDrift = true;
+    }
+
+    public void DisallowDrift()
+    {
+        canDrift = false;
+        isDriftHeld = false;
+    }
     public bool GetCanActivatePowerUp()
     {
         return canActivatePowerUp;
@@ -340,6 +402,7 @@ public class CartControlScript : MonoBehaviour
     public void DisableControl()
     {
         controllable = false;
+        isDriftHeld = false;
     }
     public bool GetCanAim()
     {
@@ -352,6 +415,7 @@ public class CartControlScript : MonoBehaviour
     public void SetInPit()
     {
         isInPit = true;
+        isDriftHeld = false;
     }
     public void SetOutPit()
     {
