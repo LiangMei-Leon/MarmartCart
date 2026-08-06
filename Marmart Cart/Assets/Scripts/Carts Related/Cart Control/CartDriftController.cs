@@ -6,7 +6,8 @@ public class CartDriftController : MonoBehaviour
     {
         None,
         DriftArmed,
-        Drifting
+        Drifting,
+        DriftBlockedUntilRelease
     }
 
     public enum DriftInputMode
@@ -34,6 +35,7 @@ public class CartDriftController : MonoBehaviour
 
     [Tooltip("If true, drift side is chosen from cart facing direction. If false, side is chosen from current velocity/path direction.")]
     [SerializeField] private bool useCartForwardForEntrySide = true;
+    public bool IsDriftBlockedUntilRelease => driftState == DriftState.DriftBlockedUntilRelease;
 
     [Header("Dynamic Side Switch Experiment")]
     [Tooltip("True = current locked drift behavior. False = strong opposite input can switch drift side while still holding drift.")]
@@ -159,7 +161,9 @@ public class CartDriftController : MonoBehaviour
     private Vector3 entryForward = Vector3.zero;
     private Vector3 entryInputDirection = Vector3.zero;
     private Vector3 entryPathDirection = Vector3.zero;
-
+    public System.Action OnDriftStarted;
+    public System.Action<string> OnDriftEndedClean;
+    public System.Action<string> OnDriftInterrupted;
     private void Update()
     {
         UpdateDriftState();
@@ -178,6 +182,19 @@ public class CartDriftController : MonoBehaviour
         Vector2 moveInput = cartControlInput.MoveInput;
 
         currentSpeed = GetPlanarSpeed();
+
+        if (driftState == DriftState.DriftBlockedUntilRelease)
+        {
+            if (!driftHeld)
+            {
+                ForceClearDrift();
+
+                if (debugDriftState)
+                    Debug.Log("[Drift Prototype] UNBLOCKED after drift button release.");
+            }
+
+            return;
+        }
 
         if (!driftHeld)
         {
@@ -242,6 +259,7 @@ public class CartDriftController : MonoBehaviour
 
         driftState = DriftState.Drifting;
         currentInputMode = DriftInputMode.Holding;
+        OnDriftStarted?.Invoke();
         debugTimer = 0f;
         sideSwitchCount = 0;
 
@@ -353,7 +371,24 @@ public class CartDriftController : MonoBehaviour
             );
         }
     }
+    public void InterruptDrift(string reason = "Interrupted")
+    {
+        if (driftState == DriftState.None || driftState == DriftState.DriftBlockedUntilRelease)
+            return;
 
+        if (debugDriftState)
+            Debug.Log($"[Drift Prototype] INTERRUPTED: {reason}");
+
+        OnDriftInterrupted?.Invoke(reason);
+
+        ForceClearDrift();
+
+        // Important:
+        // If the player is still holding RB after crash/interruption,
+        // do not allow drift to instantly restart.
+        driftState = DriftState.DriftBlockedUntilRelease;
+        currentInputMode = DriftInputMode.Holding;
+    }
     private void DebugActiveDrift()
     {
         if (!debugDriftState)
@@ -388,10 +423,21 @@ public class CartDriftController : MonoBehaviour
         {
             Debug.Log($"[Drift Prototype] END {DriftSideName} Drift");
         }
+        OnDriftEndedClean?.Invoke("Released drift button");
+        ForceClearDrift();
+    }
+    public void CancelDriftForSpeedup(string reason = "Speedup started")
+    {
+        if (driftState == DriftState.None)
+            return;
+
+        if (debugDriftState)
+            Debug.Log($"[Drift Prototype] CANCELLED CLEANLY: {reason}");
+
+        OnDriftEndedClean?.Invoke(reason);
 
         ForceClearDrift();
     }
-
     private void ForceClearDrift()
     {
         driftState = DriftState.None;

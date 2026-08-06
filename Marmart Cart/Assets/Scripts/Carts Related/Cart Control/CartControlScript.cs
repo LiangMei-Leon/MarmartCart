@@ -28,6 +28,12 @@ public class CartControlScript : MonoBehaviour
 
         return Mathf.Clamp(_inputVector.x, -1f, 1f);
     }
+    [Header("Drift / Speedup Mutual Override")]
+    [SerializeField] private CartDriftController driftController;
+
+    [SerializeField] private bool enableDriftSpeedupOverride = true;
+
+    [SerializeField] private bool debugDriftSpeedupOverride = false;
     // Aiming input
     private Vector2 _aimInputVector;
     private Vector3 _aimDirection;
@@ -91,13 +97,13 @@ public class CartControlScript : MonoBehaviour
         _inputActions.Player.Drift.performed += ctx =>
         {
             if (ctx.control.device == device && canDrift)
-                isDriftHeld = true;
+                HandleDriftPressed();
         };
 
         _inputActions.Player.Drift.canceled += ctx =>
         {
             if (ctx.control.device == device)
-                isDriftHeld = false;
+                HandleDriftReleased();
         };
         // Aim input for controller (right stick)
         _inputActions.Player.Aim.performed += ctx =>
@@ -120,12 +126,12 @@ public class CartControlScript : MonoBehaviour
         _inputActions.Player.Speedup.performed += ctx =>
         {
             if (ctx.control.device == device && speedUpMeter > speedUpConsumeRate && canSpeedup)
-                isSpeedingUp = true;
+                HandleSpeedupPressed();
         };
         _inputActions.Player.Speedup.canceled += ctx =>
         {
             if (ctx.control.device == device)
-                isSpeedingUp = false;
+                HandleSpeedupReleased();
         };
         // for powerful charged boost
         _inputActions.Player.ActivatePowerUp.performed += ctx =>
@@ -202,13 +208,13 @@ public class CartControlScript : MonoBehaviour
         _inputActions.Player.Drift.performed += ctx =>
         {
             if (ctx.control.device == Keyboard.current && canDrift)
-                isDriftHeld = true;
+                HandleDriftPressed();
         };
 
         _inputActions.Player.Drift.canceled += ctx =>
         {
             if (ctx.control.device == Keyboard.current)
-                isDriftHeld = false;
+                HandleSpeedupReleased();
         };
         // Aim input for controller (mouse position)
         _inputActions.Player.Aim.performed += ctx =>
@@ -234,12 +240,12 @@ public class CartControlScript : MonoBehaviour
         _inputActions.Player.Speedup.performed += ctx =>
         {
             if (ctx.control.device == Keyboard.current && speedUpMeter > speedUpConsumeRate && canSpeedup)
-                isSpeedingUp = true;
+                HandleSpeedupPressed();
         };
         _inputActions.Player.Speedup.canceled += ctx =>
         {
             if (ctx.control.device == Keyboard.current)
-                isSpeedingUp = false;
+                HandleSpeedupReleased();
         };
         // for powerful charged boost
         _inputActions.Player.ActivatePowerUp.performed += ctx =>
@@ -304,6 +310,10 @@ public class CartControlScript : MonoBehaviour
         {
             isDriftHeld = false;
         }
+        if (!controllable || isInPit || !canSpeedup)
+        {
+            StopSpeedupInput("Control disabled / pit / speedup disabled");
+        }
         if (isSpeedingUp && speedUpMeter > 0f)
         {
             speedUpMeter -= speedUpConsumeRate * Time.deltaTime * 10f;
@@ -346,6 +356,76 @@ public class CartControlScript : MonoBehaviour
     {
         _inputActions?.Disable();
         InputUser.PerformPairingWithDevice(null, user); // unpair
+    }
+    private void HandleDriftPressed()
+    {
+        if (!canDrift)
+            return;
+
+        if (enableDriftSpeedupOverride)
+        {
+            StopSpeedupInput("Drift pressed");
+        }
+
+        isDriftHeld = true;
+
+        if (debugDriftSpeedupOverride)
+            Debug.Log("[CartControlScript] Drift pressed. Speedup stopped.");
+    }
+
+    private void HandleDriftReleased()
+    {
+        isDriftHeld = false;
+    }
+
+    private void HandleSpeedupPressed()
+    {
+        if (speedUpMeter <= speedUpConsumeRate)
+            return;
+
+        if (!canSpeedup)
+            return;
+
+        if (enableDriftSpeedupOverride)
+        {
+            StopDriftInputForSpeedup("Speedup pressed");
+        }
+
+        isSpeedingUp = true;
+
+        if (debugDriftSpeedupOverride)
+            Debug.Log("[CartControlScript] Speedup pressed. Drift stopped.");
+    }
+
+    private void HandleSpeedupReleased()
+    {
+        isSpeedingUp = false;
+    }
+
+    private void StopSpeedupInput(string reason)
+    {
+        if (!isSpeedingUp)
+            return;
+
+        isSpeedingUp = false;
+        OnSpeedupHeld?.Invoke(false);
+
+        if (debugDriftSpeedupOverride)
+            Debug.Log($"[CartControlScript] Speedup stopped: {reason}");
+    }
+
+    private void StopDriftInputForSpeedup(string reason)
+    {
+        if (!isDriftHeld && (driftController == null || !driftController.IsDrifting))
+            return;
+
+        isDriftHeld = false;
+
+        if (driftController != null)
+            driftController.CancelDriftForSpeedup(reason);
+
+        if (debugDriftSpeedupOverride)
+            Debug.Log($"[CartControlScript] Drift stopped for speedup: {reason}");
     }
     public void SetActiveCheckoutHandler(CheckOutManager currenetCheckoutManager)
     {
@@ -444,6 +524,7 @@ public class CartControlScript : MonoBehaviour
     public void DisallowSpeedingUp()
     {
         canSpeedup = false;
+        StopSpeedupInput("Speedup disallowed");
     }
     public float GetSpeedUpMeter()
     {

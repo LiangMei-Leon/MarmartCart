@@ -93586,7 +93586,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 797538514}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.46193978, y: 0.33141357, z: -0.19134171, w: 0.8001032}
+  m_LocalRotation: {x: 0.39044836, y: 0.346829, z: -0.16172901, w: 0.83731925}
   m_LocalPosition: {x: -41.935543, y: 11.310254, z: -490.6356}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 1
@@ -103834,13 +103834,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1035736238}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.46193978, y: 0.33141357, z: -0.19134171, w: 0.8001032}
+  m_LocalRotation: {x: 0.39044836, y: 0.346829, z: -0.16172901, w: 0.83731925}
   m_LocalPosition: {x: -22, y: 122.6, z: -490.6356}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 60, y: 45, z: 0}
+  m_LocalEulerAnglesHint: {x: 50, y: 45, z: 0}
 --- !u!114 &1035736242
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -149823,18 +149823,18 @@ MonoBehaviour:
     spawnInterval: 1
     shoppersPerSpawn: 5
   autoStart: 1
-  firstEventDelay: 5
-  minTimeBetweenEvents: 3
-  maxTimeBetweenEvents: 6
+  firstEventDelay: 10
+  minTimeBetweenEvents: 5
+  maxTimeBetweenEvents: 10
   weightedEvents:
   - eventType: 0
     weight: 6
     enabled: 1
   - eventType: 1
-    weight: 3
+    weight: 1
     enabled: 1
   - eventType: 2
-    weight: 2
+    weight: 3
     enabled: 1
   - eventType: 3
     weight: 1
@@ -205942,13 +205942,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2078120474}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.46193978, y: 0.33141357, z: -0.19134171, w: 0.8001032}
+  m_LocalRotation: {x: 0.39044836, y: 0.346829, z: -0.16172901, w: 0.83731925}
   m_LocalPosition: {x: -41.935543, y: 11.310254, z: -490.6356}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 60, y: 45, z: 0}
+  m_LocalEulerAnglesHint: {x: 50, y: 45, z: 0}
 --- !u!1 &2079838167 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8811344978194563766, guid: af86d8d82fd3c294c981e07650cb43dd, type: 3}

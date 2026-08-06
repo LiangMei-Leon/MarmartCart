@@ -91,6 +91,31 @@ public class LeadingCartBehaviour : MonoBehaviour
     //[SerializeField] private float decelerationRate = 10f; // Rate at which the cart returns to normal speed
     public bool isBoosting = false;                       // Flag to track if boost is active
 
+    [Header("Drift Speed Test")]
+    [SerializeField] private bool enableDriftSpeedOverride = true;
+
+    [Tooltip("If true, drift uses a fixed target speed. If false, drift uses base speed * multiplier.")]
+    [SerializeField] private bool useFixedDriftSpeed = false;
+
+    [Tooltip("Recommended first test: normal 20, drift 16-18, boost 25.")]
+    [SerializeField] private float fixedDriftSpeed = 17f;
+
+    [Tooltip("Used when Use Fixed Drift Speed is false. Example: 0.85 means drift is 85% of normal speed.")]
+    [SerializeField, Range(0.1f, 1.5f)] private float driftSpeedMultiplier = 0.85f;
+
+    [Tooltip("If true, SpeedUp / boost-speed input cannot raise target speed during drift.")]
+    [SerializeField] private bool blockSpeedUpInputWhileDrifting = true;
+
+    [Tooltip("If true, StartBoost() is ignored while drifting.")]
+    [SerializeField] private bool blockBoostAbilityWhileDrifting = true;
+
+    [Tooltip("If true, entering drift while boosting cancels the boost coroutine.")]
+    [SerializeField] private bool cancelBoostWhenDriftStarts = true;
+
+    [Header("Drift Fail Conditions")]
+    [SerializeField] private bool interruptDriftWhenSetSpeedToZero = true;
+
+    [SerializeField] private bool debugDriftFail = true;
     [Header("Events")]
     [SerializeField] GameEvent disableDetachEvent;
 
@@ -128,29 +153,41 @@ public class LeadingCartBehaviour : MonoBehaviour
     }
     void Update()
     {
-        if (cartControlInput.GetIsInPit() || isStopping || isBoosting)
+        if (cartControlInput.GetIsInPit() || isStopping)
+            return;
+
+        bool isDrifting = driftController != null && driftController.IsDrifting;
+
+        if (isDrifting && isBoosting && cancelBoostWhenDriftStarts)
+        {
+            CancelBoost("Drift started");
+        }
+
+        // If boost coroutine is controlling speed, do not overwrite targetSpeed here.
+        if (isBoosting)
             return;
 
         int carts = GetEffectiveCartCount();
         float baseSpeed = ComputeBaseSpeed(carts);
         float dynamicUpSpeed = baseSpeed + upSpeedBonus;
 
-        if (cartControlInput.IsSpeedingUp() && cartControlInput.CanSpeedingUp())
+        if (isDrifting && enableDriftSpeedOverride)
+        {
+            targetSpeed = GetDriftTargetSpeed(baseSpeed);
+            return;
+        }
+
+        bool canUseSpeedUp =
+            cartControlInput.IsSpeedingUp() &&
+            cartControlInput.CanSpeedingUp();
+
+        if (isDrifting && blockSpeedUpInputWhileDrifting)
+            canUseSpeedUp = false;
+
+        if (canUseSpeedUp)
             targetSpeed = dynamicUpSpeed;
         else
             targetSpeed = baseSpeed;
-        ////old fixed target speed logic
-        //if (cartControlInput.GetIsInPit() || isStopping || isBoosting)
-        //    return;
-
-        //if (cartControlInput.IsSpeedingUp() && cartControlInput.CanSpeedingUp())
-        //{
-        //    targetSpeed = upSpeed;
-        //}
-        //else
-        //{
-        //    targetSpeed = 20f;
-        //}
     }
     void FixedUpdate()
     {
@@ -283,11 +320,33 @@ public class LeadingCartBehaviour : MonoBehaviour
     }
     public void StartBoost()
     {
+        if (blockBoostAbilityWhileDrifting && driftController != null && driftController.IsDrifting)
+        {
+            if (debugDriftFail)
+                Debug.Log("[LeadingCartBehaviour] Boost ignored because cart is drifting.");
+
+            return;
+        }
+
         cartControlInput.DisallowFlip();
+
         if (!isBoosting)
             StartCoroutine(BoostCoroutine());
     }
+    private void CancelBoost(string reason)
+    {
+        if (!isBoosting)
+            return;
 
+        StopAllCoroutines();
+
+        isBoosting = false;
+        cartControlInput.EnableControl();
+        cartControlInput.DisallowFlip();
+
+        if (debugDriftFail)
+            Debug.Log($"[LeadingCartBehaviour] Boost cancelled: {reason}");
+    }
     private IEnumerator BoostCoroutine()
     {
         isBoosting = true;
@@ -363,6 +422,8 @@ public class LeadingCartBehaviour : MonoBehaviour
     }
     public void SetSpeedToZero(float duration)
     {
+        InterruptDriftFromCrash("SetSpeedToZero duration");
+
         isStopping = true;
         cacheSpeed = targetSpeed;
         targetSpeed = 0f;
@@ -379,6 +440,8 @@ public class LeadingCartBehaviour : MonoBehaviour
     
     public void SetSpeedToZero()
     {
+        InterruptDriftFromCrash("SetSpeedToZero duration");
+
         isStopping = true;
         cacheSpeed = targetSpeed;
         targetSpeed = 0f;
@@ -391,6 +454,22 @@ public class LeadingCartBehaviour : MonoBehaviour
         //Debug.Log("ResetSpeed executed");
         //targetSpeed = 20f;
         //cartControlInput.AllowBoost();
+    }
+    private void InterruptDriftFromCrash(string reason)
+    {
+        if (!interruptDriftWhenSetSpeedToZero)
+            return;
+
+        if (driftController == null)
+            return;
+
+        if (!driftController.IsDrifting && !driftController.IsDriftArmed)
+            return;
+
+        driftController.InterruptDrift(reason);
+
+        if (debugDriftFail)
+            Debug.Log($"[LeadingCartBehaviour] Drift failed/interrupted: {reason}");
     }
     private int GetEffectiveCartCount()
     {
@@ -432,7 +511,13 @@ public class LeadingCartBehaviour : MonoBehaviour
         // 1 influence = full drift multiplier
         return Mathf.Lerp(1f, targetMultiplier, driftGripInfluence);
     }
+    private float GetDriftTargetSpeed(float baseSpeed)
+    {
+        if (useFixedDriftSpeed)
+            return fixedDriftSpeed;
 
+        return baseSpeed * driftSpeedMultiplier;
+    }
     private void DebugDriftGrip(float lateralVel, float finalGripFactor)
     {
         if (!debugDriftGrip)

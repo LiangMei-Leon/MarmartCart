@@ -15,7 +15,9 @@ public class LeadingCartRaycaster : MonoBehaviour
 
     [field: SerializeField]
     public Vector3 hitDirection { get; private set; }
-
+    [SerializeField] private CartDriftController driftController;
+    [SerializeField] private bool interruptDriftOnCrash = true;
+    [SerializeField] private bool debugDriftInterrupt = true;
     [Header("Others")]
     [SerializeField] private float detachCooldown = 5f; // Cooldown duration in seconds
     [SerializeField] private float cooldownTimer = 0f; // Tracks the cooldown timer
@@ -37,6 +39,11 @@ public class LeadingCartRaycaster : MonoBehaviour
     void Start()
     {
         snakeCartManager = this.transform.parent.GetComponent<SnakeCartManager>();
+        if (!driftController)
+            driftController = GetComponentInParent<CartDriftController>();
+
+        if (!driftController && cartControlInput != null)
+            driftController = cartControlInput.GetComponentInParent<CartDriftController>();
     }
 
     // Update is called once per frame
@@ -169,6 +176,8 @@ public class LeadingCartRaycaster : MonoBehaviour
     }
     public void DetachSelfCompletely()
     {
+        InterruptDriftFromCrash("Detach Self Completely");
+
         cooldownTimer = 4f;
         cartControlInput.DisallowActivatePowerUp();
 
@@ -201,7 +210,7 @@ public class LeadingCartRaycaster : MonoBehaviour
         if(collision.gameObject.CompareTag("Obstacles"))
         {
             sfxManager.PlaySFX("CrashWalls");
-
+            InterruptDriftFromCrash("Hit Obstacle");
             cartControlInput.AllowFlip();
             cartControlInput.DisallowActivatePowerUp();
 
@@ -214,6 +223,7 @@ public class LeadingCartRaycaster : MonoBehaviour
         if (collision.gameObject.CompareTag("Walls"))
         {
             sfxManager.PlaySFX("CrashWalls");
+            InterruptDriftFromCrash("Hit Wall");
             cartControlInput.AllowFlip();
             cartControlInput.DisallowActivatePowerUp();
         }
@@ -237,11 +247,14 @@ public class LeadingCartRaycaster : MonoBehaviour
         {
             if (cartControlInput.IsCharing())
                 Destroy(collision.gameObject);
+
+            InterruptDriftFromCrash("Hit Obstacle");
             cartControlInput.AllowFlip();
             cartControlInput.DisallowActivatePowerUp();
         }
         if (collision.gameObject.CompareTag("Walls"))
         {
+            InterruptDriftFromCrash("Hit Obstacle");
             cartControlInput.AllowFlip();
             cartControlInput.DisallowActivatePowerUp();
         }
@@ -266,7 +279,22 @@ public class LeadingCartRaycaster : MonoBehaviour
 
         tomatoSplashRoutine = StartCoroutine(TomatoSplashCoroutine());
     }
+    private void InterruptDriftFromCrash(string reason)
+    {
+        if (!interruptDriftOnCrash)
+            return;
 
+        if (driftController == null)
+            return;
+
+        if (!driftController.IsDrifting && !driftController.IsDriftArmed)
+            return;
+
+        driftController.InterruptDrift(reason);
+
+        if (debugDriftInterrupt)
+            Debug.Log($"[LeadingCartRaycaster] Drift interrupted: {reason}");
+    }
     private IEnumerator TomatoSplashCoroutine()
     {
         // Enable and set full alpha

@@ -2038,7 +2038,14 @@ MonoBehaviour:
   cartController: {fileID: 8217884270544574180}
   flipPrompt: {fileID: 3261560928098425661}
   speedUpFillImage: {fileID: 8536369434195968947}
+  speedUpPendingFillImage: {fileID: 0}
   desiredMaxFill: 0.5
+  driftFuelReward: {fileID: 0}
+  animateRealFuelFill: 1
+  realFuelFillLerpSpeed: 12
+  animatePendingFuelFill: 1
+  pendingFuelFillLerpSpeed: 16
+  keepPendingImageVisibleWhenEmpty: 0
 --- !u!1 &2521736287056058434
 GameObject:
   m_ObjectHideFlags: 0
@@ -2700,6 +2707,81 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!1 &3679073460100359720
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7762811973418907707}
+  - component: {fileID: 1409287392148199189}
+  - component: {fileID: 2919513196704009539}
+  m_Layer: 0
+  m_Name: FuelMeter_Pending
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &7762811973418907707
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3679073460100359720}
+  m_LocalRotation: {x: 0, y: 0, z: 0.7071068, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1.65, y: 1.65, z: 1.65}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 4961972804344258607}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 30.1, y: -19.8}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &1409287392148199189
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3679073460100359720}
+  m_CullTransparentMesh: 1
+--- !u!114 &2919513196704009539
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3679073460100359720}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.49999988, g: 0.8843136, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 0
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: ace4285c3e233e341b12dfd1ee4deb06, type: 3}
+  m_Type: 3
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 0.5
+  m_FillClockwise: 1
+  m_FillOrigin: 2
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
 --- !u!1 &3934125940509537525
@@ -3400,6 +3482,15 @@ MonoBehaviour:
   boostDuration: 1.25
   speedLerpRate: 100
   isBoosting: 0
+  enableDriftSpeedOverride: 1
+  useFixedDriftSpeed: 0
+  fixedDriftSpeed: 17
+  driftSpeedMultiplier: 0.8
+  blockSpeedUpInputWhileDrifting: 1
+  blockBoostAbilityWhileDrifting: 1
+  cancelBoostWhenDriftStarts: 1
+  interruptDriftWhenSetSpeedToZero: 1
+  debugDriftFail: 1
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
   debugWheelName: BL
 --- !u!1 &4253039612629027847
@@ -3700,6 +3791,15 @@ MonoBehaviour:
   boostDuration: 1.25
   speedLerpRate: 100
   isBoosting: 0
+  enableDriftSpeedOverride: 1
+  useFixedDriftSpeed: 0
+  fixedDriftSpeed: 17
+  driftSpeedMultiplier: 0.8
+  blockSpeedUpInputWhileDrifting: 1
+  blockBoostAbilityWhileDrifting: 1
+  cancelBoostWhenDriftStarts: 1
+  interruptDriftWhenSetSpeedToZero: 1
+  debugDriftFail: 1
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
   debugWheelName: FL
 --- !u!1 &4678763875614643136
@@ -4029,7 +4129,14 @@ MonoBehaviour:
   cartController: {fileID: 8217884270544574180}
   flipPrompt: {fileID: 5805125127271161121}
   speedUpFillImage: {fileID: 3559557262557789468}
+  speedUpPendingFillImage: {fileID: 2919513196704009539}
   desiredMaxFill: 0.5
+  driftFuelReward: {fileID: 685721243464472951}
+  animateRealFuelFill: 1
+  realFuelFillLerpSpeed: 12
+  animatePendingFuelFill: 1
+  pendingFuelFillLerpSpeed: 16
+  keepPendingImageVisibleWhenEmpty: 0
 --- !u!1 &5216512165689482605
 GameObject:
   m_ObjectHideFlags: 0
@@ -4617,11 +4724,12 @@ GameObject:
   - component: {fileID: 4166990350242071136}
   - component: {fileID: 8217884270544574180}
   - component: {fileID: 3901328475939746546}
-  - component: {fileID: 7762128806167645806}
   - component: {fileID: 357763201747243696}
   - component: {fileID: 5373437564598737662}
+  - component: {fileID: 7762128806167645806}
   - component: {fileID: 1821272755317792179}
   - component: {fileID: 5267220811583740005}
+  - component: {fileID: 685721243464472951}
   m_Layer: 7
   m_Name: Cart Control Script
   m_TagString: Untagged
@@ -4658,6 +4766,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   canDrift: 1
   prototypeSteerDeadzone: 0.15
+  driftController: {fileID: 0}
+  enableDriftSpeedupOverride: 1
+  debugDriftSpeedupOverride: 0
   controllable: 1
   isInPit: 0
   boostEvent: {fileID: 11400000, guid: 3aeaccc6664a25346b77bae38223b5d0, type: 2}
@@ -4697,42 +4808,6 @@ MonoBehaviour:
   driftController: {fileID: 7762128806167645806}
   driftSteerDegreesPerSecond: 220
   debugDriftSteering: 0
---- !u!114 &7762128806167645806
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6061795394319341633}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d7c1dae7bac37614da87e3e2e2fc0abe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cartControlInput: {fileID: 8217884270544574180}
-  cartBody: {fileID: 4657918851737140441}
-  enableCameraMappedDriftPrototype: 1
-  minSpeedToStartDrift: 5
-  minInputMagnitudeToChooseSide: 0.15
-  minInputAngleToChooseSide: 5
-  useCartForwardForEntrySide: 0
-  lockDriftSide: 0
-  sideSwitchMinInputMagnitude: 0.9
-  sideSwitchMinAngleFromReference: 25
-  updateEntryDebugOnSideSwitch: 0
-  debugSideSwitch: 0
-  driftInputHoldDeadzone: 0.95
-  wideSameSideAngle: 15
-  tightSameSideAngle: 70
-  usePathDirectionForTightness: 1
-  enableDriftSteeringOutput: 1
-  wideDriftSteerAngle: 1
-  baseDriftSteerAngle: 15
-  tightDriftSteerAngle: 30
-  baseTightnessPoint: 0.6
-  invertDriftSteeringSign: 0
-  debugDriftState: 0
-  debugLogInterval: 0.35
 --- !u!114 &357763201747243696
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4825,6 +4900,42 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &7762128806167645806
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6061795394319341633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7c1dae7bac37614da87e3e2e2fc0abe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cartControlInput: {fileID: 8217884270544574180}
+  cartBody: {fileID: 4657918851737140441}
+  enableCameraMappedDriftPrototype: 1
+  minSpeedToStartDrift: 5
+  minInputMagnitudeToChooseSide: 0.15
+  minInputAngleToChooseSide: 5
+  useCartForwardForEntrySide: 0
+  lockDriftSide: 0
+  sideSwitchMinInputMagnitude: 0.9
+  sideSwitchMinAngleFromReference: 25
+  updateEntryDebugOnSideSwitch: 0
+  debugSideSwitch: 0
+  driftInputHoldDeadzone: 0.95
+  wideSameSideAngle: 15
+  tightSameSideAngle: 70
+  usePathDirectionForTightness: 1
+  enableDriftSteeringOutput: 1
+  wideDriftSteerAngle: 1
+  baseDriftSteerAngle: 15
+  tightDriftSteerAngle: 30
+  baseTightnessPoint: 0.6
+  invertDriftSteeringSign: 0
+  debugDriftState: 0
+  debugLogInterval: 0.35
 --- !u!114 &1821272755317792179
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4916,6 +5027,56 @@ MonoBehaviour:
   invertPhysicsYaw: 0
   resetWhenNotDrifting: 1
   debugYawOffset: 0
+--- !u!114 &685721243464472951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6061795394319341633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90181da981efd024e8f76f03fcbd1118, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  driftController: {fileID: 7762128806167645806}
+  cartController: {fileID: 8217884270544574180}
+  enableDriftFuelReward: 1
+  minimumSuccessDuration: 0.6
+  baseFuelGainPerSecond: 2
+  maxFuelRewardPerDrift: 100
+  minimumRewardTightness: 0
+  minTightnessRewardMultiplier: 0.5
+  maxTightnessRewardMultiplier: 1.5
+  durationToReachMaxRewardRate: 3
+  startingDurationRewardMultiplier: 0.5
+  maxDurationRewardMultiplier: 2
+  durationRewardCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  payoutWhenCancelledBySpeedup: 1
+  debugReward: 0
 --- !u!1 &6156112578977034907
 GameObject:
   m_ObjectHideFlags: 0
@@ -4956,6 +5117,7 @@ RectTransform:
   - {fileID: 8623803211580671244}
   - {fileID: 2918190569953354719}
   - {fileID: 5673407441989888861}
+  - {fileID: 7762811973418907707}
   - {fileID: 5152639490516769113}
   - {fileID: 2406899612149177500}
   - {fileID: 4304346306706571532}
@@ -5522,6 +5684,9 @@ MonoBehaviour:
   raycastYOffset: -0.6
   raycastZOffset: 1.2
   <hitDirection>k__BackingField: {x: 0, y: 0, z: 0}
+  driftController: {fileID: 7762128806167645806}
+  interruptDriftOnCrash: 1
+  debugDriftInterrupt: 1
   detachCooldown: 1.25
   cooldownTimer: 0
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
@@ -5895,6 +6060,15 @@ MonoBehaviour:
   boostDuration: 1.25
   speedLerpRate: 100
   isBoosting: 0
+  enableDriftSpeedOverride: 1
+  useFixedDriftSpeed: 0
+  fixedDriftSpeed: 17
+  driftSpeedMultiplier: 0.8
+  blockSpeedUpInputWhileDrifting: 1
+  blockBoostAbilityWhileDrifting: 1
+  cancelBoostWhenDriftStarts: 1
+  interruptDriftWhenSetSpeedToZero: 1
+  debugDriftFail: 1
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
   debugWheelName: FR
 --- !u!1 &6790623035213392116
@@ -6370,6 +6544,15 @@ MonoBehaviour:
   boostDuration: 1.25
   speedLerpRate: 100
   isBoosting: 0
+  enableDriftSpeedOverride: 1
+  useFixedDriftSpeed: 0
+  fixedDriftSpeed: 17
+  driftSpeedMultiplier: 0.8
+  blockSpeedUpInputWhileDrifting: 1
+  blockBoostAbilityWhileDrifting: 1
+  cancelBoostWhenDriftStarts: 1
+  interruptDriftWhenSetSpeedToZero: 1
+  debugDriftFail: 1
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
   debugWheelName: BR
 --- !u!1 &7183817861845487896
