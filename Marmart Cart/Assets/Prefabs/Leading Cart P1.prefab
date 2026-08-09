@@ -3483,9 +3483,9 @@ MonoBehaviour:
   speedLerpRate: 100
   isBoosting: 0
   enableDriftSpeedOverride: 1
-  useFixedDriftSpeed: 0
+  useFixedDriftSpeed: 1
   fixedDriftSpeed: 17
-  driftSpeedMultiplier: 0.8
+  driftSpeedMultiplier: 1
   blockSpeedUpInputWhileDrifting: 1
   blockBoostAbilityWhileDrifting: 1
   cancelBoostWhenDriftStarts: 1
@@ -3792,9 +3792,9 @@ MonoBehaviour:
   speedLerpRate: 100
   isBoosting: 0
   enableDriftSpeedOverride: 1
-  useFixedDriftSpeed: 0
+  useFixedDriftSpeed: 1
   fixedDriftSpeed: 17
-  driftSpeedMultiplier: 0.8
+  driftSpeedMultiplier: 1
   blockSpeedUpInputWhileDrifting: 1
   blockBoostAbilityWhileDrifting: 1
   cancelBoostWhenDriftStarts: 1
@@ -4798,7 +4798,7 @@ MonoBehaviour:
   - {fileID: 6739513257674474393}
   - {fileID: 56782952564412908}
   - {fileID: 2937625834076403769}
-  maxRotationAngle: 30
+  maxRotationAngle: 60
   rotationSpeed: 120
   enablePrototypeLeftRightSteering: 0
   prototypeMaxSteerAngle: 90
@@ -4951,17 +4951,17 @@ MonoBehaviour:
   cartControlInput: {fileID: 8217884270544574180}
   driftController: {fileID: 7762128806167645806}
   cartBody: {fileID: 4657918851737140441}
-  showDebug: 0
+  showDebug: 1
   showCurrentInputLine: 1
   showPathDirectionLine: 1
   showEntryInputLine: 0
   showEntryForwardLine: 0
   showDebugText: 1
   showSpeedText: 1
-  showStateText: 1
-  showSideText: 1
-  showInputAngleText: 1
-  showTightnessText: 1
+  showStateText: 0
+  showSideText: 0
+  showInputAngleText: 0
+  showTightnessText: 0
   lineHeight: 1.5
   lineLength: 4
   lineWidth: 0.3
@@ -4980,9 +4980,9 @@ MonoBehaviour:
   - {fileID: 4303530599371487712}
   autoFindWheelGripSources: 0
   showWheelLateralVelocity: 1
-  showWheelBaseGrip: 1
-  showWheelDriftMultiplier: 1
-  showWheelFinalGrip: 1
+  showWheelBaseGrip: 0
+  showWheelDriftMultiplier: 0
+  showWheelFinalGrip: 0
   showWheelForce: 0
 --- !u!114 &5267220811583740005
 MonoBehaviour:
@@ -6061,9 +6061,9 @@ MonoBehaviour:
   speedLerpRate: 100
   isBoosting: 0
   enableDriftSpeedOverride: 1
-  useFixedDriftSpeed: 0
+  useFixedDriftSpeed: 1
   fixedDriftSpeed: 17
-  driftSpeedMultiplier: 0.8
+  driftSpeedMultiplier: 1
   blockSpeedUpInputWhileDrifting: 1
   blockBoostAbilityWhileDrifting: 1
   cancelBoostWhenDriftStarts: 1
@@ -6545,9 +6545,9 @@ MonoBehaviour:
   speedLerpRate: 100
   isBoosting: 0
   enableDriftSpeedOverride: 1
-  useFixedDriftSpeed: 0
+  useFixedDriftSpeed: 1
   fixedDriftSpeed: 17
-  driftSpeedMultiplier: 0.8
+  driftSpeedMultiplier: 1
   blockSpeedUpInputWhileDrifting: 1
   blockBoostAbilityWhileDrifting: 1
   cancelBoostWhenDriftStarts: 1

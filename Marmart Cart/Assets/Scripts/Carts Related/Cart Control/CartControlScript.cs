@@ -214,7 +214,7 @@ public class CartControlScript : MonoBehaviour
         _inputActions.Player.Drift.canceled += ctx =>
         {
             if (ctx.control.device == Keyboard.current)
-                HandleSpeedupReleased();
+                HandleDriftReleased();
         };
         // Aim input for controller (mouse position)
         _inputActions.Player.Aim.performed += ctx =>
