@@ -19,57 +19,48 @@ MonoBehaviour:
     enableTurnSpeedAssist: 1
     turnAssistReferenceAngle: 45
     turnAssistStartIntensity: 0
-    maxTurnAssistTorqueMultiplier: 1
+    maxTurnAssistTorqueMultiplier: 0.5
   drift:
     enableTurnSpeedAssist: 1
     turnAssistReferenceAngle: 30
     turnAssistStartIntensity: 0
-    maxTurnAssistTorqueMultiplier: 1
+    maxTurnAssistTorqueMultiplier: 1.5
   speedup:
     enableTurnSpeedAssist: 1
     turnAssistReferenceAngle: 45
     turnAssistStartIntensity: 0
-    maxTurnAssistTorqueMultiplier: 1
+    maxTurnAssistTorqueMultiplier: 3
   driftFeel:
     enableTightDriftDip: 1
-    tightDriftDipTriggerTightness: 0.65
-    tightDriftDipRearmTightness: 0.65
-    tightDriftDipDuration: 0.3
-    tightDriftDipMultiplier: 0.3
+    tightDriftDipTriggerTightness: 0.35
+    tightDriftDipRearmTightness: 0.35
+    tightDriftDipDuration: 0.35
+    tightDriftDipMultiplier: 0.8
     enableDriftFatigueSpeedLoss: 1
-    fatigueBuildStartTightness: 0.35
-    fatigueRecoverBelowTightness: 0.35
+    fatigueBuildStartTightness: 0.1
+    fatigueRecoverBelowTightness: 0.1
     fatigueBuildPerSecondAtFullTightness: 0.45
-    fatigueRecoverPerSecondWhenWide: 0.75
+    fatigueRecoverPerSecondWhenWide: 0.65
     fatigueSpeedMultiplier:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 1
-        inSlope: 0
-        outSlope: 0
+        value: 0.9
+        inSlope: -0.033284973
+        outSlope: -0.033284973
         tangentMode: 0
         weightedMode: 0
         inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 0.5
-        value: 0.94
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
+        outWeight: 0.17736536
       - serializedVersion: 3
         time: 1
-        value: 0.88
-        inSlope: 0
-        outSlope: 0
+        value: 0.7
+        inSlope: -0.40004006
+        outSlope: -0.40004006
         tangentMode: 0
         weightedMode: 0
-        inWeight: 0
+        inWeight: 0.093738735
         outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
