@@ -3388,6 +3388,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cartControlInput: {fileID: 8217884270544574180}
   cartBody: {fileID: 4657918851737140441}
+  movementProfile: {fileID: 11400000, guid: cfdd6c4e731faab4ca37cf80a6258ba3, type: 2}
+  driftController: {fileID: 7762128806167645806}
+  snakeCartManager: {fileID: 0}
   layerMask:
     serializedVersion: 2
     m_Bits: 64
@@ -3421,15 +3424,6 @@ MonoBehaviour:
     m_RotationOrder: 4
   maxLateralVelocity: 20
   wheelMass: 1
-  driftController: {fileID: 7762128806167645806}
-  wheelRole: 1
-  enableDriftGripExperiment: 0
-  driftGripInfluence: 1
-  frontDriftGripMultiplier: 0.9
-  rearGripAtWideDrift: 0.8
-  rearGripAtTightDrift: 0.7
-  debugDriftGrip: 0
-  debugDriftGripLogInterval: 0.35
   engineTorqueCurve:
     serializedVersion: 2
     m_Curve:
@@ -3464,35 +3458,18 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   maxEngineTorque: 100
-  thresholdSpeed: 0.1
-  regularMaxSpeed: 20
+  targetSpeed: 20
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  targetSpeed: 20
-  upSpeed: 25
-  snakeCartManager: {fileID: 0}
   fullSpeedUntilCarts: 5
-  fullSpeed: 20
   speedLossPerCart: 0.3
-  minBaseSpeed: 15
-  upSpeedBonus: 5
   excludeLeadingCartFromCount: 1
   boostedSpeed: 40
   boostDuration: 1.25
   speedLerpRate: 100
   isBoosting: 0
-  enableDriftSpeedOverride: 1
-  useFixedDriftSpeed: 1
-  fixedDriftSpeed: 17
-  driftSpeedMultiplier: 1
-  blockSpeedUpInputWhileDrifting: 1
-  blockBoostAbilityWhileDrifting: 1
-  cancelBoostWhenDriftStarts: 1
-  interruptDriftWhenSetSpeedToZero: 1
-  debugDriftFail: 1
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
-  debugWheelName: BL
 --- !u!1 &4253039612629027847
 GameObject:
   m_ObjectHideFlags: 0
@@ -3697,6 +3674,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cartControlInput: {fileID: 8217884270544574180}
   cartBody: {fileID: 4657918851737140441}
+  movementProfile: {fileID: 11400000, guid: cfdd6c4e731faab4ca37cf80a6258ba3, type: 2}
+  driftController: {fileID: 7762128806167645806}
+  snakeCartManager: {fileID: 0}
   layerMask:
     serializedVersion: 2
     m_Bits: 64
@@ -3730,15 +3710,6 @@ MonoBehaviour:
     m_RotationOrder: 4
   maxLateralVelocity: 20
   wheelMass: 1
-  driftController: {fileID: 7762128806167645806}
-  wheelRole: 0
-  enableDriftGripExperiment: 0
-  driftGripInfluence: 1
-  frontDriftGripMultiplier: 0.9
-  rearGripAtWideDrift: 0.8
-  rearGripAtTightDrift: 0.7
-  debugDriftGrip: 0
-  debugDriftGripLogInterval: 0.35
   engineTorqueCurve:
     serializedVersion: 2
     m_Curve:
@@ -3773,35 +3744,18 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   maxEngineTorque: 100
-  thresholdSpeed: 0.1
-  regularMaxSpeed: 20
+  targetSpeed: 20
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  targetSpeed: 20
-  upSpeed: 25
-  snakeCartManager: {fileID: 0}
   fullSpeedUntilCarts: 5
-  fullSpeed: 20
   speedLossPerCart: 0.3
-  minBaseSpeed: 15
-  upSpeedBonus: 5
   excludeLeadingCartFromCount: 1
   boostedSpeed: 40
   boostDuration: 1.25
   speedLerpRate: 100
   isBoosting: 0
-  enableDriftSpeedOverride: 1
-  useFixedDriftSpeed: 1
-  fixedDriftSpeed: 17
-  driftSpeedMultiplier: 1
-  blockSpeedUpInputWhileDrifting: 1
-  blockBoostAbilityWhileDrifting: 1
-  cancelBoostWhenDriftStarts: 1
-  interruptDriftWhenSetSpeedToZero: 1
-  debugDriftFail: 1
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
-  debugWheelName: FL
 --- !u!1 &4678763875614643136
 GameObject:
   m_ObjectHideFlags: 0
@@ -4798,7 +4752,7 @@ MonoBehaviour:
   - {fileID: 6739513257674474393}
   - {fileID: 56782952564412908}
   - {fileID: 2937625834076403769}
-  maxRotationAngle: 60
+  maxRotationAngle: 45
   rotationSpeed: 120
   enablePrototypeLeftRightSteering: 0
   prototypeMaxSteerAngle: 90
@@ -4919,7 +4873,7 @@ MonoBehaviour:
   minInputMagnitudeToChooseSide: 0.15
   minInputAngleToChooseSide: 5
   useCartForwardForEntrySide: 0
-  lockDriftSide: 0
+  lockDriftSide: 1
   sideSwitchMinInputMagnitude: 0.9
   sideSwitchMinAngleFromReference: 25
   updateEntryDebugOnSideSwitch: 0
@@ -5043,7 +4997,7 @@ MonoBehaviour:
   cartController: {fileID: 8217884270544574180}
   enableDriftFuelReward: 1
   minimumSuccessDuration: 0.6
-  baseFuelGainPerSecond: 2
+  baseFuelGainPerSecond: 20
   maxFuelRewardPerDrift: 100
   minimumRewardTightness: 0
   minTightnessRewardMultiplier: 0.5
@@ -5966,6 +5920,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cartControlInput: {fileID: 8217884270544574180}
   cartBody: {fileID: 4657918851737140441}
+  movementProfile: {fileID: 11400000, guid: cfdd6c4e731faab4ca37cf80a6258ba3, type: 2}
+  driftController: {fileID: 7762128806167645806}
+  snakeCartManager: {fileID: 0}
   layerMask:
     serializedVersion: 2
     m_Bits: 64
@@ -5999,15 +5956,6 @@ MonoBehaviour:
     m_RotationOrder: 4
   maxLateralVelocity: 20
   wheelMass: 1
-  driftController: {fileID: 7762128806167645806}
-  wheelRole: 0
-  enableDriftGripExperiment: 0
-  driftGripInfluence: 1
-  frontDriftGripMultiplier: 0.9
-  rearGripAtWideDrift: 0.8
-  rearGripAtTightDrift: 0.7
-  debugDriftGrip: 0
-  debugDriftGripLogInterval: 0.35
   engineTorqueCurve:
     serializedVersion: 2
     m_Curve:
@@ -6042,35 +5990,18 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   maxEngineTorque: 100
-  thresholdSpeed: 0.1
-  regularMaxSpeed: 20
+  targetSpeed: 20
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  targetSpeed: 20
-  upSpeed: 25
-  snakeCartManager: {fileID: 0}
   fullSpeedUntilCarts: 5
-  fullSpeed: 20
   speedLossPerCart: 0.3
-  minBaseSpeed: 15
-  upSpeedBonus: 5
   excludeLeadingCartFromCount: 1
   boostedSpeed: 40
   boostDuration: 1.25
   speedLerpRate: 100
   isBoosting: 0
-  enableDriftSpeedOverride: 1
-  useFixedDriftSpeed: 1
-  fixedDriftSpeed: 17
-  driftSpeedMultiplier: 1
-  blockSpeedUpInputWhileDrifting: 1
-  blockBoostAbilityWhileDrifting: 1
-  cancelBoostWhenDriftStarts: 1
-  interruptDriftWhenSetSpeedToZero: 1
-  debugDriftFail: 1
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
-  debugWheelName: FR
 --- !u!1 &6790623035213392116
 GameObject:
   m_ObjectHideFlags: 0
@@ -6450,6 +6381,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cartControlInput: {fileID: 8217884270544574180}
   cartBody: {fileID: 4657918851737140441}
+  movementProfile: {fileID: 11400000, guid: cfdd6c4e731faab4ca37cf80a6258ba3, type: 2}
+  driftController: {fileID: 7762128806167645806}
+  snakeCartManager: {fileID: 0}
   layerMask:
     serializedVersion: 2
     m_Bits: 64
@@ -6483,15 +6417,6 @@ MonoBehaviour:
     m_RotationOrder: 4
   maxLateralVelocity: 20
   wheelMass: 1
-  driftController: {fileID: 7762128806167645806}
-  wheelRole: 1
-  enableDriftGripExperiment: 0
-  driftGripInfluence: 1
-  frontDriftGripMultiplier: 0.9
-  rearGripAtWideDrift: 0.8
-  rearGripAtTightDrift: 0.7
-  debugDriftGrip: 0
-  debugDriftGripLogInterval: 0.35
   engineTorqueCurve:
     serializedVersion: 2
     m_Curve:
@@ -6526,35 +6451,18 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   maxEngineTorque: 100
-  thresholdSpeed: 0.1
-  regularMaxSpeed: 20
+  targetSpeed: 20
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  targetSpeed: 20
-  upSpeed: 25
-  snakeCartManager: {fileID: 0}
   fullSpeedUntilCarts: 5
-  fullSpeed: 20
   speedLossPerCart: 0.3
-  minBaseSpeed: 15
-  upSpeedBonus: 5
   excludeLeadingCartFromCount: 1
   boostedSpeed: 40
   boostDuration: 1.25
   speedLerpRate: 100
   isBoosting: 0
-  enableDriftSpeedOverride: 1
-  useFixedDriftSpeed: 1
-  fixedDriftSpeed: 17
-  driftSpeedMultiplier: 1
-  blockSpeedUpInputWhileDrifting: 1
-  blockBoostAbilityWhileDrifting: 1
-  cancelBoostWhenDriftStarts: 1
-  interruptDriftWhenSetSpeedToZero: 1
-  debugDriftFail: 1
   disableDetachEvent: {fileID: 11400000, guid: 200ec07664d42b744a584e32d04afc07, type: 2}
-  debugWheelName: BR
 --- !u!1 &7183817861845487896
 GameObject:
   m_ObjectHideFlags: 0
@@ -7443,7 +7351,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -510, y: 221}
+  m_AnchoredPosition: {x: -510, y: -75}
   m_SizeDelta: {x: 404.9, y: 194.3}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6498363700843095715

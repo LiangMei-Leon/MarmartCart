@@ -222,41 +222,41 @@ public class CartDriftDebugVisualizer : MonoBehaviour
     }
     private void AppendWheelGripDebugText(System.Text.StringBuilder textBuilder)
     {
-        if (!showWheelGripText)
-            return;
+        //if (!showWheelGripText)
+        //    return;
 
-        if (wheelGripDebugSources == null || wheelGripDebugSources.Length == 0)
-            return;
+        //if (wheelGripDebugSources == null || wheelGripDebugSources.Length == 0)
+        //    return;
 
-        textBuilder.AppendLine();
-        textBuilder.AppendLine("=== Wheel Grip ===");
+        //textBuilder.AppendLine();
+        //textBuilder.AppendLine("=== Wheel Grip ===");
 
-        for (int i = 0; i < wheelGripDebugSources.Length; i++)
-        {
-            LeadingCartBehaviour wheel = wheelGripDebugSources[i];
+        //for (int i = 0; i < wheelGripDebugSources.Length; i++)
+        //{
+        //    LeadingCartBehaviour wheel = wheelGripDebugSources[i];
 
-            if (wheel == null)
-                continue;
+        //    if (wheel == null)
+        //        continue;
 
-            textBuilder.Append($"{wheel.DebugWheelName} [{wheel.DebugWheelRole}] ");
+        //    textBuilder.Append($"{wheel.DebugWheelName} [{wheel.DebugWheelRole}] ");
 
-            if (showWheelLateralVelocity)
-                textBuilder.Append($"latVel:{wheel.DebugLateralVelocity:F2} ");
+        //    if (showWheelLateralVelocity)
+        //        textBuilder.Append($"latVel:{wheel.DebugLateralVelocity:F2} ");
 
-            if (showWheelBaseGrip)
-                textBuilder.Append($"base:{wheel.DebugBaseGripFactor:F2} ");
+        //    if (showWheelBaseGrip)
+        //        textBuilder.Append($"base:{wheel.DebugBaseGripFactor:F2} ");
 
-            if (showWheelDriftMultiplier)
-                textBuilder.Append($"mult:{wheel.DebugDriftGripMultiplier:F2} ");
+        //    if (showWheelDriftMultiplier)
+        //        textBuilder.Append($"mult:{wheel.DebugDriftGripMultiplier:F2} ");
 
-            if (showWheelFinalGrip)
-                textBuilder.Append($"final:{wheel.DebugFinalGripFactor:F2} ");
+        //    if (showWheelFinalGrip)
+        //        textBuilder.Append($"final:{wheel.DebugFinalGripFactor:F2} ");
 
-            if (showWheelForce)
-                textBuilder.Append($"force:{wheel.DebugSteeringForceMagnitude:F0} ");
+        //    if (showWheelForce)
+        //        textBuilder.Append($"force:{wheel.DebugSteeringForceMagnitude:F0} ");
 
-            textBuilder.AppendLine();
-        }
+        //    textBuilder.AppendLine();
+        //}
     }
     private void DisableAllVisuals()
     {

@@ -1,352 +1,559 @@
 using System.Collections;
-using System.ComponentModel.Design.Serialization;
-using System.Runtime.InteropServices;
-using TMPro;
 using UnityEngine;
 
+/// <summary>
+/// Per-wheel raycast suspension / lateral grip / forward drive for the leading cart.
+///
+/// This component is still intended to live on each raycast wheel object.
+/// Assign the same CartMovementProfile to all leading-cart wheel scripts.
+///
+/// Movement design:
+/// - Normal Drive uses chain-adjusted base speed.
+/// - Drift uses chain-adjusted base speed with tight-drift dip and recoverable fatigue.
+/// - Speedup uses chain-adjusted base speed + additive fuel speedup bonus.
+/// - Turn assist only changes engine authority. It does not modify lateral counter-force.
+/// </summary>
 public class LeadingCartBehaviour : MonoBehaviour
 {
-    public enum WheelRole
-    {
-        Front,
-        Rear
-    }
+    #region References
 
-    [Tooltip("Refer to the script that read/gather the new input system")]
-    [SerializeField] CartControlScript cartControlInput;
+    [Header("References")]
+    [Tooltip("Reads movement, speedup, pit, and control state.")]
+    [SerializeField] private CartControlScript cartControlInput;
+
+    [Tooltip("Main rigidbody of the leading cart.")]
     [SerializeField] private Rigidbody cartBody;
+
+    [Tooltip("Shared movement tuning asset for Drive / Drift / Speedup.")]
+    [SerializeField] private CartMovementProfile movementProfile;
+
+    [Tooltip("Used to detect drift mode and drift tightness.")]
+    [SerializeField] private CartDriftController driftController;
+
+    [Tooltip("Used by the chain-length speed penalty.")]
+    [SerializeField] private SnakeCartManager snakeCartManager;
+
+    #endregion
+
+    #region Raycast Settings
 
     [Header("Raycast Settings")]
     [SerializeField] private LayerMask layerMask;
+
     private bool isGrounded = false;
 
+    #endregion
+
+    #region Suspension Settings
+
     [Header("Suspension Settings")]
-    private Vector3 rayStartPosition;
-    [SerializeField] float springRestLength = 1f;
-    [SerializeField] float springRaycastExtraLength = 0.1f;
-    [SerializeField] float springStrength = 100f;
-    [SerializeField] float springDamping = 10f;
+    [SerializeField] private float springRestLength = 1f;
+    [SerializeField] private float springRaycastExtraLength = 0.1f;
+    [SerializeField] private float springStrength = 100f;
+    [SerializeField] private float springDamping = 10f;
+
     private Vector3 springDirection;
-
-    [Header("Steering Settings")]
-    private Vector3 steeringDirection;
     private Vector3 wheelVelocity;
-    [SerializeField] AnimationCurve wheelGripCurve;
-    [SerializeField] float maxLateralVelocity = 6f;
-    [SerializeField] float wheelMass = 1.5f;
 
-    [Header("Drift Grip Experiment")]
-    [SerializeField] private CartDriftController driftController;
-    [SerializeField] private WheelRole wheelRole = WheelRole.Front;
-    [Tooltip("Master toggle for this physics experiment.")]
-    [SerializeField] private bool enableDriftGripExperiment = false;
-    [Tooltip("0 = keep original path. 1 = full drift grip effect.")]
-    [SerializeField, Range(0f, 1f)] private float driftGripInfluence = 0f;
-    [Tooltip("Front wheels usually stay planted so the cart remains controllable.")]
-    [SerializeField, Range(0f, 1.5f)] private float frontDriftGripMultiplier = 1f;
-    [Tooltip("Rear grip when CurrentTightness is 0. Lower = looser wide drift.")]
-    [SerializeField, Range(0f, 1.5f)] private float rearGripAtWideDrift = 0.55f;
-    [Tooltip("Rear grip when CurrentTightness is 1. Higher = more controlled tight drift.")]
-    [SerializeField, Range(0f, 1.5f)] private float rearGripAtTightDrift = 0.75f;
-    [Header("Drift Grip Debug")]
-    [SerializeField] private bool debugDriftGrip = false;
-    [SerializeField] private float debugDriftGripLogInterval = 0.35f;
-    private float currentDriftGripMultiplier = 1f;
-    private float driftGripDebugTimer = 0f;
+    #endregion
 
-    [Header("Acceleration and Brake Settings")]
-    [SerializeField] AnimationCurve engineTorqueCurve;
-    [SerializeField] float maxEngineTorque = 100f;
-    [SerializeField] float thresholdSpeed = 0.1f;  // Small threshold to treat near-zero speeds as zero
-    public float regularMaxSpeed = 10f;        // Regular forward speed
-    [SerializeField] float minSpeed = 5f;          // minimum speed cap
-    [SerializeField] float brakeFactor = 1f;
-    [SerializeField] float maxBrakeForce = 1f;
+    #region Lateral Grip Settings
+
+    [Header("Lateral Grip Settings")]
+    [Tooltip("Curve that decides how strongly the wheel cancels lateral sliding.")]
+    [SerializeField] private AnimationCurve wheelGripCurve;
+
+    [Tooltip("Lateral speed used to normalize the wheel grip curve.")]
+    [SerializeField] private float maxLateralVelocity = 6f;
+
+    [Tooltip("Effective wheel mass used for lateral correction force.")]
+    [SerializeField] private float wheelMass = 1.5f;
+
+    private Vector3 steeringDirection;
+
+    #endregion
+
+    #region Forward Drive Settings
+
+    [Header("Forward Drive Settings")]
+    [Tooltip("Engine torque available at normalized speed 0..1.")]
+    [SerializeField] private AnimationCurve engineTorqueCurve;
+
+    [Tooltip("Base cap for forward drive force. Mode profile turn assist multiplies this value during turns.")]
+    [SerializeField] private float maxEngineTorque = 100f;
+
+    [Tooltip("Current speed target calculated from movement profile + chain length + mode.")]
     [SerializeField] private float targetSpeed = 20f;
-    [SerializeField] private float upSpeed = 25f;
-    private float cacheSpeed = 20f;
-    private bool isStopping = false;
-    private Vector3 finalSuspensionForce;
-    private Vector3 finalSteeringForce;
-    private Vector3 finalBrakeForce;
 
-    [Header("Dynamic Speed by Chain Length")]
-    [SerializeField] private SnakeCartManager snakeCartManager;
+    private CartDriveMode currentDriveMode = CartDriveMode.NormalDrive;
 
+    #endregion
+
+    #region Brake Settings
+
+    [Header("Brake Settings")]
+    [SerializeField] private float minSpeed = 5f;
+    [SerializeField] private float brakeFactor = 1f;
+    [SerializeField] private float maxBrakeForce = 1f;
+
+    #endregion
+
+    #region Chain-Length Speed Penalty
+
+    [Header("Chain-Length Speed Penalty")]
+    [Tooltip("No speed penalty while the snake body length is at or below this value.")]
     [SerializeField] private int fullSpeedUntilCarts = 5;
-    [SerializeField] private float fullSpeed = 25f;
 
+    [Tooltip("Base speed loss for each cart beyond Full Speed Until Carts.")]
     [SerializeField] private float speedLossPerCart = 0.3f;
-    [SerializeField] private float minBaseSpeed = 10f;
 
-    [SerializeField] private float upSpeedBonus = 5f; // upSpeed = base + 5
+    [Tooltip("If true, the leading cart is not counted when applying speed penalty.")]
     [SerializeField] private bool excludeLeadingCartFromCount = false;
 
-    [Header("Boost Settings")]
+    #endregion
+
+    #region Powerup Boost Settings
+
+    [Header("Powerup Boost Settings")]
+    [Tooltip("Separate powerup boost target speed. This is not the fuel speedup mode.")]
     [SerializeField] private float boostedSpeed = 20f;
+
     [SerializeField] private float boostDuration = 2f;
+
+    [Tooltip("Kept for existing tuning compatibility. The current boost coroutine uses duration sections.")]
     [SerializeField] private float speedLerpRate = 5f;
-    //[SerializeField] private float boostForce = 80f;       // Force applied to the cart to boost
-    //[SerializeField] private float boostTime = 1f;     // Duration to hold the boosted speed
-    //[SerializeField] private float decelerationRate = 10f; // Rate at which the cart returns to normal speed
-    public bool isBoosting = false;                       // Flag to track if boost is active
 
-    [Header("Drift Speed Test")]
-    [SerializeField] private bool enableDriftSpeedOverride = true;
+    public bool isBoosting = false;
 
-    [Tooltip("If true, drift uses a fixed target speed. If false, drift uses base speed * multiplier.")]
-    [SerializeField] private bool useFixedDriftSpeed = false;
+    private Coroutine boostRoutine;
 
-    [Tooltip("Recommended first test: normal 20, drift 16-18, boost 25.")]
-    [SerializeField] private float fixedDriftSpeed = 17f;
+    #endregion
 
-    [Tooltip("Used when Use Fixed Drift Speed is false. Example: 0.85 means drift is 85% of normal speed.")]
-    [SerializeField, Range(0.1f, 1.5f)] private float driftSpeedMultiplier = 0.85f;
+    #region Crash / Stop State
 
-    [Tooltip("If true, SpeedUp / boost-speed input cannot raise target speed during drift.")]
-    [SerializeField] private bool blockSpeedUpInputWhileDrifting = true;
+    private bool isStopping = false;
 
-    [Tooltip("If true, StartBoost() is ignored while drifting.")]
-    [SerializeField] private bool blockBoostAbilityWhileDrifting = true;
+    #endregion
 
-    [Tooltip("If true, entering drift while boosting cancels the boost coroutine.")]
-    [SerializeField] private bool cancelBoostWhenDriftStarts = true;
+    #region Drift Runtime State
 
-    [Header("Drift Fail Conditions")]
-    [SerializeField] private bool interruptDriftWhenSetSpeedToZero = true;
+    private bool wasDriftingLastFrame = false;
 
-    [SerializeField] private bool debugDriftFail = true;
+    private float currentDriftDuration = 0f;
+    private float currentDriftFatigue = 0f;
+
+    private float tightDriftDipTimer = 0f;
+    private bool tightDriftDipArmed = true;
+
+    #endregion
+
+    #region Events
+
     [Header("Events")]
-    [SerializeField] GameEvent disableDetachEvent;
+    [SerializeField] private GameEvent disableDetachEvent;
 
-    [Header("Runtime Grip Debug")]
-    [SerializeField] private string debugWheelName = "Wheel";
+    #endregion
 
-    public string DebugWheelName => debugWheelName;
-    public WheelRole DebugWheelRole => wheelRole;
+    #region Unity Lifecycle
 
-    public float DebugLateralVelocity => debugLateralVelocity;
-    public float DebugNormalizedLateralVelocity => debugNormalizedLateralVelocity;
-    public float DebugBaseGripFactor => debugBaseGripFactor;
-    public float DebugDriftGripMultiplier => currentDriftGripMultiplier;
-    public float DebugFinalGripFactor => debugFinalGripFactor;
-    public float DebugSteeringForceMagnitude => debugSteeringForceMagnitude;
-
-    private float debugLateralVelocity = 0f;
-    private float debugNormalizedLateralVelocity = 0f;
-    private float debugBaseGripFactor = 0f;
-    private float debugFinalGripFactor = 0f;
-    private float debugSteeringForceMagnitude = 0f;
-    void Awake()
+    private void Awake()
     {
-        // Warn the user if the Rigidbody is not assigned
         if (cartBody == null)
-        {
-            Debug.LogError("Rigidbody is not assigned! Please assign the Rigidbody for the cartBody in the Inspector.");
-        }
+            Debug.LogError("Rigidbody is not assigned. Please assign the cartBody Rigidbody in the Inspector.", this);
+
+        if (movementProfile == null)
+            Debug.LogWarning("CartMovementProfile is not assigned. Using fallback movement values.", this);
     }
 
-    void Start()
+    private void Start()
     {
         if (!snakeCartManager)
             snakeCartManager = GetComponentInParent<SnakeCartManager>();
+
+        if (!driftController)
+            driftController = GetComponentInParent<CartDriftController>();
     }
-    void Update()
+
+    private void Update()
     {
+        UpdateDriveModeAndTargetSpeed(Time.deltaTime);
+    }
+
+    private void FixedUpdate()
+    {
+        if (cartBody == null)
+            return;
+
+        RaycastHit hit;
+
+        bool didHitGround = Physics.Raycast(
+            transform.position,
+            -transform.up,
+            out hit,
+            springRestLength + springRaycastExtraLength,
+            layerMask
+        );
+
+        if (!didHitGround)
+        {
+            isGrounded = false;
+            return;
+        }
+
+        isGrounded = true;
+
+        ApplySuspension(hit);
+        ApplyLateralGrip();
+        ApplyForwardDrive();
+    }
+
+    #endregion
+
+    #region Mode / Target Speed
+
+    private void UpdateDriveModeAndTargetSpeed(float deltaTime)
+    {
+        if (cartControlInput == null)
+            return;
+
         if (cartControlInput.GetIsInPit() || isStopping)
             return;
 
         bool isDrifting = driftController != null && driftController.IsDrifting;
 
-        if (isDrifting && isBoosting && cancelBoostWhenDriftStarts)
-        {
-            CancelBoost("Drift started");
-        }
+        UpdateDriftRuntimeState(isDrifting, deltaTime);
 
-        // If boost coroutine is controlling speed, do not overwrite targetSpeed here.
+        // Powerup boost owns targetSpeed while its coroutine is active.
+        if (isDrifting && isBoosting && ShouldCancelPowerupBoostWhenDrifting())
+            CancelBoost();
+
         if (isBoosting)
             return;
 
-        int carts = GetEffectiveCartCount();
-        float baseSpeed = ComputeBaseSpeed(carts);
-        float dynamicUpSpeed = baseSpeed + upSpeedBonus;
+        currentDriveMode = ResolveDriveMode(isDrifting);
 
-        if (isDrifting && enableDriftSpeedOverride)
+        float chainAdjustedBaseSpeed = ComputeChainAdjustedBaseSpeed();
+        targetSpeed = ComputeTargetSpeed(currentDriveMode, chainAdjustedBaseSpeed);
+    }
+
+    private void UpdateDriftRuntimeState(bool isDrifting, float deltaTime)
+    {
+        if (!isDrifting)
         {
-            targetSpeed = GetDriftTargetSpeed(baseSpeed);
+            ResetDriftRuntimeState();
             return;
         }
 
-        bool canUseSpeedUp =
+        if (!wasDriftingLastFrame)
+        {
+            currentDriftDuration = 0f;
+            currentDriftFatigue = 0f;
+            tightDriftDipTimer = 0f;
+            tightDriftDipArmed = true;
+        }
+
+        wasDriftingLastFrame = true;
+        currentDriftDuration += deltaTime;
+
+        float tightness = GetDriftTightness();
+
+        UpdateTightDriftDip(tightness, deltaTime);
+        UpdateDriftFatigue(tightness, deltaTime);
+    }
+
+    private void ResetDriftRuntimeState()
+    {
+        wasDriftingLastFrame = false;
+
+        currentDriftDuration = 0f;
+        currentDriftFatigue = 0f;
+
+        tightDriftDipTimer = 0f;
+        tightDriftDipArmed = true;
+    }
+
+    private void UpdateTightDriftDip(float tightness, float deltaTime)
+    {
+        CartDriftFeelSettings driftFeel = GetDriftFeelSettings();
+
+        if (!driftFeel.enableTightDriftDip)
+        {
+            tightDriftDipTimer = 0f;
+            tightDriftDipArmed = true;
+            return;
+        }
+
+        // Re-arm only when the player returns to wide enough drift.
+        if (tightness <= driftFeel.tightDriftDipRearmTightness)
+            tightDriftDipArmed = true;
+
+        // Trigger the dip immediately when entering tight-drift range.
+        if (tightDriftDipArmed && tightness >= driftFeel.tightDriftDipTriggerTightness)
+        {
+            tightDriftDipTimer = driftFeel.tightDriftDipDuration;
+            tightDriftDipArmed = false;
+        }
+
+        if (tightDriftDipTimer > 0f)
+            tightDriftDipTimer = Mathf.Max(0f, tightDriftDipTimer - deltaTime);
+    }
+
+    private void UpdateDriftFatigue(float tightness, float deltaTime)
+    {
+        CartDriftFeelSettings driftFeel = GetDriftFeelSettings();
+
+        if (!driftFeel.enableDriftFatigueSpeedLoss)
+        {
+            currentDriftFatigue = 0f;
+            return;
+        }
+
+        float buildAmount = driftFeel.GetFatigueBuildAmount(tightness, deltaTime);
+        float recoverAmount = driftFeel.GetFatigueRecoverAmount(tightness, deltaTime);
+
+        currentDriftFatigue += buildAmount;
+        currentDriftFatigue -= recoverAmount;
+
+        currentDriftFatigue = Mathf.Clamp01(currentDriftFatigue);
+    }
+
+    private CartDriveMode ResolveDriveMode(bool isDrifting)
+    {
+        if (isDrifting)
+            return CartDriveMode.Drift;
+
+        bool isUsingFuelSpeedup =
             cartControlInput.IsSpeedingUp() &&
             cartControlInput.CanSpeedingUp();
 
-        if (isDrifting && blockSpeedUpInputWhileDrifting)
-            canUseSpeedUp = false;
+        if (isUsingFuelSpeedup)
+            return CartDriveMode.Speedup;
 
-        if (canUseSpeedUp)
-            targetSpeed = dynamicUpSpeed;
-        else
-            targetSpeed = baseSpeed;
+        return CartDriveMode.NormalDrive;
     }
-    void FixedUpdate()
+
+    private float ComputeTargetSpeed(CartDriveMode mode, float chainAdjustedBaseSpeed)
     {
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, -1 * transform.up, out hit, springRestLength + springRaycastExtraLength, layerMask))
+        switch (mode)
         {
-            // Initial Debug on if the raycast is correctly hitting something
-            // Debug.Log(gameObject.name + "hit" + hit.collider.gameObject.name);
-            isGrounded = true;
+            case CartDriveMode.Speedup:
+                return Mathf.Max(
+                    0f,
+                    chainAdjustedBaseSpeed + GetSpeedupAdditiveBonus()
+                );
 
-            #region Suspension System Code
+            case CartDriveMode.Drift:
+                return Mathf.Max(
+                    0f,
+                    ComputeDriftTargetSpeed(chainAdjustedBaseSpeed)
+                );
 
-            // Calculate the spring's upward direction (local up of the wheel).
-            springDirection = transform.up;
-
-            // Get the velocity of the wheel at its position.
-            wheelVelocity = cartBody.GetPointVelocity(transform.position);
-
-            // Project the wheel's velocity onto the spring direction.
-            float wheelVelOnSpringDir = Vector3.Dot(springDirection, wheelVelocity);
-
-            // Calculate the compression/extension offset of the spring.
-            float offset = springRestLength - hit.distance;
-
-            // Calculate the suspension force based on the spring compression and damping.
-            float force = (offset * springStrength) - (wheelVelOnSpringDir * springDamping);
-
-            // Apply the final suspension force upward at the wheel's position.
-            finalSuspensionForce = springDirection * force;
-            cartBody.AddForceAtPosition(finalSuspensionForce, transform.position);
-
-            #endregion
-
-            #region Steering System Code
-            
-                // Set right as the steering direction (lateral sliding axis).
-                steeringDirection = transform.right;
-
-                // Calculate the velocity of the wheel along the steering direction (sideways).
-                float lateralVel = Vector3.Dot(steeringDirection, wheelVelocity);
-                // Debug.Log(lateralVel);
-                // Normalize lateral velocity by max steering velocity
-                float normalizedLateralVelocity = Mathf.Clamp01(Mathf.Abs(lateralVel) / maxLateralVelocity);
-
-                // Evaluate grip factor from curve (0 = no grip, 1 = full grip)
-                float gripFactor = wheelGripCurve.Evaluate(normalizedLateralVelocity);
-                debugBaseGripFactor = gripFactor;
-
-                // Drift experiment:
-                // This multiplier only affects lateral correction force.
-                // It does not change wheel angle, suspension, or forward drive.
-                currentDriftGripMultiplier = GetDriftGripMultiplier();
-                gripFactor *= currentDriftGripMultiplier;
-
-                // Runtime debug values.
-                debugLateralVelocity = lateralVel;
-                debugNormalizedLateralVelocity = normalizedLateralVelocity;
-                debugFinalGripFactor = gripFactor;
-
-                // Calculate the desired velocity change to stop sliding.
-                float desiredVelChange = -1 * lateralVel * gripFactor;
-
-                // Calculate the acceleration needed to stop sliding within the fixed time step.
-                float desiredAccelration = desiredVelChange / Time.fixedDeltaTime;
-
-                // Apply the force to cancel sliding (F = m * a), in the direction opposite to sliding.
-                finalSteeringForce = steeringDirection * wheelMass * desiredAccelration;
-
-                debugSteeringForceMagnitude = finalSteeringForce.magnitude;
-
-                // Apply the force at the wheel's position to counteract the lateral sliding.
-                cartBody.AddForceAtPosition(finalSteeringForce, transform.position);
-
-                DebugDriftGrip(lateralVel, gripFactor);
-
-            #endregion
-
-            /*
-            #region Acceleration and Brake System
-
-            Vector3 accelDirection = transform.forward;
-            float cartSpeed = Vector3.Dot(cartBody.gameObject.transform.forward, cartBody.linearVelocity);
-            Vector3 desiredDirection = cartControlInput.desiredDirection;
-            if (desiredDirection.sqrMagnitude > 0.001f)
-            {
-                if (cartSpeed < regularMaxSpeed)
-                {
-                    float normalizedCartSpeed = Mathf.Clamp01(Mathf.Abs(cartSpeed) / regularMaxSpeed);
-                    float availableTorque = engineTorqueCurve.Evaluate(normalizedCartSpeed);
-                    cartBody.AddForceAtPosition(accelDirection * availableTorque * maxEngineTorque, transform.position);
-                }
-            }
-            else
-            {
-                Brake();
-            }
-            #endregion
-            */
-            #region Constant Forward Drive System
-
-            Vector3 accelDirection = transform.forward;
-            float cartSpeed = Vector3.Dot(cartBody.transform.forward, cartBody.linearVelocity);
-
-            // Always attempt to maintain targetSpeed if grounded
-            if (isGrounded)
-            {
-                float speedError = targetSpeed - cartSpeed;
-
-                if (speedError > 0.1f)
-                {
-                    float normalizedSpeed = Mathf.Clamp01(Mathf.Abs(cartSpeed) / targetSpeed);
-                    float availableTorque = engineTorqueCurve.Evaluate(normalizedSpeed);
-                    float acceleration = speedError / Time.fixedDeltaTime;
-
-                    float forceMag = Mathf.Min(acceleration * cartBody.mass, maxEngineTorque * availableTorque);
-                    Vector3 forwardForce = accelDirection * forceMag;
-
-                    cartBody.AddForceAtPosition(forwardForce, transform.position);
-                }
-            }
-            #endregion
-            // Brake the cart, slow to zero now
-            //if (isBraking)
-            //    Brake();
-        }
-        else
-        {
-            isGrounded = false;
+            default:
+                return Mathf.Max(0f, chainAdjustedBaseSpeed);
         }
     }
+
+    private float ComputeDriftTargetSpeed(float chainAdjustedBaseSpeed)
+    {
+        CartDriftFeelSettings driftFeel = GetDriftFeelSettings();
+
+        float finalMultiplier = 1f;
+
+        // Tight drift dip.
+        // This is not tied only to drift start. It triggers whenever the player
+        // crosses into tight-drift range after being wide enough to re-arm.
+        if (tightDriftDipTimer > 0f)
+            finalMultiplier *= driftFeel.tightDriftDipMultiplier;
+
+        // Recoverable fatigue.
+        // Tight drifting builds fatigue. Wide drifting recovers fatigue.
+        finalMultiplier *= driftFeel.GetFatigueSpeedMultiplier(currentDriftFatigue);
+
+        return chainAdjustedBaseSpeed * finalMultiplier;
+    }
+
+    private CartMovementModeSettings GetModeSettings(CartDriveMode mode)
+    {
+        if (movementProfile != null)
+            return movementProfile.GetSettings(mode);
+
+        // Fallback keeps the cart usable if the profile is missing.
+        switch (mode)
+        {
+            case CartDriveMode.Drift:
+                return CartMovementModeSettings.CreateDrift();
+
+            case CartDriveMode.Speedup:
+                return CartMovementModeSettings.CreateSpeedup();
+
+            default:
+                return CartMovementModeSettings.CreateNormalDrive();
+        }
+    }
+
+    private CartDriftFeelSettings GetDriftFeelSettings()
+    {
+        if (movementProfile != null && movementProfile.driftFeel != null)
+            return movementProfile.driftFeel;
+
+        return CartDriftFeelSettings.CreateDefault();
+    }
+
+    #endregion
+
+    #region Suspension
+
+    private void ApplySuspension(RaycastHit hit)
+    {
+        // The spring pushes along this wheel object's local up direction.
+        springDirection = transform.up;
+
+        // Velocity of the rigidbody at this wheel position.
+        wheelVelocity = cartBody.GetPointVelocity(transform.position);
+
+        // Velocity along the suspension direction.
+        float wheelVelOnSpringDir = Vector3.Dot(springDirection, wheelVelocity);
+
+        // Spring compression amount.
+        float offset = springRestLength - hit.distance;
+
+        // Hooke-style spring force with damping.
+        float force = (offset * springStrength) - (wheelVelOnSpringDir * springDamping);
+
+        Vector3 suspensionForce = springDirection * force;
+        cartBody.AddForceAtPosition(suspensionForce, transform.position);
+    }
+
+    #endregion
+
+    #region Lateral Grip / Steering Counter-Force
+
+    private void ApplyLateralGrip()
+    {
+        // The wheel's local right axis is the lateral sliding axis.
+        steeringDirection = transform.right;
+
+        // Sideways velocity at this wheel.
+        float lateralVel = Vector3.Dot(steeringDirection, wheelVelocity);
+
+        // Normalize lateral velocity and evaluate grip curve.
+        float normalizedLateralVelocity =
+            Mathf.Clamp01(Mathf.Abs(lateralVel) / maxLateralVelocity);
+
+        float gripFactor = wheelGripCurve.Evaluate(normalizedLateralVelocity);
+
+        // Desired change to cancel lateral sliding.
+        float desiredVelChange = -lateralVel * gripFactor;
+
+        // Required acceleration over this fixed step.
+        float desiredAcceleration = desiredVelChange / Time.fixedDeltaTime;
+
+        // F = m * a
+        Vector3 steeringForce = steeringDirection * wheelMass * desiredAcceleration;
+
+        // Apply the original full lateral counter-force.
+        // Do not modify this for speed scrub, because this force is also what gives
+        // the cart its current sharp turning behavior.
+        cartBody.AddForceAtPosition(steeringForce, transform.position);
+    }
+
+    #endregion
+
+    #region Forward Drive
+
+    private void ApplyForwardDrive()
+    {
+        if (!isGrounded)
+            return;
+
+        if (targetSpeed <= 0.01f)
+            return;
+
+        Vector3 accelDirection = transform.forward;
+        float cartForwardSpeed = Vector3.Dot(cartBody.transform.forward, cartBody.linearVelocity);
+
+        float speedError = targetSpeed - cartForwardSpeed;
+
+        if (speedError <= 0.1f)
+            return;
+
+        float normalizedSpeed = Mathf.Clamp01(Mathf.Abs(cartForwardSpeed) / targetSpeed);
+        float availableTorque = engineTorqueCurve.Evaluate(normalizedSpeed);
+
+        float acceleration = speedError / Time.fixedDeltaTime;
+
+        float forceCap =
+            maxEngineTorque *
+            availableTorque *
+            GetTurnAssistTorqueMultiplier();
+
+        float forceMagnitude = Mathf.Min(acceleration * cartBody.mass, forceCap);
+        Vector3 forwardForce = accelDirection * forceMagnitude;
+
+        cartBody.AddForceAtPosition(forwardForce, transform.position);
+    }
+
+    private float GetTurnAssistTorqueMultiplier()
+    {
+        CartMovementModeSettings settings = GetModeSettings(currentDriveMode);
+
+        if (!settings.enableTurnSpeedAssist)
+            return 1f;
+
+        float requestedTurnAngle = GetRequestedTurnAngleForCurrentMode();
+        float referenceAngle = Mathf.Max(1f, settings.turnAssistReferenceAngle);
+
+        float normalizedTurnIntensity = Mathf.Clamp01(requestedTurnAngle / referenceAngle);
+
+        return settings.GetTurnAssistTorqueMultiplier(normalizedTurnIntensity);
+    }
+
+    private float GetRequestedTurnAngleForCurrentMode()
+    {
+        if (currentDriveMode == CartDriveMode.Drift &&
+            driftController != null &&
+            driftController.IsDrifting)
+        {
+            // Drift steering output is already the requested drift wheel angle.
+            return Mathf.Abs(driftController.DriftSteeringAngle);
+        }
+
+        if (cartControlInput == null)
+            return 0f;
+
+        Vector3 desiredDirection = cartControlInput.desiredDirection;
+
+        if (desiredDirection.sqrMagnitude < 0.001f)
+            return 0f;
+
+        Vector3 cartForward = Vector3.ProjectOnPlane(cartBody.transform.forward, Vector3.up);
+
+        if (cartForward.sqrMagnitude < 0.001f)
+            return 0f;
+
+        cartForward.Normalize();
+        desiredDirection = Vector3.ProjectOnPlane(desiredDirection, Vector3.up).normalized;
+
+        return Mathf.Abs(
+            Vector3.SignedAngle(cartForward, desiredDirection, Vector3.up)
+        );
+    }
+
+    #endregion
+
+    #region Powerup Boost
+
     public void StartBoost()
     {
-        if (blockBoostAbilityWhileDrifting && driftController != null && driftController.IsDrifting)
-        {
-            if (debugDriftFail)
-                Debug.Log("[LeadingCartBehaviour] Boost ignored because cart is drifting.");
-
+        if (ShouldBlockPowerupBoostWhileDrifting())
             return;
-        }
 
         cartControlInput.DisallowFlip();
 
         if (!isBoosting)
-            StartCoroutine(BoostCoroutine());
+            boostRoutine = StartCoroutine(BoostCoroutine());
     }
-    private void CancelBoost(string reason)
-    {
-        if (!isBoosting)
-            return;
 
-        StopAllCoroutines();
-
-        isBoosting = false;
-        cartControlInput.EnableControl();
-        cartControlInput.DisallowFlip();
-
-        if (debugDriftFail)
-            Debug.Log($"[LeadingCartBehaviour] Boost cancelled: {reason}");
-    }
     private IEnumerator BoostCoroutine()
     {
         isBoosting = true;
@@ -355,24 +562,35 @@ public class LeadingCartBehaviour : MonoBehaviour
         float originalSpeed = targetSpeed;
         float timeElapsed = 0f;
 
-        // Step 1: Ramp up to boostedSpeed
+        // Step 1: Ramp up to boostedSpeed.
         while (timeElapsed < boostDuration * 0.25f)
         {
-            targetSpeed = Mathf.Lerp(originalSpeed, boostedSpeed, timeElapsed / (boostDuration * 0.25f));
+            targetSpeed = Mathf.Lerp(
+                originalSpeed,
+                boostedSpeed,
+                timeElapsed / (boostDuration * 0.25f)
+            );
+
             timeElapsed += Time.deltaTime;
             yield return null;
         }
 
         targetSpeed = boostedSpeed;
 
-        // Step 2: Hold boosted speed
+        // Step 2: Hold boosted speed.
         yield return new WaitForSeconds(boostDuration * 0.5f);
 
-        // Step 3: Ramp down
+        // Step 3: Ramp back down.
         timeElapsed = 0f;
+
         while (timeElapsed < boostDuration * 0.25f)
         {
-            targetSpeed = Mathf.Lerp(boostedSpeed, originalSpeed, timeElapsed / (boostDuration * 0.25f));
+            targetSpeed = Mathf.Lerp(
+                boostedSpeed,
+                originalSpeed,
+                timeElapsed / (boostDuration * 0.25f)
+            );
+
             timeElapsed += Time.deltaTime;
             yield return null;
         }
@@ -380,84 +598,132 @@ public class LeadingCartBehaviour : MonoBehaviour
         targetSpeed = originalSpeed;
         cartControlInput.EnableControl();
         cartControlInput.DisallowFlip();
+
         isBoosting = false;
+        boostRoutine = null;
     }
+
+    private void CancelBoost()
+    {
+        if (!isBoosting)
+            return;
+
+        if (boostRoutine != null)
+            StopCoroutine(boostRoutine);
+
+        boostRoutine = null;
+        isBoosting = false;
+
+        cartControlInput.EnableControl();
+        cartControlInput.DisallowFlip();
+    }
+
+    private bool ShouldBlockPowerupBoostWhileDrifting()
+    {
+        if (movementProfile == null)
+            return false;
+
+        return
+            movementProfile.blockPowerupBoostWhileDrifting &&
+            driftController != null &&
+            driftController.IsDrifting;
+    }
+
+    private bool ShouldCancelPowerupBoostWhenDrifting()
+    {
+        if (movementProfile == null)
+            return true;
+
+        return movementProfile.cancelPowerupBoostWhenDriftStarts;
+    }
+
+    #endregion
+
+    #region Brake / Reset / Stop
 
     public void Brake()
     {
-        if (isGrounded)
-        {
-            Vector3 accelDirection = transform.forward;
-            float cartSpeed = Vector3.Dot(cartBody.gameObject.transform.forward, cartBody.linearVelocity);
+        if (!isGrounded)
+            return;
 
-            if (cartSpeed > minSpeed)
-            {
-                float desiredBrakeVelChange = -cartSpeed * brakeFactor;
-                float desiredBrakeAcceleration = desiredBrakeVelChange / Time.fixedDeltaTime;
-                float brakeForceMagnitude = Mathf.Min(Mathf.Abs(desiredBrakeAcceleration * cartBody.mass), maxBrakeForce);
+        Vector3 accelDirection = transform.forward;
+        float cartSpeed = Vector3.Dot(cartBody.transform.forward, cartBody.linearVelocity);
 
-                Vector3 finalBrakeForce = -accelDirection * brakeForceMagnitude;
-                cartBody.AddForceAtPosition(finalBrakeForce, transform.position);
-            }
-        }
+        if (cartSpeed <= minSpeed)
+            return;
+
+        float desiredBrakeVelChange = -cartSpeed * brakeFactor;
+        float desiredBrakeAcceleration = desiredBrakeVelChange / Time.fixedDeltaTime;
+        float brakeForceMagnitude =
+            Mathf.Min(Mathf.Abs(desiredBrakeAcceleration * cartBody.mass), maxBrakeForce);
+
+        Vector3 brakeForce = -accelDirection * brakeForceMagnitude;
+        cartBody.AddForceAtPosition(brakeForce, transform.position);
     }
 
     public void Reset()
     {
-        // Debug.Log("attempt to flip the cart");
         disableDetachEvent.Raise();
+
         cartControlInput.DisallowFlip();
         cartControlInput.AllowActivatePowerUp();
-        Vector3 desiredFacingDirection = -1 * cartBody.gameObject.transform.forward;
-        cartBody.gameObject.transform.rotation = Quaternion.LookRotation(desiredFacingDirection);
 
+        Vector3 desiredFacingDirection = -cartBody.transform.forward;
+        cartBody.transform.rotation = Quaternion.LookRotation(desiredFacingDirection);
     }
-    private float ComputeBaseSpeed(int carts)
-    {
-        if (carts <= fullSpeedUntilCarts)
-            return fullSpeed;
 
-        float raw = fullSpeed - speedLossPerCart * (carts - fullSpeedUntilCarts);
-        return Mathf.Max(minBaseSpeed, raw);
-    }
     public void SetSpeedToZero(float duration)
     {
         InterruptDriftFromCrash("SetSpeedToZero duration");
 
         isStopping = true;
-        cacheSpeed = targetSpeed;
         targetSpeed = 0f;
-        Vector3 knockbackDir = -cartBody.linearVelocity.normalized;
-        float knockbackForce = 200f; // Make this punchy
 
-        // Instant stop
+        Vector3 knockbackDir = GetSafeKnockbackDirection();
+        float knockbackForce = 200f;
+
+        // Instant stop.
         cartBody.linearVelocity = Vector3.zero;
 
-        // Apply force at the offset point
-        cartBody.AddForceAtPosition(knockbackDir * knockbackForce, transform.position, ForceMode.Impulse);
+        // Apply a small punch back from the collision/stopping direction.
+        cartBody.AddForceAtPosition(
+            knockbackDir * knockbackForce,
+            transform.position,
+            ForceMode.Impulse
+        );
+
         Invoke(nameof(ResetSpeed), duration);
     }
-    
+
     public void SetSpeedToZero()
     {
-        InterruptDriftFromCrash("SetSpeedToZero duration");
+        InterruptDriftFromCrash("SetSpeedToZero");
 
         isStopping = true;
-        cacheSpeed = targetSpeed;
         targetSpeed = 0f;
         cartBody.linearVelocity = Vector3.zero;
     }
+
     public void ResetSpeed()
     {
         isStopping = false;
         isBoosting = false;
-        //Debug.Log("ResetSpeed executed");
-        //targetSpeed = 20f;
-        //cartControlInput.AllowBoost();
+        boostRoutine = null;
     }
+
+    private Vector3 GetSafeKnockbackDirection()
+    {
+        Vector3 velocity = cartBody.linearVelocity;
+
+        if (velocity.sqrMagnitude > 0.001f)
+            return -velocity.normalized;
+
+        return -cartBody.transform.forward;
+    }
+
     private void InterruptDriftFromCrash(string reason)
     {
-        if (!interruptDriftWhenSetSpeedToZero)
+        if (!ShouldInterruptDriftWhenSetSpeedToZero())
             return;
 
         if (driftController == null)
@@ -467,105 +733,76 @@ public class LeadingCartBehaviour : MonoBehaviour
             return;
 
         driftController.InterruptDrift(reason);
-
-        if (debugDriftFail)
-            Debug.Log($"[LeadingCartBehaviour] Drift failed/interrupted: {reason}");
     }
+
+    private bool ShouldInterruptDriftWhenSetSpeedToZero()
+    {
+        if (movementProfile == null)
+            return true;
+
+        return movementProfile.interruptDriftWhenSetSpeedToZero;
+    }
+
+    #endregion
+
+    #region Chain-Length Speed Penalty
+
+    private float ComputeChainAdjustedBaseSpeed()
+    {
+        int carts = GetEffectiveCartCount();
+
+        float profileBaseSpeed = GetProfileBaseSpeed();
+        float profileMinimumBaseSpeed = GetProfileMinimumBaseSpeed();
+
+        if (carts <= fullSpeedUntilCarts)
+            return profileBaseSpeed;
+
+        float rawSpeed =
+            profileBaseSpeed -
+            speedLossPerCart * (carts - fullSpeedUntilCarts);
+
+        return Mathf.Max(profileMinimumBaseSpeed, rawSpeed);
+    }
+
     private int GetEffectiveCartCount()
     {
-        if (!snakeCartManager) return 0;
+        if (!snakeCartManager)
+            return 0;
 
-        int count = snakeCartManager.GetSnakeBodyLength(); // includes leading cart
+        int count = snakeCartManager.GetSnakeBodyLength();
+
         if (excludeLeadingCartFromCount)
             count = Mathf.Max(0, count - 1);
 
         return count;
     }
-    private float GetDriftGripMultiplier()
-    {
-        if (!enableDriftGripExperiment)
-            return 1f;
 
+    #endregion
+
+    #region Profile Fallbacks
+
+    private float GetProfileBaseSpeed()
+    {
+        return movementProfile != null ? movementProfile.baseSpeed : 20f;
+    }
+
+    private float GetProfileMinimumBaseSpeed()
+    {
+        return movementProfile != null ? movementProfile.minimumBaseSpeed : 10f;
+    }
+
+    private float GetSpeedupAdditiveBonus()
+    {
+        return movementProfile != null ? movementProfile.speedupAdditiveBonus : 5f;
+    }
+
+    private float GetDriftTightness()
+    {
         if (driftController == null || !driftController.IsDrifting)
-            return 1f;
+            return 0f;
 
-        float targetMultiplier;
-
-        if (wheelRole == WheelRole.Front)
-        {
-            targetMultiplier = frontDriftGripMultiplier;
-        }
-        else
-        {
-            float tightness = Mathf.Clamp01(driftController.CurrentTightness);
-
-            targetMultiplier = Mathf.Lerp(
-                rearGripAtWideDrift,
-                rearGripAtTightDrift,
-                tightness
-            );
-        }
-
-        // Safety blend:
-        // 0 influence = original grip
-        // 1 influence = full drift multiplier
-        return Mathf.Lerp(1f, targetMultiplier, driftGripInfluence);
+        return Mathf.Clamp01(driftController.CurrentTightness);
     }
-    private float GetDriftTargetSpeed(float baseSpeed)
-    {
-        if (useFixedDriftSpeed)
-            return fixedDriftSpeed;
 
-        return baseSpeed * driftSpeedMultiplier;
-    }
-    private void DebugDriftGrip(float lateralVel, float finalGripFactor)
-    {
-        if (!debugDriftGrip)
-            return;
-
-        if (driftController == null || !driftController.IsDrifting)
-            return;
-
-        driftGripDebugTimer += Time.fixedDeltaTime;
-
-        if (driftGripDebugTimer < debugDriftGripLogInterval)
-            return;
-
-        driftGripDebugTimer = 0f;
-
-        Debug.Log(
-            $"[Drift Grip Experiment] {gameObject.name} | " +
-            $"role: {wheelRole}, " +
-            $"tightness: {driftController.CurrentTightness:F2}, " +
-            $"multiplier: {currentDriftGripMultiplier:F2}, " +
-            $"lateralVel: {lateralVel:F2}, " +
-            $"finalGripFactor: {finalGripFactor:F2}"
-        );
-    }
-    void OnDrawGizmos()
-    {
-        // Calculate the RayStartPosition in OnDrawGizmos so it updates in the editor
-        // rayStartPosition = transform.TransformPoint(new Vector3(xAxisOffset, yAxisOffset, zAxisOffset));
-
-        //  Draw the length of the spring
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawRay(transform.position + new Vector3(0.1f, 0, 0), -1 * transform.up * springRestLength);
-        Gizmos.color = Color.blue;
-        Gizmos.DrawSphere(rayStartPosition, 0.015f);
-        Gizmos.DrawRay(transform.position, -1 * transform.up * (springRestLength + springRaycastExtraLength));
-        // Gizmos.color = Color.gray;
-        // Gizmos.DrawRay(transform.position, transform.right * 0.35f);
-        // Visualize the force direction and magnitude
-        if (Application.isPlaying) // Only draw the force vector during play mode
-        {
-            Gizmos.color = Color.green;
-            // Scale the force vector for visualization
-            float forceVisualizationScale = 0.001f; // Adjust this value to make the force more or less visible
-            Gizmos.DrawRay(transform.position, finalSuspensionForce * forceVisualizationScale);
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawRay(transform.position, finalSteeringForce);
-            Gizmos.color = Color.black;
-            Gizmos.DrawRay(transform.position, finalBrakeForce);
-        }
-    }
+    #endregion
 }
