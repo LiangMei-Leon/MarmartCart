@@ -1712,6 +1712,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cartControlInput: {fileID: 8217884270544574180}
   cartBody: {fileID: 4657918851737140441}
+  movementProfile: {fileID: 0}
+  driftController: {fileID: 0}
+  snakeCartManager: {fileID: 0}
   layerMask:
     serializedVersion: 2
     m_Bits: 64
@@ -1779,19 +1782,12 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   maxEngineTorque: 100
-  thresholdSpeed: 0.1
-  regularMaxSpeed: 20
+  targetSpeed: 20
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  targetSpeed: 20
-  upSpeed: 25
-  snakeCartManager: {fileID: 0}
   fullSpeedUntilCarts: 5
-  fullSpeed: 25
   speedLossPerCart: 0.3
-  minBaseSpeed: 15
-  upSpeedBonus: 5
   excludeLeadingCartFromCount: 1
   boostedSpeed: 27.5
   boostDuration: 1.25
@@ -1994,6 +1990,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cartControlInput: {fileID: 8217884270544574180}
   cartBody: {fileID: 4657918851737140441}
+  movementProfile: {fileID: 0}
+  driftController: {fileID: 0}
+  snakeCartManager: {fileID: 0}
   layerMask:
     serializedVersion: 2
     m_Bits: 64
@@ -2061,19 +2060,12 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   maxEngineTorque: 100
-  thresholdSpeed: 0.1
-  regularMaxSpeed: 20
+  targetSpeed: 20
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  targetSpeed: 20
-  upSpeed: 25
-  snakeCartManager: {fileID: 0}
   fullSpeedUntilCarts: 5
-  fullSpeed: 25
   speedLossPerCart: 0.3
-  minBaseSpeed: 15
-  upSpeedBonus: 5
   excludeLeadingCartFromCount: 1
   boostedSpeed: 27.5
   boostDuration: 1.25
@@ -2858,6 +2850,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0693562bac5d814abfcb8fb90a990de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  canDrift: 1
+  prototypeSteerDeadzone: 0.15
+  driftController: {fileID: 0}
+  enableDriftSpeedupOverride: 1
+  debugDriftSpeedupOverride: 0
   controllable: 1
   isInPit: 0
   boostEvent: {fileID: 11400000, guid: b763a5ca8cf6a4f45ae127c5fc7f6629, type: 2}
@@ -2889,6 +2886,14 @@ MonoBehaviour:
   - {fileID: 2937625834076403769}
   maxRotationAngle: 90
   rotationSpeed: 120
+  enablePrototypeLeftRightSteering: 0
+  prototypeMaxSteerAngle: 35
+  prototypeSteerDegreesPerSecond: 180
+  debugPrototypeSteering: 0
+  enableCameraMappedDriftSteering: 1
+  driftController: {fileID: 0}
+  driftSteerDegreesPerSecond: 220
+  debugDriftSteering: 0
 --- !u!114 &357763201747243696
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3088,7 +3093,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -38.4, y: 2.65, z: -487.1}
-  m_LocalScale: {x: 5, y: 5, z: 5}
+  m_LocalScale: {x: 6, y: 6, z: 6}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 8527454712530326416}
@@ -3186,6 +3191,9 @@ MonoBehaviour:
   raycastYOffset: -0.6
   raycastZOffset: 1.2
   <hitDirection>k__BackingField: {x: 0, y: 0, z: 0}
+  driftController: {fileID: 0}
+  interruptDriftOnCrash: 1
+  debugDriftInterrupt: 1
   detachCooldown: 1.25
   cooldownTimer: 0
   disableDetachEvent: {fileID: 11400000, guid: 9577c87a5470ba24bb0b52c553553622, type: 2}
@@ -3284,6 +3292,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cartControlInput: {fileID: 8217884270544574180}
   cartBody: {fileID: 4657918851737140441}
+  movementProfile: {fileID: 0}
+  driftController: {fileID: 0}
+  snakeCartManager: {fileID: 0}
   layerMask:
     serializedVersion: 2
     m_Bits: 64
@@ -3351,19 +3362,12 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   maxEngineTorque: 100
-  thresholdSpeed: 0.1
-  regularMaxSpeed: 20
+  targetSpeed: 20
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  targetSpeed: 20
-  upSpeed: 25
-  snakeCartManager: {fileID: 0}
   fullSpeedUntilCarts: 5
-  fullSpeed: 25
   speedLossPerCart: 0.3
-  minBaseSpeed: 15
-  upSpeedBonus: 5
   excludeLeadingCartFromCount: 1
   boostedSpeed: 27.5
   boostDuration: 1.25
@@ -3714,6 +3718,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cartControlInput: {fileID: 8217884270544574180}
   cartBody: {fileID: 4657918851737140441}
+  movementProfile: {fileID: 0}
+  driftController: {fileID: 0}
+  snakeCartManager: {fileID: 0}
   layerMask:
     serializedVersion: 2
     m_Bits: 64
@@ -3781,19 +3788,12 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   maxEngineTorque: 100
-  thresholdSpeed: 0.1
-  regularMaxSpeed: 20
+  targetSpeed: 20
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  targetSpeed: 20
-  upSpeed: 25
-  snakeCartManager: {fileID: 0}
   fullSpeedUntilCarts: 5
-  fullSpeed: 25
   speedLossPerCart: 0.3
-  minBaseSpeed: 15
-  upSpeedBonus: 5
   excludeLeadingCartFromCount: 1
   boostedSpeed: 27.5
   boostDuration: 1.25
@@ -4350,7 +4350,14 @@ MonoBehaviour:
   cartController: {fileID: 8217884270544574180}
   flipPrompt: {fileID: 8477537442354830664}
   speedUpFillImage: {fileID: 6279572121305034653}
+  speedUpPendingFillImage: {fileID: 0}
   desiredMaxFill: 0.5
+  driftFuelReward: {fileID: 0}
+  animateRealFuelFill: 1
+  realFuelFillLerpSpeed: 12
+  animatePendingFuelFill: 1
+  pendingFuelFillLerpSpeed: 16
+  keepPendingImageVisibleWhenEmpty: 0
 --- !u!1 &8431589685750026701
 GameObject:
   m_ObjectHideFlags: 0

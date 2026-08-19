@@ -3241,6 +3241,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cartControlInput: {fileID: 8217884270544574180}
   cartBody: {fileID: 4657918851737140441}
+  movementProfile: {fileID: 0}
+  driftController: {fileID: 5019224781660704407}
+  snakeCartManager: {fileID: 0}
   layerMask:
     serializedVersion: 2
     m_Bits: 64
@@ -3274,15 +3277,6 @@ MonoBehaviour:
     m_RotationOrder: 4
   maxLateralVelocity: 20
   wheelMass: 1
-  driftController: {fileID: 5019224781660704407}
-  wheelRole: 0
-  enableDriftGripExperiment: 0
-  driftGripInfluence: 0
-  frontDriftGripMultiplier: 1
-  rearGripAtWideDrift: 0.55
-  rearGripAtTightDrift: 0.75
-  debugDriftGrip: 0
-  debugDriftGripLogInterval: 0.35
   engineTorqueCurve:
     serializedVersion: 2
     m_Curve:
@@ -3317,35 +3311,18 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   maxEngineTorque: 100
-  thresholdSpeed: 0.1
-  regularMaxSpeed: 20
+  targetSpeed: 20
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  targetSpeed: 20
-  upSpeed: 25
-  snakeCartManager: {fileID: 0}
   fullSpeedUntilCarts: 5
-  fullSpeed: 20
   speedLossPerCart: 0.3
-  minBaseSpeed: 15
-  upSpeedBonus: 5
   excludeLeadingCartFromCount: 1
   boostedSpeed: 27.5
   boostDuration: 1.25
   speedLerpRate: 50
   isBoosting: 0
-  enableDriftSpeedOverride: 1
-  useFixedDriftSpeed: 0
-  fixedDriftSpeed: 17
-  driftSpeedMultiplier: 0.85
-  blockSpeedUpInputWhileDrifting: 1
-  blockBoostAbilityWhileDrifting: 1
-  cancelBoostWhenDriftStarts: 1
-  interruptDriftWhenSetSpeedToZero: 1
-  debugDriftFail: 1
   disableDetachEvent: {fileID: 11400000, guid: 87a9fb9219fdbba4ea0baff15a1c840a, type: 2}
-  debugWheelName: Wheel
 --- !u!1 &4262975068530280116
 GameObject:
   m_ObjectHideFlags: 0
@@ -3753,6 +3730,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cartControlInput: {fileID: 8217884270544574180}
   cartBody: {fileID: 4657918851737140441}
+  movementProfile: {fileID: 0}
+  driftController: {fileID: 5019224781660704407}
+  snakeCartManager: {fileID: 0}
   layerMask:
     serializedVersion: 2
     m_Bits: 64
@@ -3786,15 +3766,6 @@ MonoBehaviour:
     m_RotationOrder: 4
   maxLateralVelocity: 20
   wheelMass: 1
-  driftController: {fileID: 5019224781660704407}
-  wheelRole: 0
-  enableDriftGripExperiment: 0
-  driftGripInfluence: 0
-  frontDriftGripMultiplier: 1
-  rearGripAtWideDrift: 0.55
-  rearGripAtTightDrift: 0.75
-  debugDriftGrip: 0
-  debugDriftGripLogInterval: 0.35
   engineTorqueCurve:
     serializedVersion: 2
     m_Curve:
@@ -3829,35 +3800,18 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   maxEngineTorque: 100
-  thresholdSpeed: 0.1
-  regularMaxSpeed: 20
+  targetSpeed: 20
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  targetSpeed: 20
-  upSpeed: 25
-  snakeCartManager: {fileID: 0}
   fullSpeedUntilCarts: 5
-  fullSpeed: 20
   speedLossPerCart: 0.3
-  minBaseSpeed: 15
-  upSpeedBonus: 5
   excludeLeadingCartFromCount: 1
   boostedSpeed: 27.5
   boostDuration: 1.25
   speedLerpRate: 50
   isBoosting: 0
-  enableDriftSpeedOverride: 1
-  useFixedDriftSpeed: 0
-  fixedDriftSpeed: 17
-  driftSpeedMultiplier: 0.85
-  blockSpeedUpInputWhileDrifting: 1
-  blockBoostAbilityWhileDrifting: 1
-  cancelBoostWhenDriftStarts: 1
-  interruptDriftWhenSetSpeedToZero: 1
-  debugDriftFail: 1
   disableDetachEvent: {fileID: 11400000, guid: 87a9fb9219fdbba4ea0baff15a1c840a, type: 2}
-  debugWheelName: Wheel
 --- !u!1 &4787562550691839643
 GameObject:
   m_ObjectHideFlags: 0
@@ -5581,7 +5535,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -38.4, y: 2.65, z: -487.1}
-  m_LocalScale: {x: 5, y: 5, z: 5}
+  m_LocalScale: {x: 6, y: 6, z: 6}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 8527454712530326416}
@@ -5856,6 +5810,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cartControlInput: {fileID: 8217884270544574180}
   cartBody: {fileID: 4657918851737140441}
+  movementProfile: {fileID: 0}
+  driftController: {fileID: 5019224781660704407}
+  snakeCartManager: {fileID: 0}
   layerMask:
     serializedVersion: 2
     m_Bits: 64
@@ -5889,15 +5846,6 @@ MonoBehaviour:
     m_RotationOrder: 4
   maxLateralVelocity: 20
   wheelMass: 1
-  driftController: {fileID: 5019224781660704407}
-  wheelRole: 0
-  enableDriftGripExperiment: 0
-  driftGripInfluence: 0
-  frontDriftGripMultiplier: 1
-  rearGripAtWideDrift: 0.55
-  rearGripAtTightDrift: 0.75
-  debugDriftGrip: 0
-  debugDriftGripLogInterval: 0.35
   engineTorqueCurve:
     serializedVersion: 2
     m_Curve:
@@ -5932,35 +5880,18 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   maxEngineTorque: 100
-  thresholdSpeed: 0.1
-  regularMaxSpeed: 20
+  targetSpeed: 20
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  targetSpeed: 20
-  upSpeed: 25
-  snakeCartManager: {fileID: 0}
   fullSpeedUntilCarts: 5
-  fullSpeed: 20
   speedLossPerCart: 0.3
-  minBaseSpeed: 15
-  upSpeedBonus: 5
   excludeLeadingCartFromCount: 1
   boostedSpeed: 27.5
   boostDuration: 1.25
   speedLerpRate: 50
   isBoosting: 0
-  enableDriftSpeedOverride: 1
-  useFixedDriftSpeed: 0
-  fixedDriftSpeed: 17
-  driftSpeedMultiplier: 0.85
-  blockSpeedUpInputWhileDrifting: 1
-  blockBoostAbilityWhileDrifting: 1
-  cancelBoostWhenDriftStarts: 1
-  interruptDriftWhenSetSpeedToZero: 1
-  debugDriftFail: 1
   disableDetachEvent: {fileID: 11400000, guid: 87a9fb9219fdbba4ea0baff15a1c840a, type: 2}
-  debugWheelName: Wheel
 --- !u!1 &6747082928034111428
 GameObject:
   m_ObjectHideFlags: 0
@@ -6544,6 +6475,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cartControlInput: {fileID: 8217884270544574180}
   cartBody: {fileID: 4657918851737140441}
+  movementProfile: {fileID: 0}
+  driftController: {fileID: 5019224781660704407}
+  snakeCartManager: {fileID: 0}
   layerMask:
     serializedVersion: 2
     m_Bits: 64
@@ -6577,15 +6511,6 @@ MonoBehaviour:
     m_RotationOrder: 4
   maxLateralVelocity: 20
   wheelMass: 1
-  driftController: {fileID: 5019224781660704407}
-  wheelRole: 0
-  enableDriftGripExperiment: 0
-  driftGripInfluence: 0
-  frontDriftGripMultiplier: 1
-  rearGripAtWideDrift: 0.55
-  rearGripAtTightDrift: 0.75
-  debugDriftGrip: 0
-  debugDriftGripLogInterval: 0.35
   engineTorqueCurve:
     serializedVersion: 2
     m_Curve:
@@ -6620,35 +6545,18 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   maxEngineTorque: 100
-  thresholdSpeed: 0.1
-  regularMaxSpeed: 20
+  targetSpeed: 20
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  targetSpeed: 20
-  upSpeed: 25
-  snakeCartManager: {fileID: 0}
   fullSpeedUntilCarts: 5
-  fullSpeed: 20
   speedLossPerCart: 0.3
-  minBaseSpeed: 15
-  upSpeedBonus: 5
   excludeLeadingCartFromCount: 1
   boostedSpeed: 27.5
   boostDuration: 1.25
   speedLerpRate: 50
   isBoosting: 0
-  enableDriftSpeedOverride: 1
-  useFixedDriftSpeed: 0
-  fixedDriftSpeed: 17
-  driftSpeedMultiplier: 0.85
-  blockSpeedUpInputWhileDrifting: 1
-  blockBoostAbilityWhileDrifting: 1
-  cancelBoostWhenDriftStarts: 1
-  interruptDriftWhenSetSpeedToZero: 1
-  debugDriftFail: 1
   disableDetachEvent: {fileID: 11400000, guid: 87a9fb9219fdbba4ea0baff15a1c840a, type: 2}
-  debugWheelName: Wheel
 --- !u!1 &7545704361287823023
 GameObject:
   m_ObjectHideFlags: 0
