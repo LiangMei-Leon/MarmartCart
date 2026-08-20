@@ -22,7 +22,7 @@ MonoBehaviour:
     maxTurnAssistTorqueMultiplier: 0.5
   drift:
     enableTurnSpeedAssist: 1
-    turnAssistReferenceAngle: 30
+    turnAssistReferenceAngle: 60
     turnAssistStartIntensity: 0
     maxTurnAssistTorqueMultiplier: 1.5
   speedup:
