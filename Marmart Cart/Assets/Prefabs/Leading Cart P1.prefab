@@ -4905,7 +4905,7 @@ MonoBehaviour:
   cartControlInput: {fileID: 8217884270544574180}
   driftController: {fileID: 7762128806167645806}
   cartBody: {fileID: 4657918851737140441}
-  showDebug: 1
+  showDebug: 0
   showCurrentInputLine: 1
   showPathDirectionLine: 1
   showEntryInputLine: 0

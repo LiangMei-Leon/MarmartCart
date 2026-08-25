@@ -23,6 +23,7 @@ public class LeadingCartBehaviour : MonoBehaviour
 
     [Tooltip("Main rigidbody of the leading cart.")]
     [SerializeField] private Rigidbody cartBody;
+    public Rigidbody CartBody => cartBody;
 
     [Tooltip("Shared movement tuning asset for Drive / Drift / Speedup.")]
     [SerializeField] private CartMovementProfile movementProfile;

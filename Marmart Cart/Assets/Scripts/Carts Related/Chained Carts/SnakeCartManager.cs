@@ -8,6 +8,9 @@ using UnityEngine.SceneManagement;
 
 public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 {
+    [Header("Distance Path System")]
+    [SerializeField] private SnakePathHistory pathHistory;
+
     [SerializeField] float distanceBetween = 0.2f; // The spawn rate time difference that creates an illusion of distance in between snake bodies
     //[SerializeField] float cartSpacing = 1f; // world space units
 
@@ -35,6 +38,15 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 
     [SerializeField] private int numOfCartsWithGroceryItem = 0;
     [SerializeField] private SfxManager sfxManager;
+
+    private void Awake()
+    {
+        if (pathHistory == null)
+            pathHistory = GetComponent<SnakePathHistory>();
+
+        if (pathHistory == null)
+            pathHistory = gameObject.AddComponent<SnakePathHistory>();
+    }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -98,6 +110,31 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 
             snakeBody.Add(tempCartInstance);
             LeadingCartRaycaster = tempCartInstance.GetComponent<LeadingCartRaycaster>();
+            // ------------------------------------------------------
+            // NEW DISTANCE PATH SYSTEM
+            // ------------------------------------------------------
+
+            LeadingCartBehaviour movementBehaviour =
+                tempCartInstance.GetComponentInChildren<LeadingCartBehaviour>();
+
+            if (movementBehaviour != null &&
+                movementBehaviour.CartBody != null)
+            {
+                pathHistory.Initialize(
+                    movementBehaviour.CartBody
+                );
+            }
+            else
+            {
+                Debug.LogError(
+                    "[SnakeCartManager] Could not find the " +
+                    "authoritative leading-cart Rigidbody for " +
+                    "SnakePathHistory.",
+                    tempCartInstance
+                );
+            }
+
+            // ------------------------------------------------------
             setupCamera.Raise();
             bodyParts.RemoveAt(0);
 
