@@ -91,6 +91,7 @@ public class SnakeMoveBackwardController : MonoBehaviour
     private LeadingCartBehaviour leadingMovement;
     private CartControlScript cartControl;
     private SnakePathHistory snakePathHistory;
+    private bool leaderWasKinematic;
 
     private readonly List<LeaderPathPoint> history = new List<LeaderPathPoint>(512);
 
@@ -171,7 +172,8 @@ public class SnakeMoveBackwardController : MonoBehaviour
         leaderBody.linearVelocity = Vector3.zero;
         leaderBody.angularVelocity = Vector3.zero;
 
-        cartControl.DisableControl();
+        leaderWasKinematic = leaderBody.isKinematic;
+        leaderBody.isKinematic = true;
 
         snakePathHistory.BeginMoveBackward();
 
@@ -219,13 +221,15 @@ public class SnakeMoveBackwardController : MonoBehaviour
 
         TruncateLeaderHistoryAt(moveBackwardCurrentProgress);
 
-        leaderBody.linearVelocity = Vector3.zero;
-        leaderBody.angularVelocity = Vector3.zero;
+        leaderBody.isKinematic = leaderWasKinematic;
 
-        // Keep this only if LeadingCartBehaviour already exposes ResetSpeed().
+        if (!leaderBody.isKinematic)
+        {
+            leaderBody.linearVelocity = Vector3.zero;
+            leaderBody.angularVelocity = Vector3.zero;
+        }
+
         leadingMovement.ResetSpeed();
-
-        cartControl.EnableControl();
 
         nextAllowedMoveBackwardTime = Time.time + moveBackwardCooldown;
 

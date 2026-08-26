@@ -45,6 +45,9 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
     [SerializeField]
     private float hingeInfluenceFalloffPerCart = 0.2f;
 
+    [Header("Move Backward")]
+    [SerializeField] private SnakeMoveBackwardController moveBackwardController;
+
     [Header("Distance Path Debug")]
     [SerializeField]
     private bool drawFirstFollowerTarget = true;
@@ -101,6 +104,9 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
         {
             physicalJointProbe = GetComponent<PhysicalChainJointProbe>();
         }
+
+        if (moveBackwardController == null) moveBackwardController = GetComponent<SnakeMoveBackwardController>();
+        if (moveBackwardController == null) moveBackwardController = gameObject.AddComponent<SnakeMoveBackwardController>();
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -115,25 +121,19 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
     // Update is called once per frame
     void FixedUpdate()
     {
-        // Update probe-generated spatial history first.
-        if (pathHistory != null &&
-            pathHistory.IsInitialized)
-        {
-            pathHistory.TickHistory();
-        }
-
         ManageSnakeBody();
+
+        bool bIsMovingBackward = moveBackwardController != null && moveBackwardController.TickMoveBackward();
+
+        if (!bIsMovingBackward && pathHistory != null && pathHistory.IsInitialized)
+            pathHistory.TickHistory();
 
         UpdateFollowerScale();
 
         if (useDistancePathForAllFollowers)
-        {
             MoveAllFollowersUsingDistancePath();
-        }
         else
-        {
             SnakeMovement();
-        }
     }
 
     void SnakeMovement()
@@ -341,11 +341,12 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
             snakeBody.Add(tempCartInstance);
             LeadingCartRaycaster = tempCartInstance.GetComponent<LeadingCartRaycaster>();
             // Cache old marker system on the leader.
-            leadingMarkerManager =
-                tempCartInstance.GetComponent<MarkerManager>();
+            leadingMarkerManager = tempCartInstance.GetComponent<MarkerManager>();
 
             // Find the authoritative movement Rigidbody.
             LeadingCartBehaviour leadingMovement = tempCartInstance.GetComponentInChildren<LeadingCartBehaviour>();
+            Rigidbody leadingBody = leadingMovement != null ? leadingMovement.CartBody : null;
+            CartControlScript leadingControl = tempCartInstance.GetComponentInChildren<CartControlScript>();
             Transform rearHitch = tempCartInstance.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "RearHitch");
 
             if (rearHitch != null)
@@ -357,25 +358,24 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
             }
             else
             {
-                Debug.LogError(
-                    "[SnakeCartManager] Could not find RearHitch " +
-                    "on leading cart prefab.",
-                    tempCartInstance
-                );
+                Debug.LogError("[SnakeCartManager] Could not find RearHitch " + "on leading cart prefab.", tempCartInstance);
             }
 
             if (physicalJointProbe.ProbeTransform != null)
             {
-                pathHistory.Initialize(
-                    physicalJointProbe.ProbeTransform
-                );
+                pathHistory.Initialize(physicalJointProbe.ProbeTransform);
             }
             else
             {
-                Debug.LogError(
-                    "[SnakeCartManager] Physical probe did not create a ProbeTransform.",
-                    this
-                );
+                Debug.LogError("[SnakeCartManager] Physical probe did not create a ProbeTransform.", this);
+            }
+            if (leadingBody != null && leadingMovement != null && leadingControl != null)
+            {
+                moveBackwardController.Initialize(leadingBody, leadingMovement, leadingControl, pathHistory);
+            }
+            else
+            {
+                Debug.LogError("[SnakeCartManager] MoveBackward system could not initialize.", tempCartInstance);
             }
             setupCamera.Raise();
             bodyParts.RemoveAt(0);

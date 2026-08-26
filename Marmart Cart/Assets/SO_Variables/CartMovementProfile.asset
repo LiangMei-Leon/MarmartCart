@@ -35,7 +35,7 @@ MonoBehaviour:
     tightDriftDipTriggerTightness: 0.35
     tightDriftDipRearmTightness: 0.35
     tightDriftDipDuration: 0.35
-    tightDriftDipMultiplier: 0.8
+    tightDriftDipMultiplier: 0.85
     enableDriftFatigueSpeedLoss: 1
     fatigueBuildStartTightness: 0.1
     fatigueRecoverBelowTightness: 0.1

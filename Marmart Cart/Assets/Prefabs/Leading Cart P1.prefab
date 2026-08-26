@@ -2036,7 +2036,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cartController: {fileID: 8217884270544574180}
-  flipPrompt: {fileID: 3261560928098425661}
+  moveBackwardPrompt: {fileID: 0}
   speedUpFillImage: {fileID: 8536369434195968947}
   speedUpPendingFillImage: {fileID: 0}
   desiredMaxFill: 0.5
@@ -4112,7 +4112,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cartController: {fileID: 8217884270544574180}
-  flipPrompt: {fileID: 5805125127271161121}
+  moveBackwardPrompt: {fileID: 5805125127271161121}
   speedUpFillImage: {fileID: 3559557262557789468}
   speedUpPendingFillImage: {fileID: 2919513196704009539}
   desiredMaxFill: 0.5
@@ -4756,14 +4756,13 @@ MonoBehaviour:
   debugDriftSpeedupOverride: 0
   controllable: 1
   isInPit: 0
-  boostEvent: {fileID: 11400000, guid: 3aeaccc6664a25346b77bae38223b5d0, type: 2}
-  resetCartEvent: {fileID: 11400000, guid: ec6acc4ad101416458a8963117372088, type: 2}
   speedUpMeter: 100
   speedUpConsumeRate: 1
   canSpeedup: 1
+  canMoveBackward: 0
   canActivatePowerUp: 0
-  canFlip: 0
   powerupsManager: {fileID: 6036905620950081183}
+  boostEvent: {fileID: 11400000, guid: 3aeaccc6664a25346b77bae38223b5d0, type: 2}
 --- !u!114 &3901328475939746546
 MonoBehaviour:
   m_ObjectHideFlags: 0

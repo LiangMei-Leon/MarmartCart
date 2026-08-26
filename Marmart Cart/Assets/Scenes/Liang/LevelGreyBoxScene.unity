@@ -35608,7 +35608,7 @@ PrefabInstance:
       objectReference: {fileID: 818985103}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4031
+      value: 4034
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -39627,7 +39627,7 @@ PrefabInstance:
       objectReference: {fileID: 1468305010}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4031
+      value: 4034
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -43622,7 +43622,7 @@ PrefabInstance:
       objectReference: {fileID: 355296247}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4031
+      value: 4034
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -45693,6 +45693,7 @@ MonoBehaviour:
   followerCartSpacing: 1.5
   firstFollowerHingeInfluence: 0.7
   hingeInfluenceFalloffPerCart: 0.2
+  moveBackwardController: {fileID: 0}
   drawFirstFollowerTarget: 1
   distanceBetween: 0.11
   bodyParts:
@@ -59414,7 +59415,7 @@ PrefabInstance:
       objectReference: {fileID: 2126039392}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4031
+      value: 4034
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -72933,7 +72934,7 @@ PrefabInstance:
       objectReference: {fileID: 1655001293}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4031
+      value: 4034
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -100080,7 +100081,7 @@ PrefabInstance:
       objectReference: {fileID: 1741062704}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4031
+      value: 4034
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -127754,7 +127755,7 @@ PrefabInstance:
       objectReference: {fileID: 186369562}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4031
+      value: 4034
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -139885,6 +139886,7 @@ MonoBehaviour:
   followerCartSpacing: 1.5
   firstFollowerHingeInfluence: 0.7
   hingeInfluenceFalloffPerCart: 0.2
+  moveBackwardController: {fileID: 0}
   drawFirstFollowerTarget: 1
   distanceBetween: 0.11
   bodyParts:
@@ -143084,7 +143086,7 @@ PrefabInstance:
       objectReference: {fileID: 860941776}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4031
+      value: 4034
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -199784,11 +199786,11 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: -100
-  far clip plane: 1000
+  near clip plane: -69.3
+  far clip plane: 1100.1
   field of view: 30
   orthographic: 1
-  orthographic size: 14
+  orthographic size: 6.5
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -199812,8 +199814,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 797538514}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.39044836, y: 0.346829, z: -0.16172901, w: 0.83731925}
-  m_LocalPosition: {x: -41.935543, y: 11.310254, z: -490.6356}
+  m_LocalRotation: {x: 0.19198428, y: 0.45080337, z: -0.09994069, w: 0.8659852}
+  m_LocalPosition: {x: -51.334045, y: 4.0461636, z: -645.43854}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -199897,8 +199899,8 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: -100
-  far clip plane: 1000
+  near clip plane: -69.3
+  far clip plane: 1100.1
   field of view: 30
   orthographic: 1
   orthographic size: 6.5
@@ -199926,7 +199928,7 @@ Transform:
   m_GameObject: {fileID: 797802257}
   serializedVersion: 2
   m_LocalRotation: {x: 0.19198428, y: 0.45080337, z: -0.09994069, w: 0.8659852}
-  m_LocalPosition: {x: 64.54597, y: 3.186157, z: -507.93845}
+  m_LocalPosition: {x: -51.434067, y: 4.086161, z: -645.69855}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -216339,7 +216341,7 @@ PrefabInstance:
       objectReference: {fileID: 525975445}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4031
+      value: 4034
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -250815,7 +250817,7 @@ PrefabInstance:
       objectReference: {fileID: 222044587}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4031
+      value: 4034
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -259413,7 +259415,7 @@ PrefabInstance:
       objectReference: {fileID: 815012674}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4031
+      value: 4034
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -336316,7 +336318,7 @@ PrefabInstance:
       objectReference: {fileID: 1212537215}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4031
+      value: 4034
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -362239,7 +362241,7 @@ PrefabInstance:
       objectReference: {fileID: 919854402}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4031
+      value: 4034
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -362646,6 +362648,7 @@ MonoBehaviour:
   followerCartSpacing: 1.5
   firstFollowerHingeInfluence: 0.7
   hingeInfluenceFalloffPerCart: 0.2
+  moveBackwardController: {fileID: 0}
   drawFirstFollowerTarget: 1
   distanceBetween: 0.11
   bodyParts:
@@ -407479,7 +407482,7 @@ PrefabInstance:
       objectReference: {fileID: 485078453}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4031
+      value: 4034
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -518723,7 +518726,7 @@ PrefabInstance:
       objectReference: {fileID: 1083701875}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4031
+      value: 4034
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -524668,6 +524671,7 @@ MonoBehaviour:
   followerCartSpacing: 3
   firstFollowerHingeInfluence: 0.7
   hingeInfluenceFalloffPerCart: 1
+  moveBackwardController: {fileID: 0}
   drawFirstFollowerTarget: 1
   distanceBetween: 0.11
   bodyParts:
@@ -524745,47 +524749,26 @@ MonoBehaviour:
   leaderRearHitch: {fileID: 0}
   armLength: 1
   armMass: 1
-  linearDamping: 1
+  linearDamping: 0.5
   angularDamping: 6
-  limitSwingAngle: 0
+  maxArmAngularVelocity: 25
+  limitSwingAngle: 1
   maxSwingAngle: 60
-  enableDriftSwingBias: 1
-  driftController: {fileID: 0}
-  wideDriftBiasAngle: 30
-  tightDriftBiasAngle: 145
-  driftBiasByTightness:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 34
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 34
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  driftBiasSpring: 10
-  driftBiasDamper: 8
-  driftBiasResponseSpeed: 120
-  invertDriftBias: 1
-  currentDriftBiasAngle: 0
-  targetDriftBiasAngle: 0
+  enableAutoRecenter: 1
+  minSpeedForRecenter: 2
+  maxYawRateForRecenter: 20
+  recenterDeadAngle: 1.5
+  recenterSpring: 250
+  recenterDamper: 25
   showPhysicalArm: 1
+  showProbeSphere: 1
   probeSphereSize: 0.8
   currentHingeAngle: 0
+  currentDistanceToHitch: 0
+  currentProbeSpeed: 0
+  isRecentering: 0
+  currentHitchSpeed: 0
+  currentHitchYawRate: 0
 --- !u!43 &1981911432
 Mesh:
   m_ObjectHideFlags: 0
@@ -528293,7 +528276,7 @@ PrefabInstance:
       objectReference: {fileID: 465641269}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4031
+      value: 4034
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -528875,7 +528858,7 @@ PrefabInstance:
       objectReference: {fileID: 490470779}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4031
+      value: 4034
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -541023,7 +541006,7 @@ PrefabInstance:
       objectReference: {fileID: 1197134800}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4031
+      value: 4034
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
