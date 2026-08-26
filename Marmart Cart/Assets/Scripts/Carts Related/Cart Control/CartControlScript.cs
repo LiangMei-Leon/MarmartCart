@@ -42,24 +42,25 @@ public class CartControlScript : MonoBehaviour
 
     [SerializeField] private bool controllable = true; // variable that controls if the system gonna read input
     [SerializeField] private bool isInPit = false;
-    [SerializeField] private GameEvent boostEvent; // raise this event when the player accelerates (boost)
-    [SerializeField] private GameEvent resetCartEvent; // raise this event when the player wants to reset the cart (to solve stuck issues)
+    [Header("SpeedUp Movement")]
     [SerializeField] private float speedUpMeter = 100f;
     [SerializeField] private float speedUpConsumeRate = 10f;
     private bool isSpeedingUp = false;
     [SerializeField] private bool canSpeedup = true;
+    [Header("Move Backward")]
+    [SerializeField] private bool canMoveBackward = false;
     [SerializeField] private bool canActivatePowerUp = false;
-    [SerializeField] private bool canFlip = false;
 
     [SerializeField] private PowerupsManager powerupsManager; // Reference to the PowerupsManager script
 
+    [SerializeField] private GameEvent boostEvent; // raise this event when the player accelerates (boost)
     // fro cart pit check out actions
     private CheckOutManager activeCheckoutManager;
 
     public System.Action OnTutorialPrev;
     public System.Action OnTutorialNext;
 
-    public System.Action OnFlipPressed;
+    public System.Action OnMoveBackwardPressed;
     public System.Action OnCheckoutReleased;
     public System.Action OnExitReleased;
     public System.Action OnShootPressed;
@@ -142,14 +143,13 @@ public class CartControlScript : MonoBehaviour
                 OnShootPressed?.Invoke();
             }
         };
-        _inputActions.Player.FlipDirection.performed += ctx =>
+        _inputActions.Player.MoveBackward.performed += ctx =>
         {
-            if (ctx.control.device == device && canFlip)
+            if (ctx.control.device == device && canMoveBackward)
             {
-                resetCartEvent.Raise();
-                OnFlipPressed?.Invoke();
+                canMoveBackward = false;
+                OnMoveBackwardPressed?.Invoke();
             }
-                
         };
         // inputs for check out pit
         _inputActions.Player.CheckOut.performed += ctx =>
@@ -256,12 +256,12 @@ public class CartControlScript : MonoBehaviour
                 OnShootPressed?.Invoke();
             }
         };
-        _inputActions.Player.FlipDirection.performed += ctx =>
+        _inputActions.Player.MoveBackward.performed += ctx =>
         {
-            if (ctx.control.device == Keyboard.current && canFlip)
+            if (ctx.control.device == Keyboard.current && canMoveBackward)
             {
-                resetCartEvent.Raise();
-                OnFlipPressed?.Invoke();
+                canMoveBackward = false;
+                OnMoveBackwardPressed?.Invoke();
             }
         };
         // inputs for check out pit
@@ -435,17 +435,19 @@ public class CartControlScript : MonoBehaviour
     {
         powerupsManager = manager;
     }
-    public void AllowFlip()
+    public void AllowMoveBackward()
     {
-        canFlip = true;
+        canMoveBackward = true;
     }
-    public void DisallowFlip()
+
+    public void DisallowMoveBackward()
     {
-        canFlip = false;
+        canMoveBackward = false;
     }
-    public bool GetCanFlip()
+
+    public bool GetCanMoveBackward()
     {
-        return canFlip;
+        return canMoveBackward;
     }
     public bool IsDriftHeld()
     {

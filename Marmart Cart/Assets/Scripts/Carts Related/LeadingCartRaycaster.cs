@@ -211,7 +211,7 @@ public class LeadingCartRaycaster : MonoBehaviour
         {
             sfxManager.PlaySFX("CrashWalls");
             InterruptDriftFromCrash("Hit Obstacle");
-            cartControlInput.AllowFlip();
+            cartControlInput.AllowMoveBackward();
             cartControlInput.DisallowActivatePowerUp();
 
             if (cartControlInput.IsCharing())
@@ -224,7 +224,7 @@ public class LeadingCartRaycaster : MonoBehaviour
         {
             sfxManager.PlaySFX("CrashWalls");
             InterruptDriftFromCrash("Hit Wall");
-            cartControlInput.AllowFlip();
+            cartControlInput.AllowMoveBackward();
             cartControlInput.DisallowActivatePowerUp();
         }
     }
@@ -233,9 +233,9 @@ public class LeadingCartRaycaster : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Obstacles") || collision.gameObject.CompareTag("Walls"))
         {
-            if (cartControlInput.GetCanFlip())
+            if (cartControlInput.GetCanMoveBackward())
             {
-                cartControlInput.DisallowFlip();
+                cartControlInput.DisallowMoveBackward();
                 cartControlInput.AllowActivatePowerUp();
             }
         }
@@ -249,13 +249,13 @@ public class LeadingCartRaycaster : MonoBehaviour
                 Destroy(collision.gameObject);
 
             InterruptDriftFromCrash("Hit Obstacle");
-            cartControlInput.AllowFlip();
+            cartControlInput.AllowMoveBackward();
             cartControlInput.DisallowActivatePowerUp();
         }
         if (collision.gameObject.CompareTag("Walls"))
         {
             InterruptDriftFromCrash("Hit Obstacle");
-            cartControlInput.AllowFlip();
+            cartControlInput.AllowMoveBackward();
             cartControlInput.DisallowActivatePowerUp();
         }
     }

@@ -6,7 +6,7 @@ public class CartControlPromptManager : MonoBehaviour
     [SerializeField] CartControlScript cartController;
 
     [Header("Raycast Settings")]
-    [SerializeField] GameObject flipPrompt;
+    [SerializeField] GameObject moveBackwardPrompt;
 
     [Header("Speed-Up UI (Circular Fill)")]
     [Tooltip("Image with 'Filled' type set to Radial360 in the inspector.")]
@@ -49,16 +49,16 @@ public class CartControlPromptManager : MonoBehaviour
 
     void Update()
     {
-        UpdateFlipPrompt();
+        UpdateMoveBackwardPrompt();
         UpdateSpeedUpUI();
     }
 
-    private void UpdateFlipPrompt()
+    private void UpdateMoveBackwardPrompt()
     {
-        if (flipPrompt == null || cartController == null)
+        if (moveBackwardPrompt == null || cartController == null)
             return;
 
-        flipPrompt.SetActive(cartController.GetCanFlip());
+        moveBackwardPrompt.SetActive(cartController.GetCanMoveBackward());
     }
 
     private void UpdateSpeedUpUI()

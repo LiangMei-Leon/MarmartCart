@@ -549,7 +549,7 @@ public class LeadingCartBehaviour : MonoBehaviour
         if (ShouldBlockPowerupBoostWhileDrifting())
             return;
 
-        cartControlInput.DisallowFlip();
+        cartControlInput.DisallowMoveBackward();
 
         if (!isBoosting)
             boostRoutine = StartCoroutine(BoostCoroutine());
@@ -598,7 +598,7 @@ public class LeadingCartBehaviour : MonoBehaviour
 
         targetSpeed = originalSpeed;
         cartControlInput.EnableControl();
-        cartControlInput.DisallowFlip();
+        cartControlInput.DisallowMoveBackward();
 
         isBoosting = false;
         boostRoutine = null;
@@ -616,7 +616,7 @@ public class LeadingCartBehaviour : MonoBehaviour
         isBoosting = false;
 
         cartControlInput.EnableControl();
-        cartControlInput.DisallowFlip();
+        cartControlInput.DisallowMoveBackward();
     }
 
     private bool ShouldBlockPowerupBoostWhileDrifting()
@@ -666,7 +666,7 @@ public class LeadingCartBehaviour : MonoBehaviour
     {
         disableDetachEvent.Raise();
 
-        cartControlInput.DisallowFlip();
+        cartControlInput.DisallowMoveBackward();
         cartControlInput.AllowActivatePowerUp();
 
         Vector3 desiredFacingDirection = -cartBody.transform.forward;

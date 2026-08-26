@@ -4,7 +4,7 @@ public class ControlsOverlayUI : MonoBehaviour
 {
     [Header("Rows")]
     [SerializeField] private ControlHints moveRow;
-    [SerializeField] private ControlHints flipRow;
+    [SerializeField] private ControlHints moveBackwardRow;
 
     [SerializeField] private ControlHints checkoutRow;
     [SerializeField] private ControlHints exitRow;
@@ -19,7 +19,7 @@ public class ControlsOverlayUI : MonoBehaviour
     {
         // Start minimal (show only movement / steer if you want)
         moveRow?.SetIntroduced(true);
-        flipRow?.SetIntroduced(true);
+        moveBackwardRow?.SetIntroduced(true);
 
         checkoutRow?.SetIntroduced(false);
         exitRow?.SetIntroduced(false);
@@ -37,7 +37,7 @@ public class ControlsOverlayUI : MonoBehaviour
         if (_cart == null) return;
 
         // These events need to exist in CartControlScript
-        _cart.OnFlipPressed += HandleFlip;
+        _cart.OnMoveBackwardPressed += HandleMoveBackward;
         _cart.OnCheckoutReleased += HandleCheckout;
         _cart.OnExitReleased += HandleExit;
         _cart.OnShootPressed += HandleShoot;
@@ -49,7 +49,7 @@ public class ControlsOverlayUI : MonoBehaviour
     public void Unbind()
     {
         if (_cart == null) return;
-        _cart.OnFlipPressed -= HandleFlip;
+        _cart.OnMoveBackwardPressed -= HandleMoveBackward;
         _cart.OnCheckoutReleased = HandleCheckout;
         _cart.OnExitReleased -= HandleExit;
         _cart.OnShootPressed -= HandleShoot;
@@ -73,7 +73,7 @@ public class ControlsOverlayUI : MonoBehaviour
     }
     // Called by tutorial “sections” when you want to reveal a new control
     public void IntroduceMove() => moveRow?.SetIntroduced(true);
-    public void IntroduceFlip() => flipRow?.SetIntroduced(true);
+    public void IntroduceMoveBackward() => moveBackwardRow?.SetIntroduced(true);
     public void IntroduceCheckout() => checkoutRow?.SetIntroduced(true);
     public void IntroduceExit() => exitRow?.SetIntroduced(true);
     public void IntroduceAim() => aimRow?.SetIntroduced(true);
@@ -81,7 +81,7 @@ public class ControlsOverlayUI : MonoBehaviour
     public void IntroduceCharge() => chargeRow?.SetIntroduced(true);
 
     // Input callbacks -> pulse the row
-    private void HandleFlip() => flipRow?.Pulse();
+    private void HandleMoveBackward() => moveBackwardRow?.Pulse();
     private void HandleCheckout() => checkoutRow?.Pulse();
     private void HandleExit() => exitRow?.Pulse();
     private void HandleShoot() => shootRow?.Pulse();

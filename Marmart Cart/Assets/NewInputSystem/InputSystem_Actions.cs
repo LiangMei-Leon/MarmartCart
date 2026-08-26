@@ -119,7 +119,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""FlipDirection"",
+                    ""name"": ""MoveBackward"",
                     ""type"": ""Button"",
                     ""id"": ""7bf6def0-a510-48b2-8dec-9d8b3702f042"",
                     ""expectedControlType"": """",
@@ -410,7 +410,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Keyboard_WASD"",
-                    ""action"": ""FlipDirection"",
+                    ""action"": ""MoveBackward"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -421,7 +421,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Controller"",
-                    ""action"": ""FlipDirection"",
+                    ""action"": ""MoveBackward"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -1177,7 +1177,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         m_Player_Move = m_Player.FindAction("Move", throwIfNotFound: true);
         m_Player_Aim = m_Player.FindAction("Aim", throwIfNotFound: true);
         m_Player_ActivatePowerUp = m_Player.FindAction("ActivatePowerUp", throwIfNotFound: true);
-        m_Player_FlipDirection = m_Player.FindAction("FlipDirection", throwIfNotFound: true);
+        m_Player_MoveBackward = m_Player.FindAction("MoveBackward", throwIfNotFound: true);
         m_Player_CheckOut = m_Player.FindAction("CheckOut", throwIfNotFound: true);
         m_Player_QuitCheckOut = m_Player.FindAction("QuitCheckOut", throwIfNotFound: true);
         m_Player_Speedup = m_Player.FindAction("Speedup", throwIfNotFound: true);
@@ -1280,7 +1280,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Move;
     private readonly InputAction m_Player_Aim;
     private readonly InputAction m_Player_ActivatePowerUp;
-    private readonly InputAction m_Player_FlipDirection;
+    private readonly InputAction m_Player_MoveBackward;
     private readonly InputAction m_Player_CheckOut;
     private readonly InputAction m_Player_QuitCheckOut;
     private readonly InputAction m_Player_Speedup;
@@ -1311,9 +1311,9 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// </summary>
         public InputAction @ActivatePowerUp => m_Wrapper.m_Player_ActivatePowerUp;
         /// <summary>
-        /// Provides access to the underlying input action "Player/FlipDirection".
+        /// Provides access to the underlying input action "Player/MoveBackward".
         /// </summary>
-        public InputAction @FlipDirection => m_Wrapper.m_Player_FlipDirection;
+        public InputAction @MoveBackward => m_Wrapper.m_Player_MoveBackward;
         /// <summary>
         /// Provides access to the underlying input action "Player/CheckOut".
         /// </summary>
@@ -1373,9 +1373,9 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @ActivatePowerUp.started += instance.OnActivatePowerUp;
             @ActivatePowerUp.performed += instance.OnActivatePowerUp;
             @ActivatePowerUp.canceled += instance.OnActivatePowerUp;
-            @FlipDirection.started += instance.OnFlipDirection;
-            @FlipDirection.performed += instance.OnFlipDirection;
-            @FlipDirection.canceled += instance.OnFlipDirection;
+            @MoveBackward.started += instance.OnMoveBackward;
+            @MoveBackward.performed += instance.OnMoveBackward;
+            @MoveBackward.canceled += instance.OnMoveBackward;
             @CheckOut.started += instance.OnCheckOut;
             @CheckOut.performed += instance.OnCheckOut;
             @CheckOut.canceled += instance.OnCheckOut;
@@ -1414,9 +1414,9 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @ActivatePowerUp.started -= instance.OnActivatePowerUp;
             @ActivatePowerUp.performed -= instance.OnActivatePowerUp;
             @ActivatePowerUp.canceled -= instance.OnActivatePowerUp;
-            @FlipDirection.started -= instance.OnFlipDirection;
-            @FlipDirection.performed -= instance.OnFlipDirection;
-            @FlipDirection.canceled -= instance.OnFlipDirection;
+            @MoveBackward.started -= instance.OnMoveBackward;
+            @MoveBackward.performed -= instance.OnMoveBackward;
+            @MoveBackward.canceled -= instance.OnMoveBackward;
             @CheckOut.started -= instance.OnCheckOut;
             @CheckOut.performed -= instance.OnCheckOut;
             @CheckOut.canceled -= instance.OnCheckOut;
@@ -1770,12 +1770,12 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnActivatePowerUp(InputAction.CallbackContext context);
         /// <summary>
-        /// Method invoked when associated input action "FlipDirection" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// Method invoked when associated input action "MoveBackward" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
         /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnFlipDirection(InputAction.CallbackContext context);
+        void OnMoveBackward(InputAction.CallbackContext context);
         /// <summary>
         /// Method invoked when associated input action "CheckOut" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>

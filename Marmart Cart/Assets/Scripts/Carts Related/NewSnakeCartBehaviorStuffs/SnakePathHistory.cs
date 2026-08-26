@@ -86,6 +86,48 @@ public class SnakePathHistory : MonoBehaviour
     private float leaderToChainHeadDistance = 1.5f;
     #endregion
 
+    #region Move Backward
+    private bool moveBackwardActive;
+    public bool IsMoveBackwardActive => moveBackwardActive;
+    public void BeginMoveBackward()
+    {
+        if (!isInitialized || pathSource == null) return;
+
+        moveBackwardActive = true;
+        lastObservedPosition = pathSource.position;
+    }
+    public void MoveHeadBackwardBy(float distance)
+    {
+        if (!isInitialized || samples.Count == 0 || distance <= 0f) return;
+
+        headProgress = Mathf.Max(samples[0].distance, headProgress - distance);
+    }
+    public void EndMoveBackwardAndTruncate()
+    {
+        if (!isInitialized || pathSource == null) return;
+
+        TruncateFutureAtHead();
+
+        Vector3 currentSourcePosition = pathSource.position;
+
+        if (samples.Count > 0)
+        {
+            PathPoint endpoint = samples[samples.Count - 1];
+            endpoint.position = currentSourcePosition;
+            endpoint.distance = headProgress;
+            samples[samples.Count - 1] = endpoint;
+        }
+
+        livePathEndPosition = currentSourcePosition;
+        lastObservedPosition = currentSourcePosition;
+
+        recordedEndProgress = headProgress;
+        distanceSinceLastSample = 0f;
+
+        moveBackwardActive = false;
+    }
+    #endregion
+
     #region History Settings
 
     [Header("History")]
@@ -358,15 +400,15 @@ public class SnakePathHistory : MonoBehaviour
     /// </summary>
     public void TickHistory()
     {
-        if (!isInitialized ||
-            pathSource == null)
+        if (!isInitialized || pathSource == null) return;
+
+        if (moveBackwardActive)
         {
+            lastObservedPosition = pathSource.position;
             return;
         }
 
-        RecordPathSourceMovement(
-            pathSource.position
-        );
+        RecordPathSourceMovement(pathSource.position);
     }
 
     #endregion

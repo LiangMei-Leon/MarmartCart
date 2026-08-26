@@ -155,20 +155,20 @@ public class Debuggers : MonoBehaviour
 
     private void FlipDebug()
     {
-        TryAllowFlip(p1AllowFlipKey, p1CartControl, 1);
-        TryAllowFlip(p2AllowFlipKey, p2CartControl, 2);
-        TryAllowFlip(p3AllowFlipKey, p3CartControl, 3);
-        TryAllowFlip(p4AllowFlipKey, p4CartControl, 4);
+        TryAllowMoveBackward(p1AllowFlipKey, p1CartControl, 1);
+        TryAllowMoveBackward(p2AllowFlipKey, p2CartControl, 2);
+        TryAllowMoveBackward(p3AllowFlipKey, p3CartControl, 3);
+        TryAllowMoveBackward(p4AllowFlipKey, p4CartControl, 4);
     }
 
-    private void TryAllowFlip(KeyCode key, CartControlScript control, int index)
+    private void TryAllowMoveBackward(KeyCode key, CartControlScript control, int index)
     {
         if (!Input.GetKeyDown(key)) return;
 
         if (control != null)
         {
-            control.AllowFlip();
-            Debug.Log($"[Debuggers] P{index} allowed to flip.");
+            control.AllowMoveBackward();
+            Debug.Log($"[Debuggers] P{index} allowed to move backward.");
         }
         else
         {
