@@ -2,434 +2,384 @@
 using UnityEngine;
 
 /// <summary>
-/// Records the leading cart's actual travelled path in world space.
+/// Shared spatial path for the snake.
 ///
-/// Unlike the old MarkerManager:
-/// - This history belongs to the whole snake, not to every cart.
-/// - Progress is measured by travelled DISTANCE, not elapsed FixedUpdates.
-/// - No meaningful leader movement = no path progress.
-/// - Samples are approximately evenly spaced in world distance.
-/// - The history is queried by cumulative distance and is NOT consumed.
+/// Core idea:
 ///
-/// Step A0:
-/// This component only records/debugs the path.
-/// It does not move follower carts yet.
+/// PATH:
+///     Describes where the leading cart has meaningfully travelled.
+///
+/// HEAD PROGRESS:
+///     Describes where the active head of the snake currently is on that path.
+///
+/// Followers DO NOT consume samples.
+/// They query:
+///
+///     HeadProgress - desiredDistanceBehind
+///
+/// Rotation is derived from the path tangent rather than copied
+/// from the leading cart's rotation.
+///
+/// This is still an early prototype:
+/// - Forward locomotion recording is implemented.
+/// - Stop/stall freezes progress.
+/// - Reverse cursor support is architecturally prepared,
+///   but player-controlled reverse is not connected yet.
 /// </summary>
 public class SnakePathHistory : MonoBehaviour
 {
+    #region Path Point
+
     [System.Serializable]
-    public struct PathPose
+    public struct PathPoint
     {
         public Vector3 position;
-        public Quaternion rotation;
-
-        /// <summary>
-        /// Cumulative path distance.
-        /// The leader begins at distance 0.
-        /// Seeded history behind the leader uses negative values.
-        /// </summary>
         public float distance;
 
-        public PathPose(Vector3 position, Quaternion rotation, float distance)
+        public PathPoint(
+            Vector3 position,
+            float distance)
         {
             this.position = position;
-            this.rotation = rotation;
             this.distance = distance;
         }
     }
 
-    #region Settings
-
-    [Header("Path Recording")]
-
-    [Tooltip(
-        "World-space distance between stored path samples. " +
-        "Eventually this should be much smaller than the distance between two carts.")]
-    [Min(0.001f)]
-    [SerializeField] private float sampleSpacing = 0.1f;
-
-    [Tooltip(
-        "Leader must move at least this far from the last accepted movement point " +
-        "before that movement counts as path progress. " +
-        "This prevents tiny Rigidbody jitter while stalled from growing the path.")]
-    [Min(0f)]
-    [SerializeField] private float movementAcceptanceDistance = 0.01f;
-
-    [Tooltip(
-        "Creates a straight history behind the leader when initialized. " +
-        "Later this allows carts to already exist behind the leader before " +
-        "the player has driven forward.")]
-    [Min(0f)]
-    [SerializeField] private float initialBackfillDistance = 20f;
-
-    [Tooltip(
-        "Maximum path distance we keep behind the current leader position. " +
-        "This must eventually be longer than the maximum possible cart train.")]
-    [Min(1f)]
-    [SerializeField] private float maxHistoryDistance = 80f;
-
-    [Tooltip(
-        "Old samples are removed in batches instead of constantly deleting " +
-        "one element from the beginning of the List.")]
-    [Min(1)]
-    [SerializeField] private int pruneBatchSize = 32;
-
-    [Header("Movement Filtering")]
-
-    [Tooltip(
-    "Minimum planar Rigidbody speed required before displacement " +
-    "is allowed to advance the snake path. " +
-    "Filters collision-solver settling and tiny wall pivots.")]
-    [Min(0f)]
-    [SerializeField] private float minPathMotionSpeed = 0.5f;
-
-    [Tooltip(
-        "If true, vertical suspension/bouncing does not count as snake path travel.")]
-    [SerializeField] private bool ignoreVerticalMotion = true;
     #endregion
 
-    #region Debug Settings
+    #region Recording Settings
+    private Transform pathSource;
+    [Header("Recording")]
 
-    [Header("Debug Drawing")]
+    [Tooltip(
+        "Distance between stored path samples in world units.")]
+    [Min(0.001f)]
+    [SerializeField]
+    private float sampleSpacing = 0.1f;
 
-    [SerializeField] private bool drawPath = true;
-    [SerializeField] private bool drawStoredSamples = true;
+    [Tooltip(
+        "Minimum planar Rigidbody speed required before movement " +
+        "is considered real snake-path progress.")]
+    [Min(0f)]
+    [SerializeField]
+    private float minPathMotionSpeed = 0.5f;
+
+    [Tooltip(
+        "Minimum world displacement in one physics tick before " +
+        "movement can advance the path.")]
+    [Min(0f)]
+    [SerializeField]
+    private float movementAcceptanceDistance = 0.01f;
+
+    [Tooltip(
+        "Ignore suspension / bouncing when measuring path distance.")]
+    [SerializeField]
+    private bool ignoreVerticalMotion = true;
+    [Header("Virtual Chain Head")]
+
+    [Tooltip(
+    "Distance along the recorded spatial path between the " +
+    "leading cart's progress and the virtual rear coupling " +
+    "that the actual cart train follows.")]
+    [Min(0f)]
+    [SerializeField]
+    private float leaderToChainHeadDistance = 1.5f;
+    #endregion
+
+    #region History Settings
+
+    [Header("History")]
+
+    [Tooltip(
+        "Straight path created behind the leader at startup.")]
+    [Min(0f)]
+    [SerializeField]
+    private float initialBackfillDistance = 20f;
+
+    [Tooltip(
+        "Maximum amount of historical path retained.")]
+    [Min(1f)]
+    [SerializeField]
+    private float maxHistoryDistance = 80f;
+
+    [Tooltip(
+        "Old samples are removed in batches.")]
+    [Min(1)]
+    [SerializeField]
+    private int pruneBatchSize = 32;
+
+    #endregion
+
+    #region Rotation Settings
+
+    [Header("Follower Rotation")]
+
+    [Tooltip(
+        "Distance sampled before/after a target point when calculating " +
+        "the path tangent used for follower rotation.")]
+    [Min(0.01f)]
+    [SerializeField]
+    private float tangentProbeDistance = 0.35f;
+
+    #endregion
+
+    #region Debug
+
+    [Header("Debug")]
+
+    [SerializeField]
+    private bool drawPath = true;
+
+    [SerializeField]
+    private bool drawStoredSamples = true;
 
     [Min(1)]
-    [SerializeField] private int drawEveryNthSample = 5;
+    [SerializeField]
+    private int drawEveryNthSample = 5;
 
     [Min(0.001f)]
-    [SerializeField] private float sampleGizmoRadius = 0.04f;
+    [SerializeField]
+    private float sampleGizmoRadius = 0.04f;
 
     [Header("Runtime Debug - Read Only")]
 
-    [SerializeField] private bool isInitialized;
-    [SerializeField] private bool acceptedMovementThisTick;
-    [SerializeField] private float currentDistance;
-    [SerializeField] private float lastAcceptedSegmentDistance;
-    [SerializeField] private int currentSampleCount;
+    [SerializeField]
+    private bool isInitialized;
+
+    [SerializeField]
+    private bool acceptedMovementThisTick;
+
+    [SerializeField]
+    private float currentPlanarSpeed;
+
+    [SerializeField]
+    private float headProgress;
+
+    [SerializeField]
+    private float recordedEndProgress;
+
+    [SerializeField]
+    private float distanceSinceLastSample;
+
+    [SerializeField]
+    private int currentSampleCount;
 
     #endregion
 
-    #region Runtime Data
+    #region Runtime
 
     private Rigidbody leaderBody;
 
-    private readonly List<PathPose> samples =
-        new List<PathPose>(512);
+    private readonly List<PathPoint> samples =
+        new List<PathPoint>(512);
 
     /// <summary>
-    /// Last leader pose whose movement was accepted as meaningful.
-    /// Small Rigidbody jitter around this point is ignored.
+    /// Actual Rigidbody position observed last physics tick.
+    /// Used only for detecting physical movement.
     /// </summary>
-    private Vector3 acceptedPosition;
-    private Quaternion acceptedRotation;
-
-    /// <summary>
-    /// Current accepted endpoint of the path.
-    ///
-    /// This may exist between two regularly-spaced stored samples.
-    /// </summary>
-    private Vector3 livePosition;
-    private Quaternion liveRotation;
-
-    /// <summary>
-    /// Distance already travelled after the newest stored sample,
-    /// but not yet enough to create another full sample.
-    /// </summary>
-    private float distanceSinceLastSample;
-
     private Vector3 lastObservedPosition;
+
+    /// <summary>
+    /// Spatial endpoint of the currently recorded path.
+    ///
+    /// IMPORTANT:
+    /// This endpoint is allowed to re-anchor during tiny rejected
+    /// stall/solver movement WITHOUT increasing progress.
+    /// </summary>
+    private Vector3 livePathEndPosition;
+
     #endregion
 
     #region Public API
 
-    public bool IsInitialized => isInitialized;
-
-    public float CurrentDistance => currentDistance;
-
-    public int SampleCount => samples.Count;
-
-    public float SampleSpacing => sampleSpacing;
-
-    public IReadOnlyList<PathPose> Samples => samples;
+    public bool IsInitialized =>
+        isInitialized;
 
     /// <summary>
-    /// Begin recording the supplied Rigidbody.
+    /// Current active position of the snake head along the path.
+    ///
+    /// Followers should use this value.
     /// </summary>
-    public void Initialize(Rigidbody body)
+    public float HeadProgress =>
+        headProgress;
+
+    /// <summary>
+    /// Furthest currently recorded path distance.
+    ///
+    /// For now this normally equals HeadProgress.
+    /// Later, during reverse:
+    ///
+    /// HeadProgress < RecordedEndProgress
+    ///
+    /// will be possible.
+    /// </summary>
+    public float RecordedEndProgress =>
+        recordedEndProgress;
+
+    public int SampleCount =>
+        samples.Count;
+
+    public IReadOnlyList<PathPoint> Samples =>
+        samples;
+    public float ChainHeadProgress
     {
-        if (body == null)
+        get
+        {
+            if (!isInitialized ||
+                samples.Count == 0)
+            {
+                return headProgress;
+            }
+
+            return Mathf.Clamp(
+                headProgress -
+                leaderToChainHeadDistance,
+                samples[0].distance,
+                headProgress
+            );
+        }
+    }
+    public bool TryGetChainHeadPose(
+    out Vector3 position,
+    out Quaternion rotation)
+    {
+        return TryGetPoseAtProgress(
+            ChainHeadProgress,
+            out position,
+            out rotation
+        );
+    }
+    #endregion
+
+    #region Initialize
+
+    public void Initialize(Transform newPathSource)
+    {
+        if (newPathSource == null)
         {
             Debug.LogError(
-                "[SnakePathHistory] Cannot initialize with a null Rigidbody.",
+                "[SnakePathHistory] Cannot initialize: Path Source is null.",
                 this
             );
 
             return;
         }
 
-        leaderBody = body;
+        pathSource = newPathSource;
 
-        ResetHistoryToLeader();
+        ResetHistoryToSource();
 
         Debug.Log(
-            $"[SnakePathHistory] Initialized using Rigidbody '{body.name}'.",
+            $"[SnakePathHistory] Initialized from {pathSource.name}.",
             this
         );
     }
 
-    /// <summary>
-    /// Clears the current path and rebuilds the initial path behind the leader.
-    ///
-    /// Later we will also use this for teleports / respawns / resets.
-    /// </summary>
-    public void ResetHistoryToLeader()
+    public void ResetHistoryToSource()
     {
-        if (leaderBody == null)
+        if (pathSource == null)
             return;
 
         samples.Clear();
 
-        Vector3 leaderPosition = leaderBody.position;
-        Quaternion leaderRotation = leaderBody.rotation;
+        Vector3 sourcePosition =
+            pathSource.position;
 
-        Vector3 backwardsPathDirection =
+        Vector3 forward =
             Vector3.ProjectOnPlane(
-                leaderRotation * Vector3.forward,
+                pathSource.forward,
                 Vector3.up
             );
 
-        if (backwardsPathDirection.sqrMagnitude < 0.0001f)
-            backwardsPathDirection = Vector3.forward;
+        if (forward.sqrMagnitude < 0.0001f)
+            forward = Vector3.forward;
 
-        backwardsPathDirection.Normalize();
-
-        // --------------------------------------------------
-        // Seed a straight path behind the starting cart.
-        //
-        // Example:
-        //
-        // -3m ---- -2m ---- -1m ---- 0m Leader
-        //
-        // This means later followers can immediately ask for
-        // positions behind the leader.
-        // --------------------------------------------------
+        forward.Normalize();
 
         if (initialBackfillDistance > 0f)
         {
-            int backfillSampleCount =
+            int backfillCount =
                 Mathf.CeilToInt(
-                    initialBackfillDistance / sampleSpacing
+                    initialBackfillDistance /
+                    sampleSpacing
                 );
 
-            for (int i = backfillSampleCount; i >= 1; i--)
+            for (int i = backfillCount; i >= 1; i--)
             {
-                float distance = -i * sampleSpacing;
+                float distance =
+                    -i * sampleSpacing;
 
                 Vector3 position =
-                    leaderPosition +
-                    backwardsPathDirection * distance;
+                    sourcePosition +
+                    forward * distance;
 
                 samples.Add(
-                    new PathPose(
+                    new PathPoint(
                         position,
-                        leaderRotation,
                         distance
                     )
                 );
             }
         }
 
-        // Leader starts at path distance zero.
         samples.Add(
-            new PathPose(
-                leaderPosition,
-                leaderRotation,
+            new PathPoint(
+                sourcePosition,
                 0f
             )
         );
 
-        acceptedPosition = leaderPosition;
-        acceptedRotation = leaderRotation;
-        lastObservedPosition = leaderPosition;
+        lastObservedPosition =
+            sourcePosition;
 
-        livePosition = leaderPosition;
-        liveRotation = leaderRotation;
+        livePathEndPosition =
+            sourcePosition;
 
         distanceSinceLastSample = 0f;
-        currentDistance = 0f;
+
+        recordedEndProgress = 0f;
+        headProgress = 0f;
 
         acceptedMovementThisTick = false;
-        lastAcceptedSegmentDistance = 0f;
-
         currentSampleCount = samples.Count;
 
         isInitialized = true;
     }
+    #endregion
+
+    #region Manual Physics Tick
 
     /// <summary>
-    /// Returns the path pose at a specific cumulative distance.
+    /// SnakeCartManager explicitly calls this before updating followers.
     ///
-    /// This is not used by carts yet in A0.
-    /// A1 will use this method for Cart 1.
+    /// We intentionally do NOT use FixedUpdate here because otherwise
+    /// component execution order could make followers read either this
+    /// frame's path or last frame's path unpredictably.
     /// </summary>
-    public bool TryGetPoseAtDistance(
-        float targetDistance,
-        out PathPose pose)
+    public void TickHistory()
     {
-        pose = default;
-
-        if (!isInitialized || samples.Count == 0)
-            return false;
-
-        float oldestDistance = samples[0].distance;
-
-        targetDistance =
-            Mathf.Clamp(
-                targetDistance,
-                oldestDistance,
-                currentDistance
-            );
-
-        PathPose newestStored =
-            samples[samples.Count - 1];
-
-        // --------------------------------------------------
-        // Target lies between the newest stored sample and
-        // the current accepted leader endpoint.
-        // --------------------------------------------------
-
-        if (targetDistance >= newestStored.distance)
+        if (!isInitialized ||
+            pathSource == null)
         {
-            float liveSegmentLength =
-                currentDistance - newestStored.distance;
-
-            if (liveSegmentLength <= 0.00001f)
-            {
-                pose = new PathPose(
-                    newestStored.position,
-                    newestStored.rotation,
-                    targetDistance
-                );
-
-                return true;
-            }
-
-            float t =
-                Mathf.Clamp01(
-                    (targetDistance - newestStored.distance) /
-                    liveSegmentLength
-                );
-
-            pose = new PathPose(
-                Vector3.Lerp(
-                    newestStored.position,
-                    livePosition,
-                    t
-                ),
-                Quaternion.Slerp(
-                    newestStored.rotation,
-                    liveRotation,
-                    t
-                ),
-                targetDistance
-            );
-
-            return true;
+            return;
         }
 
-        // --------------------------------------------------
-        // Binary-search the regularly stored samples.
-        // --------------------------------------------------
-
-        int low = 0;
-        int high = samples.Count - 1;
-
-        while (low < high)
-        {
-            int mid = (low + high) / 2;
-
-            if (samples[mid].distance < targetDistance)
-                low = mid + 1;
-            else
-                high = mid;
-        }
-
-        int upperIndex = low;
-
-        if (upperIndex == 0)
-        {
-            PathPose first = samples[0];
-
-            pose = new PathPose(
-                first.position,
-                first.rotation,
-                targetDistance
-            );
-
-            return true;
-        }
-
-        int lowerIndex = upperIndex - 1;
-
-        PathPose lower = samples[lowerIndex];
-        PathPose upper = samples[upperIndex];
-
-        float distanceRange =
-            upper.distance - lower.distance;
-
-        float interpolation =
-            distanceRange > 0.00001f
-                ? (targetDistance - lower.distance) /
-                  distanceRange
-                : 0f;
-
-        pose = new PathPose(
-            Vector3.Lerp(
-                lower.position,
-                upper.position,
-                interpolation
-            ),
-            Quaternion.Slerp(
-                lower.rotation,
-                upper.rotation,
-                interpolation
-            ),
-            targetDistance
+        RecordPathSourceMovement(
+            pathSource.position
         );
-
-        return true;
     }
 
     #endregion
 
     #region Recording
-
-    private void FixedUpdate()
-    {
-        if (!isInitialized || leaderBody == null)
-            return;
-
-        RecordLeaderPose(
-            leaderBody.position,
-            leaderBody.rotation
-        );
-    }
-
-    private void RecordLeaderPose(
-    Vector3 currentPosition,
-    Quaternion currentRotation)
+    private void RecordPathSourceMovement(
+    Vector3 currentSourcePosition)
     {
         acceptedMovementThisTick = false;
-        lastAcceptedSegmentDistance = 0f;
-
-        // --------------------------------------------------
-        // 1. Measure what physically happened this FixedUpdate.
-        // --------------------------------------------------
 
         Vector3 frameDelta =
-            currentPosition - lastObservedPosition;
+            currentSourcePosition -
+            lastObservedPosition;
 
         if (ignoreVerticalMotion)
         {
@@ -443,115 +393,73 @@ public class SnakePathHistory : MonoBehaviour
         float frameDisplacement =
             frameDelta.magnitude;
 
-        // --------------------------------------------------
-        // 2. Read the Rigidbody's actual translational speed.
-        //
-        // This acts as our "is this meaningful locomotion?"
-        // filter.
-        // --------------------------------------------------
+        // Debug only if you want it.
+        currentPlanarSpeed =
+            frameDisplacement /
+            Mathf.Max(
+                Time.fixedDeltaTime,
+                0.00001f
+            );
 
-        Vector3 velocity =
-            leaderBody.linearVelocity;
-
-        if (ignoreVerticalMotion)
-        {
-            velocity =
-                Vector3.ProjectOnPlane(
-                    velocity,
-                    Vector3.up
-                );
-        }
-
-        float planarSpeed =
-            velocity.magnitude;
-
-        // IMPORTANT:
-        // Always update this even when we reject the movement.
-        //
-        // Otherwise tiny rejected solver movements accumulate
-        // and eventually become one accepted large movement.
+        // Always follow the physical probe.
         lastObservedPosition =
-            currentPosition;
+            currentSourcePosition;
 
         // --------------------------------------------------
-        // 3. Reject passive physics settling.
+        // Only remove extremely tiny physics jitter.
+        //
+        // There is NO leader-speed test anymore.
+        // Legitimate hinge swing is allowed to make path.
         // --------------------------------------------------
 
-        bool hasMeaningfulSpeed =
-            planarSpeed >= minPathMotionSpeed;
-
-        bool hasMeaningfulDisplacement =
-            frameDisplacement >= movementAcceptanceDistance;
-
-        if (!hasMeaningfulSpeed ||
-            !hasMeaningfulDisplacement)
+        if (frameDisplacement <
+            movementAcceptanceDistance)
         {
-            // We intentionally discard this motion from path progress.
-            //
-            // Re-anchor where future VALID motion starts so that the
-            // discarded settling displacement does not get added later.
-            acceptedPosition =
-                currentPosition;
-
-            acceptedRotation =
-                currentRotation;
-
             return;
         }
 
-        // --------------------------------------------------
-        // 4. Valid locomotion.
-        //
-        // Distance itself still comes from actual world displacement,
-        // not velocity * deltaTime.
-        // --------------------------------------------------
-
-        Vector3 acceptedDelta =
-            currentPosition - acceptedPosition;
+        Vector3 segmentDelta =
+            currentSourcePosition -
+            livePathEndPosition;
 
         if (ignoreVerticalMotion)
         {
-            acceptedDelta =
+            segmentDelta =
                 Vector3.ProjectOnPlane(
-                    acceptedDelta,
+                    segmentDelta,
                     Vector3.up
                 );
         }
 
-        float acceptedSegmentLength =
-            acceptedDelta.magnitude;
+        float segmentLength =
+            segmentDelta.magnitude;
 
-        if (acceptedSegmentLength <= 0.00001f)
+        if (segmentLength <= 0.00001f)
             return;
 
         acceptedMovementThisTick = true;
 
-        lastAcceptedSegmentDistance =
-            acceptedSegmentLength;
+        if (headProgress <
+            recordedEndProgress - 0.001f)
+        {
+            TruncateFutureAtHead();
+        }
 
-        AppendAcceptedSegment(
-            acceptedPosition,
-            acceptedRotation,
-            currentPosition,
-            currentRotation,
-            acceptedSegmentLength
+        AppendSegment(
+            livePathEndPosition,
+            currentSourcePosition,
+            segmentLength
         );
 
-        acceptedPosition =
-            currentPosition;
+        livePathEndPosition =
+            currentSourcePosition;
 
-        acceptedRotation =
-            currentRotation;
-
-        livePosition =
-            currentPosition;
-
-        liveRotation =
-            currentRotation;
-
-        currentDistance =
+        recordedEndProgress =
             samples[samples.Count - 1].distance +
             distanceSinceLastSample;
+
+        headProgress =
+            recordedEndProgress;
 
         currentSampleCount =
             samples.Count;
@@ -559,123 +467,58 @@ public class SnakePathHistory : MonoBehaviour
         PruneHistory();
     }
 
-    #endregion
-
-    #region History Cleanup
-
-    private void PruneHistory()
-    {
-        if (samples.Count <= 2)
-            return;
-
-        float keepFromDistance =
-            currentDistance -
-            maxHistoryDistance;
-
-        int removeCount = 0;
-
-        // Always preserve at least two stored points.
-        while (
-            removeCount < samples.Count - 2 &&
-            samples[removeCount + 1].distance <
-            keepFromDistance)
-        {
-            removeCount++;
-        }
-
-        // Avoid constantly shifting the List.
-        if (removeCount >= pruneBatchSize)
-        {
-            samples.RemoveRange(
-                0,
-                removeCount
-            );
-        }
-
-        currentSampleCount = samples.Count;
-    }
-    /// <summary>
-    /// Converts one accepted movement segment into evenly spaced
-    /// distance-based path samples.
-    ///
-    /// Example:
-    /// sampleSpacing = 0.1m
-    /// leader moves 0.35m this FixedUpdate
-    ///
-    /// → generates samples at 0.1m, 0.2m, 0.3m
-    /// → remembers the remaining 0.05m for next update
-    /// </summary>
-    private void AppendAcceptedSegment(
+    private void AppendSegment(
         Vector3 segmentStartPosition,
-        Quaternion segmentStartRotation,
         Vector3 segmentEndPosition,
-        Quaternion segmentEndRotation,
         float segmentLength)
     {
-        float remainingLength = segmentLength;
+        float remainingLength =
+            segmentLength;
 
-        Vector3 remainingStartPosition =
+        Vector3 remainingStart =
             segmentStartPosition;
-
-        Quaternion remainingStartRotation =
-            segmentStartRotation;
 
         while (
             distanceSinceLastSample +
             remainingLength >=
             sampleSpacing)
         {
-            // How much farther do we need to travel
-            // before reaching the next evenly spaced sample?
             float distanceNeeded =
                 sampleSpacing -
                 distanceSinceLastSample;
 
             float t =
-                remainingLength > 0.00001f
-                    ? distanceNeeded / remainingLength
+                remainingLength >
+                0.00001f
+                    ? distanceNeeded /
+                      remainingLength
                     : 1f;
 
             t = Mathf.Clamp01(t);
 
-            // Find the exact position along this movement segment
-            // where the next sample belongs.
-            Vector3 newSamplePosition =
+            Vector3 newPosition =
                 Vector3.Lerp(
-                    remainingStartPosition,
+                    remainingStart,
                     segmentEndPosition,
                     t
                 );
 
-            Quaternion newSampleRotation =
-                Quaternion.Slerp(
-                    remainingStartRotation,
-                    segmentEndRotation,
-                    t
-                );
-
-            PathPose previousSample =
+            PathPoint previous =
                 samples[samples.Count - 1];
 
-            float newSampleDistance =
-                previousSample.distance +
+            float newDistance =
+                previous.distance +
                 sampleSpacing;
 
             samples.Add(
-                new PathPose(
-                    newSamplePosition,
-                    newSampleRotation,
-                    newSampleDistance
+                new PathPoint(
+                    newPosition,
+                    newDistance
                 )
             );
 
-            // Continue processing the unused part of this same
-            // FixedUpdate movement.
-            remainingStartPosition =
-                newSamplePosition;
-
-            remainingStartRotation =
-                newSampleRotation;
+            remainingStart =
+                newPosition;
 
             remainingLength -=
                 distanceNeeded;
@@ -683,11 +526,446 @@ public class SnakePathHistory : MonoBehaviour
             distanceSinceLastSample = 0f;
         }
 
-        // Not enough movement left to create another complete
-        // sample, so carry it into the next FixedUpdate.
         distanceSinceLastSample +=
-            Mathf.Max(0f, remainingLength);
+            Mathf.Max(
+                0f,
+                remainingLength
+            );
     }
+
+    #endregion
+
+    #region Path Query
+
+    /// <summary>
+    /// Gets a follower target from a spatial path distance.
+    ///
+    /// Position:
+    ///     interpolated from the path
+    ///
+    /// Rotation:
+    ///     derived from path tangent
+    ///
+    /// Leader rotation is NOT replayed.
+    /// </summary>
+    public bool TryGetPoseAtProgress(
+        float targetProgress,
+        out Vector3 position,
+        out Quaternion rotation)
+    {
+        position = Vector3.zero;
+        rotation = Quaternion.identity;
+
+        if (!TryGetPositionAtProgress(
+            targetProgress,
+            out position))
+        {
+            return false;
+        }
+
+        float oldest =
+            samples[0].distance;
+
+        float newest =
+            recordedEndProgress;
+
+        targetProgress =
+            Mathf.Clamp(
+                targetProgress,
+                oldest,
+                newest
+            );
+
+        float beforeProgress =
+            Mathf.Max(
+                oldest,
+                targetProgress -
+                tangentProbeDistance
+            );
+
+        float afterProgress =
+            Mathf.Min(
+                newest,
+                targetProgress +
+                tangentProbeDistance
+            );
+
+        if (!TryGetPositionAtProgress(
+                beforeProgress,
+                out Vector3 beforePosition))
+        {
+            return false;
+        }
+
+        if (!TryGetPositionAtProgress(
+                afterProgress,
+                out Vector3 afterPosition))
+        {
+            return false;
+        }
+
+        Vector3 tangent =
+            afterPosition -
+            beforePosition;
+
+        tangent =
+            Vector3.ProjectOnPlane(
+                tangent,
+                Vector3.up
+            );
+
+        // Fallback if we're sitting on a nearly zero-length region.
+        if (tangent.sqrMagnitude < 0.0001f)
+        {
+            tangent =
+                GetFallbackTangent();
+        }
+
+        if (tangent.sqrMagnitude < 0.0001f)
+            tangent = Vector3.forward;
+
+        rotation =
+            Quaternion.LookRotation(
+                tangent.normalized,
+                Vector3.up
+            );
+
+        return true;
+    }
+
+    public bool TryGetPositionAtProgress(
+        float targetProgress,
+        out Vector3 position)
+    {
+        position = Vector3.zero;
+
+        if (!isInitialized ||
+            samples.Count == 0)
+        {
+            return false;
+        }
+
+        float oldest =
+            samples[0].distance;
+
+        targetProgress =
+            Mathf.Clamp(
+                targetProgress,
+                oldest,
+                recordedEndProgress
+            );
+
+        PathPoint newestStored =
+            samples[samples.Count - 1];
+
+        // ---------------------------------------------
+        // Target lies inside the small unsampled
+        // "live end" section.
+        // ---------------------------------------------
+
+        if (targetProgress >=
+            newestStored.distance)
+        {
+            float liveDistance =
+                recordedEndProgress -
+                newestStored.distance;
+
+            if (liveDistance <= 0.00001f)
+            {
+                position =
+                    newestStored.position;
+
+                return true;
+            }
+
+            float t =
+                Mathf.Clamp01(
+                    (targetProgress -
+                     newestStored.distance) /
+                    liveDistance
+                );
+
+            position =
+                Vector3.Lerp(
+                    newestStored.position,
+                    livePathEndPosition,
+                    t
+                );
+
+            return true;
+        }
+
+        // ---------------------------------------------
+        // Binary search spatial samples.
+        // ---------------------------------------------
+
+        int low = 0;
+        int high =
+            samples.Count - 1;
+
+        while (low < high)
+        {
+            int mid =
+                (low + high) / 2;
+
+            if (samples[mid].distance <
+                targetProgress)
+            {
+                low = mid + 1;
+            }
+            else
+            {
+                high = mid;
+            }
+        }
+
+        int upperIndex = low;
+
+        if (upperIndex == 0)
+        {
+            position =
+                samples[0].position;
+
+            return true;
+        }
+
+        int lowerIndex =
+            upperIndex - 1;
+
+        PathPoint lower =
+            samples[lowerIndex];
+
+        PathPoint upper =
+            samples[upperIndex];
+
+        float distanceRange =
+            upper.distance -
+            lower.distance;
+
+        float t2 =
+            distanceRange >
+            0.00001f
+                ? (targetProgress -
+                   lower.distance) /
+                  distanceRange
+                : 0f;
+
+        position =
+            Vector3.Lerp(
+                lower.position,
+                upper.position,
+                t2
+            );
+
+        return true;
+    }
+
+    private Vector3 GetFallbackTangent()
+    {
+        if (samples.Count >= 2)
+        {
+            Vector3 tangent =
+                samples[samples.Count - 1].position -
+                samples[samples.Count - 2].position;
+
+            tangent =
+                Vector3.ProjectOnPlane(
+                    tangent,
+                    Vector3.up
+                );
+
+            if (tangent.sqrMagnitude >
+                0.0001f)
+            {
+                return tangent.normalized;
+            }
+        }
+
+        if (leaderBody != null)
+        {
+            Vector3 forward =
+                leaderBody.rotation *
+                Vector3.forward;
+
+            forward =
+                Vector3.ProjectOnPlane(
+                    forward,
+                    Vector3.up
+                );
+
+            return forward.normalized;
+        }
+
+        return Vector3.forward;
+    }
+
+    #endregion
+
+    #region Future Reverse Support
+
+    /// <summary>
+    /// Infrastructure for the later reverse system.
+    ///
+    /// Does NOT move the Rigidbody.
+    ///
+    /// Later the reverse controller can move the physical leader
+    /// backwards along the path and decrease this cursor at the
+    /// same time.
+    /// </summary>
+    public void SetHeadProgress(
+        float progress)
+    {
+        if (!isInitialized ||
+            samples.Count == 0)
+        {
+            return;
+        }
+
+        headProgress =
+            Mathf.Clamp(
+                progress,
+                samples[0].distance,
+                recordedEndProgress
+            );
+    }
+
+    /// <summary>
+    /// Deletes path geometry after HeadProgress.
+    ///
+    /// Example later:
+    ///
+    /// wall mistake:
+    ///
+    /// -----------●----X
+    ///            head
+    ///
+    /// player reverses to ●,
+    /// then starts driving somewhere new.
+    ///
+    /// X is discarded.
+    /// </summary>
+    public void TruncateFutureAtHead()
+    {
+        if (!isInitialized ||
+            samples.Count == 0)
+        {
+            return;
+        }
+
+        if (headProgress >=
+            recordedEndProgress - 0.0001f)
+        {
+            return;
+        }
+
+        if (!TryGetPositionAtProgress(
+                headProgress,
+                out Vector3 headPosition))
+        {
+            return;
+        }
+
+        int removeFromIndex =
+            samples.Count;
+
+        for (
+            int i = 0;
+            i < samples.Count;
+            i++)
+        {
+            if (samples[i].distance >
+                headProgress)
+            {
+                removeFromIndex = i;
+                break;
+            }
+        }
+
+        if (removeFromIndex <
+            samples.Count)
+        {
+            samples.RemoveRange(
+                removeFromIndex,
+                samples.Count -
+                removeFromIndex
+            );
+        }
+
+        // Store an exact new endpoint.
+        if (samples.Count == 0 ||
+            Mathf.Abs(
+                samples[samples.Count - 1].distance -
+                headProgress) >
+            0.0001f)
+        {
+            samples.Add(
+                new PathPoint(
+                    headPosition,
+                    headProgress
+                )
+            );
+        }
+        else
+        {
+            PathPoint endpoint =
+                samples[samples.Count - 1];
+
+            endpoint.position =
+                headPosition;
+
+            samples[samples.Count - 1] =
+                endpoint;
+        }
+
+        livePathEndPosition =
+            headPosition;
+
+        recordedEndProgress =
+            headProgress;
+
+        distanceSinceLastSample = 0f;
+
+        currentSampleCount =
+            samples.Count;
+    }
+
+    #endregion
+
+    #region Pruning
+
+    private void PruneHistory()
+    {
+        if (samples.Count <= 2)
+            return;
+
+        float keepFrom =
+            headProgress -
+            maxHistoryDistance;
+
+        int removeCount = 0;
+
+        while (
+            removeCount <
+            samples.Count - 2 &&
+            samples[removeCount + 1].distance <
+            keepFrom)
+        {
+            removeCount++;
+        }
+
+        if (removeCount >=
+            pruneBatchSize)
+        {
+            samples.RemoveRange(
+                0,
+                removeCount
+            );
+        }
+
+        currentSampleCount =
+            samples.Count;
+    }
+
     #endregion
 
     #region Gizmos
@@ -702,9 +980,13 @@ public class SnakePathHistory : MonoBehaviour
             return;
         }
 
-        Gizmos.color = Color.cyan;
+        Gizmos.color =
+            Color.cyan;
 
-        for (int i = 1; i < samples.Count; i++)
+        for (
+            int i = 1;
+            i < samples.Count;
+            i++)
         {
             Gizmos.DrawLine(
                 samples[i - 1].position,
@@ -712,19 +994,15 @@ public class SnakePathHistory : MonoBehaviour
             );
         }
 
-        // Draw the small live section between the last
-        // stored sample and the accepted leader endpoint.
-        PathPose newest =
-            samples[samples.Count - 1];
-
         Gizmos.DrawLine(
-            newest.position,
-            livePosition
+            samples[samples.Count - 1].position,
+            livePathEndPosition
         );
 
         if (drawStoredSamples)
         {
-            Gizmos.color = Color.yellow;
+            Gizmos.color =
+                Color.yellow;
 
             int stride =
                 Mathf.Max(
@@ -744,15 +1022,35 @@ public class SnakePathHistory : MonoBehaviour
             }
         }
 
-        Gizmos.color = Color.green;
+        // Active snake head cursor.
+        if (TryGetPositionAtProgress(
+                headProgress,
+                out Vector3 activeHeadPosition))
+        {
+            Gizmos.color =
+                Color.green;
 
-        Gizmos.DrawSphere(
-            livePosition,
-            sampleGizmoRadius * 1.5f
-        );
+            Gizmos.DrawSphere(
+                activeHeadPosition,
+                sampleGizmoRadius * 2f
+            );
+        }
+        if (TryGetPositionAtProgress(
+        ChainHeadProgress,
+        out Vector3 chainHeadPosition))
+        {
+            Gizmos.color = Color.red;
+
+            Gizmos.DrawSphere(
+                chainHeadPosition,
+                sampleGizmoRadius * 2.5f
+            );
+        }
     }
 
     #endregion
+
+    #region Validation
 
     private void OnValidate()
     {
@@ -762,10 +1060,22 @@ public class SnakePathHistory : MonoBehaviour
                 sampleSpacing
             );
 
+        minPathMotionSpeed =
+            Mathf.Max(
+                0f,
+                minPathMotionSpeed
+            );
+
         movementAcceptanceDistance =
             Mathf.Max(
                 0f,
                 movementAcceptanceDistance
+            );
+
+        tangentProbeDistance =
+            Mathf.Max(
+                0.01f,
+                tangentProbeDistance
             );
 
         initialBackfillDistance =
@@ -776,9 +1086,9 @@ public class SnakePathHistory : MonoBehaviour
 
         maxHistoryDistance =
             Mathf.Max(
-                maxHistoryDistance,
                 initialBackfillDistance +
-                sampleSpacing * 2f
+                sampleSpacing * 2f,
+                maxHistoryDistance
             );
 
         pruneBatchSize =
@@ -793,4 +1103,6 @@ public class SnakePathHistory : MonoBehaviour
                 drawEveryNthSample
             );
     }
+
+    #endregion
 }

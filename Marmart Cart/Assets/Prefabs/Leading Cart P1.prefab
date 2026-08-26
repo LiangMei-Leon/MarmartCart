@@ -524,6 +524,7 @@ Transform:
   - {fileID: 4798895985376391310}
   - {fileID: 8019296873271415942}
   - {fileID: 2075712972660898168}
+  - {fileID: 3285715298976908109}
   m_Father: {fileID: 6000561608375612997}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &474693890449885193
@@ -2709,6 +2710,37 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &3648461496895150276
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3285715298976908109}
+  m_Layer: 7
+  m_Name: RearHitch
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3285715298976908109
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3648461496895150276}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.0863889, z: -0.1902771}
+  m_LocalScale: {x: 0.8333334, y: 0.8333334, z: 0.8333334}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 143223866022185680}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3679073460100359720
 GameObject:
   m_ObjectHideFlags: 0

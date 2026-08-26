@@ -45662,7 +45662,7 @@ GameObject:
   m_Icon: {fileID: 7250588514170254948, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &203355758
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -45670,12 +45670,18 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 203355757}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: da91cadfcafd4164abb3b271e40055dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   pathHistory: {fileID: 0}
+  useDistancePathForAllFollowers: 1
+  firstFollowerSpacing: 2
+  followerCartSpacing: 1.5
+  firstFollowerHingeInfluence: 0.7
+  hingeInfluenceFalloffPerCart: 0.2
+  drawFirstFollowerTarget: 1
   distanceBetween: 0.11
   bodyParts:
   - {fileID: 6597024514049572970, guid: c6c12bfc1b7ace847be00ecc6a8d5d79, type: 3}
@@ -45688,6 +45694,8 @@ MonoBehaviour:
   needScaleup: 0
   numOfCartsWithGroceryItem: 0
   sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
+  physicalJointProbe: {fileID: 0}
+  hingeRotationInfluence: 0.5
 --- !u!4 &203355759
 Transform:
   m_ObjectHideFlags: 0
@@ -139844,6 +139852,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pathHistory: {fileID: 0}
+  useDistancePathForAllFollowers: 1
+  firstFollowerSpacing: 2
+  followerCartSpacing: 1.5
+  firstFollowerHingeInfluence: 0.7
+  hingeInfluenceFalloffPerCart: 0.2
+  drawFirstFollowerTarget: 1
   distanceBetween: 0.11
   bodyParts:
   - {fileID: 6597024514049572970, guid: ddd4a2478a4ba0643ba10383ce5adb33, type: 3}
@@ -139856,6 +139870,8 @@ MonoBehaviour:
   needScaleup: 0
   numOfCartsWithGroceryItem: 0
   sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
+  physicalJointProbe: {fileID: 0}
+  hingeRotationInfluence: 1
 --- !u!4 &635788456
 Transform:
   m_ObjectHideFlags: 0
@@ -261748,6 +261764,7 @@ Transform:
   - {fileID: 1040140948}
   - {fileID: 984518983}
   - {fileID: 1095131270}
+  - {fileID: 1329945752}
   - {fileID: 1598559498}
   - {fileID: 590702305}
   - {fileID: 430773387}
@@ -345806,6 +345823,115 @@ Transform:
   - {fileID: 1515485793}
   m_Father: {fileID: 589456493}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1329945751
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1329945752}
+  - component: {fileID: 1329945755}
+  - component: {fileID: 1329945754}
+  - component: {fileID: 1329945753}
+  m_Layer: 6
+  m_Name: Plane (2)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 126
+  m_IsActive: 1
+--- !u!4 &1329945752
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1329945751}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -74.31, y: -11.6, z: -210.8}
+  m_LocalScale: {x: 20, y: 1, z: 10}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1072191644}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!64 &1329945753
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1329945751}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &1329945754
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1329945751}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 073c6f48ab5c035469508c2da3b51329, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 0.5
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &1329945755
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1329945751}
+  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1001 &1330015969
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -362463,6 +362589,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pathHistory: {fileID: 0}
+  useDistancePathForAllFollowers: 1
+  firstFollowerSpacing: 2
+  followerCartSpacing: 1.5
+  firstFollowerHingeInfluence: 0.7
+  hingeInfluenceFalloffPerCart: 0.2
+  drawFirstFollowerTarget: 1
   distanceBetween: 0.11
   bodyParts:
   - {fileID: 6597024514049572970, guid: eb604ccf023d8ae44a3f75176632b652, type: 3}
@@ -362475,6 +362607,8 @@ MonoBehaviour:
   needScaleup: 0
   numOfCartsWithGroceryItem: 0
   sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
+  physicalJointProbe: {fileID: 0}
+  hingeRotationInfluence: 1
 --- !u!4 &1417757268
 Transform:
   m_ObjectHideFlags: 0
@@ -518545,7 +518679,7 @@ PrefabInstance:
       objectReference: {fileID: 1083701875}
     - target: {fileID: 7689148556561879390, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -11.704485
+      value: -15.900001
       objectReference: {fileID: 0}
     - target: {fileID: 7689148556561879390, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_LocalPosition.y
@@ -518553,7 +518687,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7689148556561879390, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 30.025452
+      value: 33.400024
       objectReference: {fileID: 0}
     - target: {fileID: 7689148556561879390, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_LocalRotation.w
@@ -524448,6 +524582,7 @@ GameObject:
   - component: {fileID: 1981863289}
   - component: {fileID: 1981863288}
   - component: {fileID: 1981863290}
+  - component: {fileID: 1981863291}
   m_Layer: 0
   m_Name: Chain of Carts P1
   m_TagString: SnakeCartManagerP1
@@ -524467,7 +524602,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da91cadfcafd4164abb3b271e40055dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pathHistory: {fileID: 0}
+  pathHistory: {fileID: 1981863290}
+  useDistancePathForAllFollowers: 1
+  firstFollowerSpacing: 0.5
+  followerCartSpacing: 3
+  firstFollowerHingeInfluence: 0.7
+  hingeInfluenceFalloffPerCart: 1
+  drawFirstFollowerTarget: 1
   distanceBetween: 0.11
   bodyParts:
   - {fileID: 6597024514049572970, guid: 8b73817db514d35448f8eae48c6e04fb, type: 3}
@@ -524480,6 +524621,8 @@ MonoBehaviour:
   needScaleup: 0
   numOfCartsWithGroceryItem: 0
   sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
+  physicalJointProbe: {fileID: 1981863291}
+  hingeRotationInfluence: 0.7
 --- !u!4 &1981863289
 Transform:
   m_ObjectHideFlags: 0
@@ -524508,19 +524651,47 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sampleSpacing: 0.1
+  minPathMotionSpeed: 0.5
   movementAcceptanceDistance: 0.01
+  ignoreVerticalMotion: 1
+  leaderToChainHeadDistance: 2.5
   initialBackfillDistance: 20
   maxHistoryDistance: 80
   pruneBatchSize: 32
+  tangentProbeDistance: 0.35
   drawPath: 1
   drawStoredSamples: 1
   drawEveryNthSample: 5
   sampleGizmoRadius: 0.15
   isInitialized: 0
   acceptedMovementThisTick: 0
-  currentDistance: 0
-  lastAcceptedSegmentDistance: 0
+  currentPlanarSpeed: 0
+  headProgress: 0
+  recordedEndProgress: 0
+  distanceSinceLastSample: 0
   currentSampleCount: 0
+--- !u!114 &1981863291
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1981863287}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5895e67b586bf54c98a6435f09cd739, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  leaderRearHitch: {fileID: 0}
+  armLength: 1
+  armMass: 1
+  linearDamping: 1
+  angularDamping: 6
+  limitSwingAngle: 1
+  maxSwingAngle: 60
+  showPhysicalArm: 1
+  probeSphereSize: 0.8
+  currentHingeAngle: 0
 --- !u!43 &1981911432
 Mesh:
   m_ObjectHideFlags: 0
