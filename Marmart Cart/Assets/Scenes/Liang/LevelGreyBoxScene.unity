@@ -45693,7 +45693,6 @@ MonoBehaviour:
   followerCartSpacing: 1.5
   firstFollowerHingeInfluence: 0.7
   hingeInfluenceFalloffPerCart: 0.2
-  moveBackwardController: {fileID: 0}
   drawFirstFollowerTarget: 1
   distanceBetween: 0.11
   bodyParts:
@@ -45708,7 +45707,6 @@ MonoBehaviour:
   numOfCartsWithGroceryItem: 0
   sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
   physicalJointProbe: {fileID: 0}
-  hingeRotationInfluence: 0.5
 --- !u!4 &203355759
 Transform:
   m_ObjectHideFlags: 0
@@ -139886,7 +139884,6 @@ MonoBehaviour:
   followerCartSpacing: 1.5
   firstFollowerHingeInfluence: 0.7
   hingeInfluenceFalloffPerCart: 0.2
-  moveBackwardController: {fileID: 0}
   drawFirstFollowerTarget: 1
   distanceBetween: 0.11
   bodyParts:
@@ -139901,7 +139898,6 @@ MonoBehaviour:
   numOfCartsWithGroceryItem: 0
   sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
   physicalJointProbe: {fileID: 0}
-  hingeRotationInfluence: 1
 --- !u!4 &635788456
 Transform:
   m_ObjectHideFlags: 0
@@ -199786,11 +199782,11 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: -69.3
-  far clip plane: 1100.1
+  near clip plane: -100
+  far clip plane: 1000
   field of view: 30
   orthographic: 1
-  orthographic size: 6.5
+  orthographic size: 14
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -199814,8 +199810,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 797538514}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.19198428, y: 0.45080337, z: -0.09994069, w: 0.8659852}
-  m_LocalPosition: {x: -51.334045, y: 4.0461636, z: -645.43854}
+  m_LocalRotation: {x: 0.39044836, y: 0.346829, z: -0.16172901, w: 0.83731925}
+  m_LocalPosition: {x: -41.935543, y: 11.310254, z: -490.6356}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -199899,8 +199895,8 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: -69.3
-  far clip plane: 1100.1
+  near clip plane: -100
+  far clip plane: 1000
   field of view: 30
   orthographic: 1
   orthographic size: 6.5
@@ -199928,7 +199924,7 @@ Transform:
   m_GameObject: {fileID: 797802257}
   serializedVersion: 2
   m_LocalRotation: {x: 0.19198428, y: 0.45080337, z: -0.09994069, w: 0.8659852}
-  m_LocalPosition: {x: -51.434067, y: 4.086161, z: -645.69855}
+  m_LocalPosition: {x: 64.54597, y: 3.186157, z: -507.93845}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -362648,7 +362644,6 @@ MonoBehaviour:
   followerCartSpacing: 1.5
   firstFollowerHingeInfluence: 0.7
   hingeInfluenceFalloffPerCart: 0.2
-  moveBackwardController: {fileID: 0}
   drawFirstFollowerTarget: 1
   distanceBetween: 0.11
   bodyParts:
@@ -362663,7 +362658,6 @@ MonoBehaviour:
   numOfCartsWithGroceryItem: 0
   sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
   physicalJointProbe: {fileID: 0}
-  hingeRotationInfluence: 1
 --- !u!4 &1417757268
 Transform:
   m_ObjectHideFlags: 0
@@ -524646,6 +524640,7 @@ GameObject:
   - component: {fileID: 1981863288}
   - component: {fileID: 1981863290}
   - component: {fileID: 1981863291}
+  - component: {fileID: 1981863292}
   m_Layer: 0
   m_Name: Chain of Carts P1
   m_TagString: SnakeCartManagerP1
@@ -524668,10 +524663,9 @@ MonoBehaviour:
   pathHistory: {fileID: 1981863290}
   useDistancePathForAllFollowers: 1
   firstFollowerSpacing: 0.5
-  followerCartSpacing: 3
+  followerCartSpacing: 3.5
   firstFollowerHingeInfluence: 0.7
-  hingeInfluenceFalloffPerCart: 1
-  moveBackwardController: {fileID: 0}
+  hingeInfluenceFalloffPerCart: 0.35
   drawFirstFollowerTarget: 1
   distanceBetween: 0.11
   bodyParts:
@@ -524686,7 +524680,6 @@ MonoBehaviour:
   numOfCartsWithGroceryItem: 0
   sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
   physicalJointProbe: {fileID: 1981863291}
-  hingeRotationInfluence: 0.7
 --- !u!4 &1981863289
 Transform:
   m_ObjectHideFlags: 0
@@ -524718,7 +524711,6 @@ MonoBehaviour:
   minPathMotionSpeed: 0.5
   movementAcceptanceDistance: 0.01
   ignoreVerticalMotion: 1
-  leaderToChainHeadDistance: 2.5
   initialBackfillDistance: 20
   maxHistoryDistance: 80
   pruneBatchSize: 32
@@ -524749,7 +524741,7 @@ MonoBehaviour:
   leaderRearHitch: {fileID: 0}
   armLength: 1
   armMass: 1
-  linearDamping: 0.5
+  linearDamping: 1
   angularDamping: 6
   maxArmAngularVelocity: 25
   limitSwingAngle: 1
@@ -524762,13 +524754,25 @@ MonoBehaviour:
   recenterDamper: 25
   showPhysicalArm: 1
   showProbeSphere: 1
-  probeSphereSize: 0.8
+  probeSphereSize: 0.75
   currentHingeAngle: 0
   currentDistanceToHitch: 0
   currentProbeSpeed: 0
   isRecentering: 0
   currentHitchSpeed: 0
   currentHitchYawRate: 0
+--- !u!114 &1981863292
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1981863287}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fef1c9cd843ec344b9c13fa69e2d522, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!43 &1981911432
 Mesh:
   m_ObjectHideFlags: 0

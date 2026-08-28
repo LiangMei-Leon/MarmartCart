@@ -20,11 +20,8 @@ using UnityEngine;
 /// Rotation is derived from the path tangent rather than copied
 /// from the leading cart's rotation.
 ///
-/// This is still an early prototype:
-/// - Forward locomotion recording is implemented.
-/// - Stop/stall freezes progress.
-/// - Reverse cursor support is architecturally prepared,
-///   but player-controlled reverse is not connected yet.
+/// Forward locomotion recording only.
+/// There is no MoveBackward/reverse control in this version.
 /// </summary>
 public class SnakePathHistory : MonoBehaviour
 {
@@ -75,57 +72,6 @@ public class SnakePathHistory : MonoBehaviour
         "Ignore suspension / bouncing when measuring path distance.")]
     [SerializeField]
     private bool ignoreVerticalMotion = true;
-    [Header("Virtual Chain Head")]
-
-    [Tooltip(
-    "Distance along the recorded spatial path between the " +
-    "leading cart's progress and the virtual rear coupling " +
-    "that the actual cart train follows.")]
-    [Min(0f)]
-    [SerializeField]
-    private float leaderToChainHeadDistance = 1.5f;
-    #endregion
-
-    #region Move Backward
-    private bool moveBackwardActive;
-    public bool IsMoveBackwardActive => moveBackwardActive;
-    public void BeginMoveBackward()
-    {
-        if (!isInitialized || pathSource == null) return;
-
-        moveBackwardActive = true;
-        lastObservedPosition = pathSource.position;
-    }
-    public void MoveHeadBackwardBy(float distance)
-    {
-        if (!isInitialized || samples.Count == 0 || distance <= 0f) return;
-
-        headProgress = Mathf.Max(samples[0].distance, headProgress - distance);
-    }
-    public void EndMoveBackwardAndTruncate()
-    {
-        if (!isInitialized || pathSource == null) return;
-
-        TruncateFutureAtHead();
-
-        Vector3 currentSourcePosition = pathSource.position;
-
-        if (samples.Count > 0)
-        {
-            PathPoint endpoint = samples[samples.Count - 1];
-            endpoint.position = currentSourcePosition;
-            endpoint.distance = headProgress;
-            samples[samples.Count - 1] = endpoint;
-        }
-
-        livePathEndPosition = currentSourcePosition;
-        lastObservedPosition = currentSourcePosition;
-
-        recordedEndProgress = headProgress;
-        distanceSinceLastSample = 0f;
-
-        moveBackwardActive = false;
-    }
     #endregion
 
     #region History Settings
@@ -234,76 +180,33 @@ public class SnakePathHistory : MonoBehaviour
 
     #region Public API
 
-    public bool IsInitialized =>
-        isInitialized;
+    public bool IsInitialized => isInitialized;
 
     /// <summary>
     /// Current active position of the snake head along the path.
     ///
     /// Followers should use this value.
     /// </summary>
-    public float HeadProgress =>
-        headProgress;
+    public float HeadProgress => headProgress;
 
     /// <summary>
     /// Furthest currently recorded path distance.
     ///
-    /// For now this normally equals HeadProgress.
-    /// Later, during reverse:
-    ///
-    /// HeadProgress < RecordedEndProgress
-    ///
-    /// will be possible.
     /// </summary>
-    public float RecordedEndProgress =>
-        recordedEndProgress;
+    public float RecordedEndProgress => recordedEndProgress;
 
-    public int SampleCount =>
-        samples.Count;
+    public int SampleCount => samples.Count;
 
-    public IReadOnlyList<PathPoint> Samples =>
-        samples;
-    public float ChainHeadProgress
-    {
-        get
-        {
-            if (!isInitialized ||
-                samples.Count == 0)
-            {
-                return headProgress;
-            }
-
-            return Mathf.Clamp(
-                headProgress -
-                leaderToChainHeadDistance,
-                samples[0].distance,
-                headProgress
-            );
-        }
-    }
-    public bool TryGetChainHeadPose(
-    out Vector3 position,
-    out Quaternion rotation)
-    {
-        return TryGetPoseAtProgress(
-            ChainHeadProgress,
-            out position,
-            out rotation
-        );
-    }
+    public IReadOnlyList<PathPoint> Samples => samples;
     #endregion
 
     #region Initialize
-
+    [SerializeField] private float pathPlaneY;
     public void Initialize(Transform newPathSource)
     {
         if (newPathSource == null)
         {
-            Debug.LogError(
-                "[SnakePathHistory] Cannot initialize: Path Source is null.",
-                this
-            );
-
+            Debug.LogError("[SnakePathHistory] Cannot initialize: Path Source is null.", this);
             return;
         }
 
@@ -311,10 +214,7 @@ public class SnakePathHistory : MonoBehaviour
 
         ResetHistoryToSource();
 
-        Debug.Log(
-            $"[SnakePathHistory] Initialized from {pathSource.name}.",
-            this
-        );
+        Debug.Log($"[SnakePathHistory] Initialized from {pathSource.name} on Y plane {pathPlaneY:F2}.", this);
     }
 
     public void ResetHistoryToSource()
@@ -324,8 +224,7 @@ public class SnakePathHistory : MonoBehaviour
 
         samples.Clear();
 
-        Vector3 sourcePosition =
-            pathSource.position;
+        Vector3 sourcePosition = FlattenToPathPlane(pathSource.position);
 
         Vector3 forward =
             Vector3.ProjectOnPlane(
@@ -387,6 +286,11 @@ public class SnakePathHistory : MonoBehaviour
 
         isInitialized = true;
     }
+    private Vector3 FlattenToPathPlane(Vector3 position)
+    {
+        position.y = pathPlaneY;
+        return position;
+    }
     #endregion
 
     #region Manual Physics Tick
@@ -402,13 +306,7 @@ public class SnakePathHistory : MonoBehaviour
     {
         if (!isInitialized || pathSource == null) return;
 
-        if (moveBackwardActive)
-        {
-            lastObservedPosition = pathSource.position;
-            return;
-        }
-
-        RecordPathSourceMovement(pathSource.position);
+        RecordPathSourceMovement(FlattenToPathPlane(pathSource.position));
     }
 
     #endregion
@@ -480,18 +378,11 @@ public class SnakePathHistory : MonoBehaviour
             return;
 
         acceptedMovementThisTick = true;
-
-        if (headProgress <
-            recordedEndProgress - 0.001f)
-        {
-            TruncateFutureAtHead();
-        }
-
         AppendSegment(
-            livePathEndPosition,
-            currentSourcePosition,
-            segmentLength
-        );
+                    livePathEndPosition,
+                    currentSourcePosition,
+                    segmentLength
+                );
 
         livePathEndPosition =
             currentSourcePosition;
@@ -842,137 +733,6 @@ public class SnakePathHistory : MonoBehaviour
     }
 
     #endregion
-
-    #region Future Reverse Support
-
-    /// <summary>
-    /// Infrastructure for the later reverse system.
-    ///
-    /// Does NOT move the Rigidbody.
-    ///
-    /// Later the reverse controller can move the physical leader
-    /// backwards along the path and decrease this cursor at the
-    /// same time.
-    /// </summary>
-    public void SetHeadProgress(
-        float progress)
-    {
-        if (!isInitialized ||
-            samples.Count == 0)
-        {
-            return;
-        }
-
-        headProgress =
-            Mathf.Clamp(
-                progress,
-                samples[0].distance,
-                recordedEndProgress
-            );
-    }
-
-    /// <summary>
-    /// Deletes path geometry after HeadProgress.
-    ///
-    /// Example later:
-    ///
-    /// wall mistake:
-    ///
-    /// -----------●----X
-    ///            head
-    ///
-    /// player reverses to ●,
-    /// then starts driving somewhere new.
-    ///
-    /// X is discarded.
-    /// </summary>
-    public void TruncateFutureAtHead()
-    {
-        if (!isInitialized ||
-            samples.Count == 0)
-        {
-            return;
-        }
-
-        if (headProgress >=
-            recordedEndProgress - 0.0001f)
-        {
-            return;
-        }
-
-        if (!TryGetPositionAtProgress(
-                headProgress,
-                out Vector3 headPosition))
-        {
-            return;
-        }
-
-        int removeFromIndex =
-            samples.Count;
-
-        for (
-            int i = 0;
-            i < samples.Count;
-            i++)
-        {
-            if (samples[i].distance >
-                headProgress)
-            {
-                removeFromIndex = i;
-                break;
-            }
-        }
-
-        if (removeFromIndex <
-            samples.Count)
-        {
-            samples.RemoveRange(
-                removeFromIndex,
-                samples.Count -
-                removeFromIndex
-            );
-        }
-
-        // Store an exact new endpoint.
-        if (samples.Count == 0 ||
-            Mathf.Abs(
-                samples[samples.Count - 1].distance -
-                headProgress) >
-            0.0001f)
-        {
-            samples.Add(
-                new PathPoint(
-                    headPosition,
-                    headProgress
-                )
-            );
-        }
-        else
-        {
-            PathPoint endpoint =
-                samples[samples.Count - 1];
-
-            endpoint.position =
-                headPosition;
-
-            samples[samples.Count - 1] =
-                endpoint;
-        }
-
-        livePathEndPosition =
-            headPosition;
-
-        recordedEndProgress =
-            headProgress;
-
-        distanceSinceLastSample = 0f;
-
-        currentSampleCount =
-            samples.Count;
-    }
-
-    #endregion
-
     #region Pruning
 
     private void PruneHistory()
@@ -1075,17 +835,6 @@ public class SnakePathHistory : MonoBehaviour
             Gizmos.DrawSphere(
                 activeHeadPosition,
                 sampleGizmoRadius * 2f
-            );
-        }
-        if (TryGetPositionAtProgress(
-        ChainHeadProgress,
-        out Vector3 chainHeadPosition))
-        {
-            Gizmos.color = Color.red;
-
-            Gizmos.DrawSphere(
-                chainHeadPosition,
-                sampleGizmoRadius * 2.5f
             );
         }
     }

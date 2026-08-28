@@ -45,9 +45,6 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
     [SerializeField]
     private float hingeInfluenceFalloffPerCart = 0.2f;
 
-    [Header("Move Backward")]
-    [SerializeField] private SnakeMoveBackwardController moveBackwardController;
-
     [Header("Distance Path Debug")]
     [SerializeField]
     private bool drawFirstFollowerTarget = true;
@@ -88,10 +85,7 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
     [Header("Physical Joint Test")]
     [SerializeField]
     private PhysicalChainJointProbe physicalJointProbe;
-    [Header("First Follower Rotation")]
-    [UnityEngine.Range(0f, 1f)]
-    [SerializeField]
-    private float hingeRotationInfluence = 1f;
+    private Rigidbody leadingCartBody;
     private void Awake()
     {
         if (pathHistory == null)
@@ -105,8 +99,6 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
             physicalJointProbe = GetComponent<PhysicalChainJointProbe>();
         }
 
-        if (moveBackwardController == null) moveBackwardController = GetComponent<SnakeMoveBackwardController>();
-        if (moveBackwardController == null) moveBackwardController = gameObject.AddComponent<SnakeMoveBackwardController>();
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -116,24 +108,18 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
     }
     private void Update()
     {
-        
+
     }
     // Update is called once per frame
     void FixedUpdate()
     {
         ManageSnakeBody();
-
-        bool bIsMovingBackward = moveBackwardController != null && moveBackwardController.TickMoveBackward();
-
-        if (!bIsMovingBackward && pathHistory != null && pathHistory.IsInitialized)
-            pathHistory.TickHistory();
-
         UpdateFollowerScale();
 
-        if (useDistancePathForAllFollowers)
-            MoveAllFollowersUsingDistancePath();
-        else
-            SnakeMovement();
+        if (pathHistory != null && pathHistory.IsInitialized) pathHistory.TickHistory();
+
+        if (useDistancePathForAllFollowers) MoveAllFollowersUsingDistancePath();
+        else SnakeMovement();
     }
 
     void SnakeMovement()
@@ -301,12 +287,7 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
                         Vector3.up
                     );
 
-                float hingeInfluence =
-                    Mathf.Clamp01(
-                        firstFollowerHingeInfluence -
-                        followerIndex *
-                        hingeInfluenceFalloffPerCart
-                    );
+                float hingeInfluence = Mathf.Clamp01(firstFollowerHingeInfluence - followerIndex * hingeInfluenceFalloffPerCart);
 
                 targetRotation =
                     Quaternion.Slerp(
@@ -342,13 +323,8 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
             LeadingCartRaycaster = tempCartInstance.GetComponent<LeadingCartRaycaster>();
             // Cache old marker system on the leader.
             leadingMarkerManager = tempCartInstance.GetComponent<MarkerManager>();
-
-            // Find the authoritative movement Rigidbody.
-            LeadingCartBehaviour leadingMovement = tempCartInstance.GetComponentInChildren<LeadingCartBehaviour>();
-            Rigidbody leadingBody = leadingMovement != null ? leadingMovement.CartBody : null;
-            CartControlScript leadingControl = tempCartInstance.GetComponentInChildren<CartControlScript>();
             Transform rearHitch = tempCartInstance.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "RearHitch");
-
+            leadingCartBody = tempCartInstance.GetComponent<Rigidbody>();
             if (rearHitch != null)
             {
                 if (physicalJointProbe != null)
@@ -368,14 +344,6 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
             else
             {
                 Debug.LogError("[SnakeCartManager] Physical probe did not create a ProbeTransform.", this);
-            }
-            if (leadingBody != null && leadingMovement != null && leadingControl != null)
-            {
-                moveBackwardController.Initialize(leadingBody, leadingMovement, leadingControl, pathHistory);
-            }
-            else
-            {
-                Debug.LogError("[SnakeCartManager] MoveBackward system could not initialize.", tempCartInstance);
             }
             setupCamera.Raise();
             bodyParts.RemoveAt(0);
@@ -397,7 +365,8 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
                 return;
             }
 
-            GameObject tempCartInstance = Instantiate(bodyParts[0],spawnPosition,spawnRotation,transform);
+            if (leadingCartBody != null) spawnPosition.y = leadingCartBody.position.y;
+            GameObject tempCartInstance = Instantiate(bodyParts[0], spawnPosition, spawnRotation, transform);
 
             tempCartInstance.tag = GetPlayerTag();
 
@@ -460,10 +429,10 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
                 // Detach this cart and all subsequent carts
                 for (int j = i; j < snakeBody.Count; j++)
                 {
-                    if(snakeBody[j].GetComponent<ChainedCartManager>().HasGroceryItem())
+                    if (snakeBody[j].GetComponent<ChainedCartManager>().HasGroceryItem())
                     {
                         numOfCartsWithGroceryItem--;
-                   
+
                     }
                     snakeBody[j].transform.localScale = new Vector3(5f, 5f, 5f);
                     snakeBody[j].transform.SetParent(null); // Detach from parent
@@ -502,10 +471,7 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
         }
 
         // Index 0 = leader.
-        for (
-            int i = 1;
-            i < snakeBody.Count;
-            i++)
+        for (int i = 1; i < snakeBody.Count; i++)
         {
             GameObject cart =
                 snakeBody[i];
@@ -513,20 +479,14 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
             if (cart == null)
                 continue;
 
-            if (!TryGetDistancePathTarget(
-                    i,
-                    out Vector3 targetPosition,
-                    out Quaternion targetRotation))
-            {
-                continue;
-            }
+            if (!TryGetDistancePathTarget(i, out Vector3 targetPosition, out Quaternion targetRotation)) continue;
 
-            cart.transform.SetPositionAndRotation(
-                targetPosition,
-                targetRotation
-            );
+            if (leadingCartBody != null) targetPosition.y = leadingCartBody.position.y;
+
+            cart.transform.SetPositionAndRotation(targetPosition, targetRotation);
         }
     }
+
     private void UpdateFollowerScale()
     {
         for (
@@ -539,14 +499,15 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 
             if (needScaleup)
             {
-                snakeBody[i].transform.localScale =new Vector3(10f,10f,10f);
+                snakeBody[i].transform.localScale = new Vector3(10f, 10f, 10f);
             }
             else
             {
-                snakeBody[i].transform.localScale = new Vector3(6f,6f,6f);
+                snakeBody[i].transform.localScale = new Vector3(6f, 6f, 6f);
             }
         }
     }
+
     private void UpdateLegacyLeaderMarkerState()
     {
         if (leadingMarkerManager == null &&

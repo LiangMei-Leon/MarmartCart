@@ -2,446 +2,699 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// One-shot stuck recovery mechanic.
+/// Tail-led MoveBackward recovery.
 ///
-/// The leading cart continuously records its recent physical trajectory.
+/// Normal:
+/// Leader -> raw physical Probe -> C1 -> C2 -> ... -> Tail
 ///
-/// When MoveBackward is triggered:
-/// - normal player control temporarily stops
-/// - leader travels backward along its own recorded trajectory
-/// - SnakePathHistory moves its shared HeadProgress backward
-/// - every chained cart therefore moves backward during the same physics ticks
-/// - abandoned future path is deleted when the movement finishes
-///
-/// This is NOT normal reverse driving.
-/// CartControlScript decides when MoveBackward is allowed.
+/// MoveBackward:
+/// - Stall freezes the ACTUAL physical probe in world space so wall-pivot hinge motion is not recorded.
+/// - The current snake shape is copied into a temporary path.
+/// - The tail becomes the temporary head.
+/// - With zero chained carts, the frozen physical Probe itself becomes the temporary head.
+/// - The temporary head travels backward along the OLD normal path.
+/// - Every member advances through the same temporary path by the same distance.
+/// - The frozen physical hinge is ignored during the action; a virtual probe follows the temporary path.
+/// - At the end the physical hinge is rebuilt and SnakePathHistory is rebound to the new raw probe.
 /// </summary>
 public class SnakeMoveBackwardController : MonoBehaviour
 {
-    [System.Serializable]
-    private struct LeaderPathPoint
-    {
-        public Vector3 position;
-        public Quaternion rotation;
-        public float distance;
-
-        public LeaderPathPoint(Vector3 position, Quaternion rotation, float distance)
-        {
-            this.position = position;
-            this.rotation = rotation;
-            this.distance = distance;
-        }
-    }
-
-    [Header("Move Backward")]
-
-    [Tooltip("How far the leading cart travels backward along its previous path.")]
-    [Min(0.1f)]
-    [SerializeField] private float moveBackwardDistance = 3f;
-
-    [Tooltip("Base speed of the automatic backward movement.")]
-    [Min(0.1f)]
-    [SerializeField] private float moveBackwardSpeed = 10f;
-
-    [Tooltip("Speed multiplier from movement start at 0 to movement finish at 1.")]
-    [SerializeField]
-    private AnimationCurve moveBackwardSpeedCurve = new AnimationCurve(
-        new Keyframe(0f, 1.4f),
-        new Keyframe(0.3f, 1f),
-        new Keyframe(1f, 0.35f)
-    );
-
-    [Tooltip("How much follower path progress moves backward for each meter the leader moves backward.")]
-    [Min(0f)]
-    [SerializeField] private float chainMoveBackwardMultiplier = 1f;
-
-    [Tooltip("Minimum delay before another MoveBackward can begin.")]
-    [Min(0f)]
-    [SerializeField] private float moveBackwardCooldown = 1.25f;
-
-    [Header("Leader Path Recording")]
-
-    [Tooltip("Distance between stored samples of the leading cart trajectory.")]
-    [Min(0.01f)]
-    [SerializeField] private float historySampleSpacing = 0.08f;
-
-    [Tooltip("Maximum amount of leading-cart trajectory retained.")]
-    [Min(1f)]
-    [SerializeField] private float maxHistoryDistance = 20f;
-
-    [Tooltip("Ignores microscopic Rigidbody solver movement.")]
-    [Min(0f)]
-    [SerializeField] private float minimumRecordMovement = 0.01f;
+    //#region Settings
 
-    [Header("Debug")]
+    //[Header("Move Backward")]
 
-    [SerializeField] private bool drawLeaderHistory = true;
+    //[Tooltip("How far the temporary tail/head travels backward along the old normal path.")]
+    //[Min(0.1f)]
+    //[SerializeField] private float moveBackwardDistance = 3f;
 
-    [Header("Runtime - Read Only")]
+    //[Tooltip("Total duration of the MoveBackward action.")]
+    //[Min(0.05f)]
+    //[SerializeField] private float moveBackwardDuration = 0.6f;
 
-    [SerializeField] private bool isInitialized;
-    [SerializeField] private bool isMovingBackward;
-    [SerializeField] private float currentHistoryProgress;
-    [SerializeField] private float moveBackwardCurrentProgress;
-    [SerializeField] private float moveBackwardTargetProgress;
-    [SerializeField] private float currentMoveBackwardCompletion;
-    [SerializeField] private int historySampleCount;
+    //[Tooltip("Maps normalized time 0-1 to normalized travelled distance 0-1.")]
+    //[SerializeField] private AnimationCurve moveBackwardMotionCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
-    private Rigidbody leaderBody;
-    private LeadingCartBehaviour leadingMovement;
-    private CartControlScript cartControl;
-    private SnakePathHistory snakePathHistory;
-    private bool leaderWasKinematic;
+    //[Tooltip("Minimum delay before another MoveBackward can begin.")]
+    //[Min(0f)]
+    //[SerializeField] private float moveBackwardCooldown = 1.25f;
 
-    private readonly List<LeaderPathPoint> history = new List<LeaderPathPoint>(512);
+    //[Header("Temporary Path")]
 
-    private Vector3 lastObservedLeaderPosition;
-    private Vector3 liveHistoryPosition;
-    private Quaternion liveHistoryRotation;
+    //[Tooltip("Sampling distance when the tail extends the temporary path through the old normal path.")]
+    //[Min(0.01f)]
+    //[SerializeField] private float temporaryPathSampleSpacing = 0.1f;
 
-    private float distanceSinceLastStoredSample;
-    private float nextAllowedMoveBackwardTime;
+    //[Tooltip("Distance used to calculate temporary-path tangents.")]
+    //[Min(0.01f)]
+    //[SerializeField] private float tangentSampleDistance = 0.2f;
 
-    public bool IsMovingBackward => isMovingBackward;
+    //[Header("Leader Rotation")]
 
-    public System.Action OnMoveBackwardStarted;
-    public System.Action OnMoveBackwardFinished;
+    //[Tooltip("If enabled, the leading cart gradually aligns with the temporary chain path while backing out.")]
+    //[SerializeField] private bool rotateLeaderAlongTemporaryPath = true;
 
-    public void Initialize(Rigidbody body, LeadingCartBehaviour movement, CartControlScript control, SnakePathHistory pathHistory)
-    {
-        if (body == null || movement == null || control == null || pathHistory == null)
-        {
-            Debug.LogError("[SnakeMoveBackwardController] Missing required initialization reference.", this);
-            return;
-        }
+    //[Tooltip("How quickly leader rotation follows the temporary path.")]
+    //[Min(0f)]
+    //[SerializeField] private float leaderRotationFollowSpeed = 10f;
 
-        if (cartControl != null) cartControl.OnMoveBackwardPressed -= TryBeginMoveBackward;
+    //#endregion
 
-        leaderBody = body;
-        leadingMovement = movement;
-        cartControl = control;
-        snakePathHistory = pathHistory;
+    //#region Debug
 
-        cartControl.OnMoveBackwardPressed += TryBeginMoveBackward;
+    //[Header("Debug")]
 
-        ResetLeaderHistory();
+    //[SerializeField] private bool drawTemporaryPath = true;
+    //[SerializeField] private bool debugMoveBackward = false;
 
-        isInitialized = true;
-    }
+    //[Header("Runtime - Read Only")]
 
-    /// <summary>
-    /// Called once per SnakeCartManager FixedUpdate.
-    ///
-    /// Returns true while this system owns the leading cart's movement.
-    /// </summary>
-    public bool TickMoveBackward()
-    {
-        if (!isInitialized || leaderBody == null) return false;
+    //[SerializeField] private bool isInitialized;
+    //[SerializeField] private bool isMovingBackward;
+    //[SerializeField] private bool stallProbeFrozen;
+    //[SerializeField] private bool usingProbeAsTail;
+    //[SerializeField] private float actualMoveBackwardDistance;
+    //[SerializeField] private float movedDistance;
+    //[SerializeField] private float tailMainPathProgress;
+    //[SerializeField] private float temporaryHeadProgress;
+    //[SerializeField] private Vector3 virtualProbePosition;
 
-        if (isMovingBackward)
-        {
-            TickActiveMoveBackward();
-            return true;
-        }
+    //#endregion
 
-        RecordLeaderHistory();
-        return false;
-    }
+    //#region References
 
-    private void TryBeginMoveBackward()
-    {
-        if (!isInitialized || isMovingBackward) return;
-        if (Time.time < nextAllowedMoveBackwardTime) return;
-        if (history.Count < 2) return;
+    //private SnakeCartManager snakeManager;
+    //private SnakePathHistory normalPath;
+    //private PhysicalChainJointProbe physicalProbe;
 
-        float oldestProgress = history[0].distance;
-        float availableDistance = currentHistoryProgress - oldestProgress;
+    //private Rigidbody leaderBody;
+    //private LeadingCartBehaviour[] leadingMovements;
+    //private CartControlScript cartControl;
 
-        if (availableDistance <= 0.05f) return;
+    //#endregion
 
-        float actualDistance = Mathf.Min(moveBackwardDistance, availableDistance);
+    //#region Runtime
 
-        moveBackwardCurrentProgress = currentHistoryProgress;
-        moveBackwardTargetProgress = currentHistoryProgress - actualDistance;
-        currentMoveBackwardCompletion = 0f;
+    //private TemporaryPath temporaryPath;
 
-        isMovingBackward = true;
+    //private float[] bodyOffsetsFromTemporaryHead;
+    //private float probeOffsetFromTemporaryHead;
 
-        leadingMovement.SetSpeedToZero();
+    //private float tailMainStartProgress;
+    //private float elapsedTime;
+    //private float nextAllowedMoveBackwardTime;
 
-        leaderBody.linearVelocity = Vector3.zero;
-        leaderBody.angularVelocity = Vector3.zero;
+    //private int expectedSnakeCount;
 
-        leaderWasKinematic = leaderBody.isKinematic;
-        leaderBody.isKinematic = true;
+    //private bool leaderWasKinematic;
+    //private bool finalizeNextFixedUpdate;
 
-        snakePathHistory.BeginMoveBackward();
+    //#endregion
 
-        OnMoveBackwardStarted?.Invoke();
-    }
+    //#region Public API
 
-    private void TickActiveMoveBackward()
-    {
-        float totalDistance = Mathf.Max(0.001f, currentHistoryProgress - moveBackwardTargetProgress);
-        float remainingDistance = moveBackwardCurrentProgress - moveBackwardTargetProgress;
+    //public bool IsMovingBackward => isMovingBackward;
 
-        currentMoveBackwardCompletion = Mathf.Clamp01(1f - remainingDistance / totalDistance);
+    //public System.Action OnMoveBackwardStarted;
+    //public System.Action OnMoveBackwardFinished;
 
-        float speedMultiplier = Mathf.Max(0.05f, moveBackwardSpeedCurve.Evaluate(currentMoveBackwardCompletion));
-        float requestedStep = moveBackwardSpeed * speedMultiplier * Time.fixedDeltaTime;
-        float actualStep = Mathf.Min(requestedStep, remainingDistance);
+    //public void Initialize(SnakeCartManager manager, Rigidbody body, LeadingCartBehaviour[] movements, CartControlScript control, SnakePathHistory pathHistory, PhysicalChainJointProbe probe)
+    //{
+    //    if (manager == null || body == null || movements == null || movements.Length == 0 || control == null || pathHistory == null || probe == null)
+    //    {
+    //        Debug.LogError("[SnakeMoveBackwardController] Missing initialization reference.", this);
+    //        return;
+    //    }
+
+    //    if (cartControl != null) cartControl.OnMoveBackwardPressed -= TryBeginMoveBackward;
+
+    //    snakeManager = manager;
+    //    leaderBody = body;
+    //    leadingMovements = movements;
+    //    cartControl = control;
+    //    normalPath = pathHistory;
+    //    physicalProbe = probe;
+
+    //    cartControl.OnMoveBackwardPressed += TryBeginMoveBackward;
+
+    //    temporaryPath = new TemporaryPath();
+
+    //    isInitialized = true;
+    //}
+
+    ///// <summary>
+    ///// Called once per FixedUpdate by SnakeCartManager.
+    /////
+    ///// This method also synchronizes the raw physical-probe freeze with
+    ///// the existing canMoveBackward stalled-state permission.
+    ///// </summary>
+    //public bool TickMoveBackward()
+    //{
+    //    if (!isInitialized) return false;
+
+    //    SyncStallProbeFreezeState();
+
+    //    if (!isMovingBackward) return false;
+
+    //    if (finalizeNextFixedUpdate)
+    //    {
+    //        FinishMoveBackward();
+    //        return true;
+    //    }
+
+    //    TickActiveMoveBackward();
+    //    return true;
+    //}
+
+    //#endregion
+
+    //#region Stall Freeze
+
+    ///// <summary>
+    ///// No new stall-detector reference is required.
+    /////
+    ///// Existing stall logic already calls:
+    /////     AllowMoveBackward()
+    /////     DisallowMoveBackward()
+    /////
+    ///// We use that same permission state to freeze/unfreeze raw Probe.
+    ///// </summary>
+    //private void SyncStallProbeFreezeState()
+    //{
+    //    if (isMovingBackward || cartControl == null || physicalProbe == null || normalPath == null) return;
+
+    //    bool shouldFreeze = cartControl.GetCanMoveBackward();
+
+    //    if (shouldFreeze && !stallProbeFrozen)
+    //    {
+    //        physicalProbe.FreezeProbeInWorld();
+    //        stallProbeFrozen = true;
+
+    //        if (debugMoveBackward) Debug.Log("[MoveBackward] Stall entered. Raw physical probe frozen in world space.");
+    //    }
+    //    else if (!shouldFreeze && stallProbeFrozen)
+    //    {
+    //        Transform resumedProbe = physicalProbe.ResumeProbeFromCurrentHitch();
+
+    //        if (resumedProbe != null)
+    //        {
+    //            normalPath.RebindPathSourceWithoutReset(resumedProbe);
+    //            normalPath.ReanchorEndToCurrentSourceWithoutProgress();
+    //        }
+
+    //        stallProbeFrozen = false;
+
+    //        if (debugMoveBackward) Debug.Log("[MoveBackward] Stall cleared. Raw physical hinge rebuilt and resumed.");
+    //    }
+    //}
+
+    //#endregion
+
+    //#region Start
+
+    //private void TryBeginMoveBackward()
+    //{
+    //    if (!isInitialized || isMovingBackward) return;
+    //    if (Time.time < nextAllowedMoveBackwardTime) return;
+    //    if (normalPath == null || !normalPath.IsInitialized) return;
+
+    //    List<GameObject> snakeBody = snakeManager.GetSnakeBody();
+
+    //    if (snakeBody == null || snakeBody.Count == 0) return;
+
+    //    expectedSnakeCount = snakeBody.Count;
+    //    usingProbeAsTail = snakeBody.Count == 1;
+
+    //    // Guarantee the source is frozen at the exact activation moment even if
+    //    // the stalled permission was enabled between physics ticks.
+    //    physicalProbe.FreezeProbeInWorld();
+    //    stallProbeFrozen = true;
+
+    //    if (usingProbeAsTail)
+    //    {
+    //        // No chained carts:
+    //        // the frozen raw physical Probe itself becomes our temporary tail.
+    //        tailMainStartProgress = normalPath.HeadProgress;
+    //    }
+    //    else
+    //    {
+    //        int tailIndex = snakeBody.Count - 1;
+    //        tailMainStartProgress = snakeManager.GetDistancePathProgressForSnakeIndex(tailIndex);
+    //    }
+
+    //    tailMainStartProgress = Mathf.Clamp(tailMainStartProgress, normalPath.OldestProgress, normalPath.HeadProgress);
+
+    //    float availableDistanceBehindTail = tailMainStartProgress - normalPath.OldestProgress;
+
+    //    if (availableDistanceBehindTail <= 0.05f)
+    //    {
+    //        if (debugMoveBackward) Debug.Log("[MoveBackward] Not enough old path behind the temporary tail.");
+    //        return;
+    //    }
+
+    //    actualMoveBackwardDistance = Mathf.Min(moveBackwardDistance, availableDistanceBehindTail);
+
+    //    if (!BuildTemporaryPathFromCurrentSnake(snakeBody))
+    //    {
+    //        Debug.LogWarning("[MoveBackward] Failed to build temporary path.", this);
+    //        return;
+    //    }
+
+    //    movedDistance = 0f;
+    //    elapsedTime = 0f;
+    //    tailMainPathProgress = tailMainStartProgress;
+    //    finalizeNextFixedUpdate = false;
 
-        float newProgress = moveBackwardCurrentProgress - actualStep;
+    //    StopLeadingMovement();
 
-        if (!TryGetLeaderPoseAtProgress(newProgress, out Vector3 targetPosition, out Quaternion targetRotation))
-        {
-            FinishMoveBackward();
-            return;
-        }
+    //    leaderBody.linearVelocity = Vector3.zero;
+    //    leaderBody.angularVelocity = Vector3.zero;
+
+    //    leaderWasKinematic = leaderBody.isKinematic;
+    //    leaderBody.isKinematic = true;
 
-        leaderBody.linearVelocity = Vector3.zero;
-        leaderBody.angularVelocity = Vector3.zero;
+    //    normalPath.BeginMoveBackward();
 
-        leaderBody.MovePosition(targetPosition);
-        leaderBody.MoveRotation(targetRotation);
+    //    // The raw physical probe remains frozen and is ignored during MoveBackward.
+    //    // virtualProbePosition is driven by the temporary path instead.
+    //    isMovingBackward = true;
+
+    //    OnMoveBackwardStarted?.Invoke();
 
-        float actualProgressMoved = moveBackwardCurrentProgress - newProgress;
-        moveBackwardCurrentProgress = newProgress;
+    //    if (debugMoveBackward)
+    //    {
+    //        Debug.Log($"[MoveBackward] START | snakeCount:{snakeBody.Count} | probeAsTail:{usingProbeAsTail} | tailProgress:{tailMainStartProgress:F2} | distance:{actualMoveBackwardDistance:F2}");
+    //    }
+    //}
+
+    ///// <summary>
+    ///// Seeds the temporary path from CURRENT world positions:
+    /////
+    ///// Leader -> Probe -> C1 -> C2 -> ... -> Tail
+    /////
+    ///// With zero chained carts:
+    /////
+    ///// Leader -> Probe
+    /////
+    ///// Because every target is derived from this exact current shape,
+    ///// MoveBackward has no activation-frame teleport.
+    ///// </summary>
+    //private bool BuildTemporaryPathFromCurrentSnake(List<GameObject> snakeBody)
+    //{
+    //    if (physicalProbe.ProbeTransform == null) return false;
+
+    //    temporaryPath.Clear();
+
+    //    bodyOffsetsFromTemporaryHead = new float[snakeBody.Count];
+    //    float[] initialBodyProgress = new float[snakeBody.Count];
+
+    //    temporaryPath.Reset(leaderBody.position);
+    //    initialBodyProgress[0] = 0f;
+
+    //    float initialProbeProgress = temporaryPath.Append(physicalProbe.ProbePosition);
+
+    //    for (int i = 1; i < snakeBody.Count; i++)
+    //    {
+    //        if (snakeBody[i] == null) return false;
+
+    //        initialBodyProgress[i] = temporaryPath.Append(snakeBody[i].transform.position);
+    //    }
+
+    //    float initialTemporaryHead = temporaryPath.HeadProgress;
+
+    //    for (int i = 0; i < snakeBody.Count; i++)
+    //    {
+    //        bodyOffsetsFromTemporaryHead[i] = initialTemporaryHead - initialBodyProgress[i];
+    //    }
+
+    //    probeOffsetFromTemporaryHead = initialTemporaryHead - initialProbeProgress;
+    //    temporaryHeadProgress = initialTemporaryHead;
+    //    virtualProbePosition = physicalProbe.ProbePosition;
+
+    //    return initialTemporaryHead > 0.01f;
+    //}
+
+    //#endregion
+
+    //#region Active MoveBackward
+
+    //private void TickActiveMoveBackward()
+    //{
+    //    List<GameObject> snakeBody = snakeManager.GetSnakeBody();
+
+    //    if (snakeBody == null || snakeBody.Count != expectedSnakeCount)
+    //    {
+    //        Debug.LogWarning("[MoveBackward] Snake count changed during MoveBackward. Finishing recovery early.", this);
+    //        finalizeNextFixedUpdate = true;
+    //        return;
+    //    }
+
+    //    elapsedTime += Time.fixedDeltaTime;
+
+    //    float normalizedTime = Mathf.Clamp01(elapsedTime / moveBackwardDuration);
+    //    float curveValue = Mathf.Clamp01(moveBackwardMotionCurve.Evaluate(normalizedTime));
+
+    //    // Prevent a badly authored curve from ever moving the temporary head forward again.
+    //    float desiredMovedDistance = Mathf.Max(movedDistance, actualMoveBackwardDistance * curveValue);
+    //    float desiredTailProgress = Mathf.Max(normalPath.OldestProgress, tailMainStartProgress - desiredMovedDistance);
+
+    //    float actualMovementThisFrame = Mathf.Max(0f, tailMainPathProgress - desiredTailProgress);
+
+    //    if (actualMovementThisFrame > 0.00001f)
+    //    {
+    //        AppendOldPathSectionToTemporaryPath(tailMainPathProgress, desiredTailProgress);
+
+    //        normalPath.MoveHeadBackwardBy(actualMovementThisFrame);
+
+    //        movedDistance += actualMovementThisFrame;
+    //        tailMainPathProgress = desiredTailProgress;
+    //        temporaryHeadProgress = temporaryPath.HeadProgress;
+    //    }
+
+    //    MoveEntireSnakeAlongTemporaryPath(snakeBody);
+
+    //    if (normalizedTime >= 1f || movedDistance >= actualMoveBackwardDistance - 0.001f)
+    //    {
+    //        finalizeNextFixedUpdate = true;
+    //    }
+    //}
+
+    ///// <summary>
+    ///// The temporary tail follows the OLD normal path.
+    /////
+    ///// We sample the section instead of appending one long chord so tight turns
+    ///// remain curved even when MoveBackward is intentionally fast.
+    ///// </summary>
+    //private void AppendOldPathSectionToTemporaryPath(float fromProgress, float toProgress)
+    //{
+    //    float spacing = Mathf.Max(0.01f, temporaryPathSampleSpacing);
+    //    float sampleProgress = fromProgress;
+
+    //    while (sampleProgress - spacing > toProgress)
+    //    {
+    //        sampleProgress -= spacing;
+
+    //        if (normalPath.TryGetPositionAtProgress(sampleProgress, out Vector3 samplePosition))
+    //        {
+    //            temporaryPath.Append(samplePosition);
+    //        }
+    //    }
+
+    //    if (normalPath.TryGetPositionAtProgress(toProgress, out Vector3 finalPosition))
+    //    {
+    //        temporaryPath.Append(finalPosition);
+    //    }
+    //}
+
+    //private void MoveEntireSnakeAlongTemporaryPath(List<GameObject> snakeBody)
+    //{
+    //    float head = temporaryPath.HeadProgress;
+
+    //    // -------------------------------------------------
+    //    // VIRTUAL PROBE
+    //    //
+    //    // The REAL physical probe stays frozen during MoveBackward.
+    //    // This virtual position is only part of the temporary tail-led path.
+    //    // -------------------------------------------------
+
+    //    float probeProgress = head - probeOffsetFromTemporaryHead;
+
+    //    if (temporaryPath.TryGetPose(probeProgress, tangentSampleDistance, out Vector3 probePosition, out Vector3 ignoredProbeTangent))
+    //    {
+    //        virtualProbePosition = probePosition;
+    //    }
+
+    //    // -------------------------------------------------
+    //    // LEADER
+    //    // -------------------------------------------------
+
+    //    float leaderProgress = head - bodyOffsetsFromTemporaryHead[0];
+
+    //    if (temporaryPath.TryGetPose(leaderProgress, tangentSampleDistance, out Vector3 leaderPosition, out Vector3 leaderTangent))
+    //    {
+    //        leaderBody.MovePosition(leaderPosition);
+
+    //        if (rotateLeaderAlongTemporaryPath && leaderTangent.sqrMagnitude > 0.0001f)
+    //        {
+    //            Quaternion targetRotation = Quaternion.LookRotation(-leaderTangent, Vector3.up);
+    //            float rotationT = 1f - Mathf.Exp(-leaderRotationFollowSpeed * Time.fixedDeltaTime);
+    //            leaderBody.MoveRotation(Quaternion.Slerp(leaderBody.rotation, targetRotation, rotationT));
+    //        }
+    //    }
+
+    //    // -------------------------------------------------
+    //    // CHAINED CARTS
+    //    // -------------------------------------------------
+
+    //    for (int i = 1; i < snakeBody.Count; i++)
+    //    {
+    //        GameObject cart = snakeBody[i];
+
+    //        if (cart == null) continue;
+
+    //        float cartProgress = head - bodyOffsetsFromTemporaryHead[i];
+
+    //        if (!temporaryPath.TryGetPose(cartProgress, tangentSampleDistance, out Vector3 cartPosition, out Vector3 cartTangent))
+    //        {
+    //            continue;
+    //        }
+
+    //        Quaternion cartRotation = cart.transform.rotation;
+
+    //        if (cartTangent.sqrMagnitude > 0.0001f)
+    //        {
+    //            // Path tangent is the backward travel direction.
+    //            // Cart faces opposite it because it is backing up.
+    //            cartRotation = Quaternion.LookRotation(-cartTangent, Vector3.up);
+    //        }
+
+    //        cart.transform.SetPositionAndRotation(cartPosition, cartRotation);
+    //    }
+    //}
 
-        snakePathHistory.MoveHeadBackwardBy(actualProgressMoved * chainMoveBackwardMultiplier);
+    //#endregion
+
+    //#region Finish
+
+    //private void FinishMoveBackward()
+    //{
+    //    // Shared normal cursor already moved backward by movedDistance.
+    //    // Delete the abandoned dead-end branch.
+    //    normalPath.EndMoveBackwardAndTruncate();
+
+    //    // Rebuild the ACTUAL physical hinge from the leader's new pose.
+    //    // virtualProbePosition gives it the desired trailing direction.
+    //    Transform rebuiltProbe = physicalProbe.ResetSimulationToCurrentHitch(virtualProbePosition);
+
+    //    if (rebuiltProbe != null)
+    //    {
+    //        normalPath.RebindPathSourceWithoutReset(rebuiltProbe);
+    //        normalPath.ReanchorEndToCurrentSourceWithoutProgress();
+    //    }
+
+    //    leaderBody.isKinematic = leaderWasKinematic;
+
+    //    if (!leaderBody.isKinematic)
+    //    {
+    //        leaderBody.linearVelocity = Vector3.zero;
+    //        leaderBody.angularVelocity = Vector3.zero;
+    //    }
+
+    //    ResetLeadingMovement();
+
+    //    isMovingBackward = false;
+    //    finalizeNextFixedUpdate = false;
+    //    stallProbeFrozen = false;
+
+    //    nextAllowedMoveBackwardTime = Time.time + moveBackwardCooldown;
+
+    //    OnMoveBackwardFinished?.Invoke();
+
+    //    if (debugMoveBackward)
+    //    {
+    //        Debug.Log($"[MoveBackward] FINISH | moved:{movedDistance:F2} | newNormalHead:{normalPath.HeadProgress:F2}");
+    //    }
+
+    //    temporaryPath.Clear();
+    //}
+
+    //#endregion
+
+    //#region Leading Movement
+
+    //private void StopLeadingMovement()
+    //{
+    //    if (leadingMovements == null) return;
+
+    //    for (int i = 0; i < leadingMovements.Length; i++)
+    //    {
+    //        if (leadingMovements[i] != null) leadingMovements[i].SetSpeedToZero();
+    //    }
+    //}
 
-        if (moveBackwardCurrentProgress <= moveBackwardTargetProgress + 0.001f) FinishMoveBackward();
-    }
+    //private void ResetLeadingMovement()
+    //{
+    //    if (leadingMovements == null) return;
 
-    private void FinishMoveBackward()
-    {
-        isMovingBackward = false;
+    //    for (int i = 0; i < leadingMovements.Length; i++)
+    //    {
+    //        if (leadingMovements[i] != null) leadingMovements[i].ResetSpeed();
+    //    }
+    //}
 
-        snakePathHistory.EndMoveBackwardAndTruncate();
+    //#endregion
 
-        TruncateLeaderHistoryAt(moveBackwardCurrentProgress);
+    //#region Cleanup / Debug
 
-        leaderBody.isKinematic = leaderWasKinematic;
+    //private void OnDestroy()
+    //{
+    //    if (cartControl != null) cartControl.OnMoveBackwardPressed -= TryBeginMoveBackward;
+    //}
 
-        if (!leaderBody.isKinematic)
-        {
-            leaderBody.linearVelocity = Vector3.zero;
-            leaderBody.angularVelocity = Vector3.zero;
-        }
+    //private void OnDrawGizmos()
+    //{
+    //    if (!drawTemporaryPath || !Application.isPlaying || temporaryPath == null || temporaryPath.Count < 2) return;
 
-        leadingMovement.ResetSpeed();
+    //    Gizmos.color = Color.magenta;
 
-        nextAllowedMoveBackwardTime = Time.time + moveBackwardCooldown;
+    //    for (int i = 1; i < temporaryPath.Count; i++)
+    //    {
+    //        Gizmos.DrawLine(temporaryPath.GetPosition(i - 1), temporaryPath.GetPosition(i));
+    //    }
 
-        OnMoveBackwardFinished?.Invoke();
-    }
+    //    Gizmos.color = Color.white;
+    //    Gizmos.DrawSphere(virtualProbePosition, 0.15f);
+    //}
 
-    private void ResetLeaderHistory()
-    {
-        history.Clear();
+    //#endregion
 
-        Vector3 position = leaderBody.position;
-        Quaternion rotation = leaderBody.rotation;
+    //#region Temporary Path
 
-        currentHistoryProgress = 0f;
-        distanceSinceLastStoredSample = 0f;
+    //private class TemporaryPath
+    //{
+    //    private struct Point
+    //    {
+    //        public Vector3 position;
+    //        public float distance;
 
-        lastObservedLeaderPosition = position;
-        liveHistoryPosition = position;
-        liveHistoryRotation = rotation;
+    //        public Point(Vector3 position, float distance)
+    //        {
+    //            this.position = position;
+    //            this.distance = distance;
+    //        }
+    //    }
 
-        history.Add(new LeaderPathPoint(position, rotation, 0f));
+    //    private readonly List<Point> points = new List<Point>(256);
 
-        historySampleCount = history.Count;
-    }
+    //    public int Count => points.Count;
+    //    public float HeadProgress => points.Count > 0 ? points[points.Count - 1].distance : 0f;
 
-    private void RecordLeaderHistory()
-    {
-        Vector3 currentPosition = leaderBody.position;
-        Quaternion currentRotation = leaderBody.rotation;
+    //    public void Clear()
+    //    {
+    //        points.Clear();
+    //    }
 
-        Vector3 frameDelta = Vector3.ProjectOnPlane(currentPosition - lastObservedLeaderPosition, Vector3.up);
-        float frameDistance = frameDelta.magnitude;
+    //    public void Reset(Vector3 position)
+    //    {
+    //        points.Clear();
+    //        points.Add(new Point(position, 0f));
+    //    }
 
-        lastObservedLeaderPosition = currentPosition;
+    //    public float Append(Vector3 position)
+    //    {
+    //        if (points.Count == 0)
+    //        {
+    //            Reset(position);
+    //            return 0f;
+    //        }
 
-        if (frameDistance < minimumRecordMovement)
-        {
-            liveHistoryPosition = currentPosition;
-            liveHistoryRotation = currentRotation;
-            return;
-        }
+    //        Point lastPoint = points[points.Count - 1];
+    //        Vector3 delta = Vector3.ProjectOnPlane(position - lastPoint.position, Vector3.up);
+    //        float distance = delta.magnitude;
 
-        Vector3 segmentDelta = Vector3.ProjectOnPlane(currentPosition - liveHistoryPosition, Vector3.up);
-        float segmentLength = segmentDelta.magnitude;
+    //        if (distance <= 0.00001f) return lastPoint.distance;
 
-        if (segmentLength <= 0.00001f)
-        {
-            liveHistoryPosition = currentPosition;
-            liveHistoryRotation = currentRotation;
-            return;
-        }
+    //        float newDistance = lastPoint.distance + distance;
 
-        AppendLeaderHistorySegment(liveHistoryPosition, liveHistoryRotation, currentPosition, currentRotation, segmentLength);
+    //        points.Add(new Point(position, newDistance));
 
-        liveHistoryPosition = currentPosition;
-        liveHistoryRotation = currentRotation;
+    //        return newDistance;
+    //    }
 
-        currentHistoryProgress = history[history.Count - 1].distance + distanceSinceLastStoredSample;
+    //    public bool TryGetPose(float progress, float tangentDistance, out Vector3 position, out Vector3 tangent)
+    //    {
+    //        position = Vector3.zero;
+    //        tangent = Vector3.zero;
 
-        PruneLeaderHistory();
+    //        if (!TryGetPosition(progress, out position)) return false;
 
-        historySampleCount = history.Count;
-    }
+    //        float sampleDistance = Mathf.Max(0.01f, tangentDistance);
 
-    private void AppendLeaderHistorySegment(Vector3 startPosition, Quaternion startRotation, Vector3 endPosition, Quaternion endRotation, float segmentLength)
-    {
-        float remainingLength = segmentLength;
-        Vector3 remainingStartPosition = startPosition;
-        Quaternion remainingStartRotation = startRotation;
+    //        TryGetPosition(progress - sampleDistance, out Vector3 before);
+    //        TryGetPosition(progress + sampleDistance, out Vector3 after);
 
-        while (distanceSinceLastStoredSample + remainingLength >= historySampleSpacing)
-        {
-            float distanceNeeded = historySampleSpacing - distanceSinceLastStoredSample;
-            float t = remainingLength > 0.00001f ? distanceNeeded / remainingLength : 1f;
+    //        tangent = Vector3.ProjectOnPlane(after - before, Vector3.up);
 
-            Vector3 samplePosition = Vector3.Lerp(remainingStartPosition, endPosition, t);
-            Quaternion sampleRotation = Quaternion.Slerp(remainingStartRotation, endRotation, t);
+    //        if (tangent.sqrMagnitude < 0.0001f && points.Count >= 2)
+    //        {
+    //            tangent = Vector3.ProjectOnPlane(points[points.Count - 1].position - points[points.Count - 2].position, Vector3.up);
+    //        }
 
-            float sampleDistance = history[history.Count - 1].distance + historySampleSpacing;
+    //        if (tangent.sqrMagnitude > 0.0001f) tangent.Normalize();
 
-            history.Add(new LeaderPathPoint(samplePosition, sampleRotation, sampleDistance));
+    //        return true;
+    //    }
 
-            remainingStartPosition = samplePosition;
-            remainingStartRotation = sampleRotation;
+    //    public bool TryGetPosition(float progress, out Vector3 position)
+    //    {
+    //        position = Vector3.zero;
 
-            remainingLength -= distanceNeeded;
-            distanceSinceLastStoredSample = 0f;
-        }
+    //        if (points.Count == 0) return false;
 
-        distanceSinceLastStoredSample += Mathf.Max(0f, remainingLength);
-    }
+    //        if (points.Count == 1)
+    //        {
+    //            position = points[0].position;
+    //            return true;
+    //        }
 
-    private bool TryGetLeaderPoseAtProgress(float progress, out Vector3 position, out Quaternion rotation)
-    {
-        position = Vector3.zero;
-        rotation = Quaternion.identity;
+    //        progress = Mathf.Clamp(progress, points[0].distance, points[points.Count - 1].distance);
 
-        if (history.Count == 0) return false;
+    //        int low = 0;
+    //        int high = points.Count - 1;
 
-        progress = Mathf.Clamp(progress, history[0].distance, currentHistoryProgress);
+    //        while (low < high)
+    //        {
+    //            int mid = (low + high) / 2;
 
-        LeaderPathPoint newestStored = history[history.Count - 1];
+    //            if (points[mid].distance < progress) low = mid + 1;
+    //            else high = mid;
+    //        }
 
-        if (progress >= newestStored.distance)
-        {
-            float liveDistance = currentHistoryProgress - newestStored.distance;
+    //        int upperIndex = low;
 
-            if (liveDistance <= 0.00001f)
-            {
-                position = newestStored.position;
-                rotation = newestStored.rotation;
-                return true;
-            }
+    //        if (upperIndex == 0)
+    //        {
+    //            position = points[0].position;
+    //            return true;
+    //        }
 
-            float p = Mathf.Clamp01((progress - newestStored.distance) / liveDistance);
+    //        Point lower = points[upperIndex - 1];
+    //        Point upper = points[upperIndex];
 
-            position = Vector3.Lerp(newestStored.position, liveHistoryPosition, p);
-            rotation = Quaternion.Slerp(newestStored.rotation, liveHistoryRotation, p);
+    //        float range = upper.distance - lower.distance;
+    //        float t = range > 0.00001f ? (progress - lower.distance) / range : 0f;
 
-            return true;
-        }
+    //        position = Vector3.Lerp(lower.position, upper.position, t);
 
-        int low = 0;
-        int high = history.Count - 1;
+    //        return true;
+    //    }
 
-        while (low < high)
-        {
-            int mid = (low + high) / 2;
+    //    public Vector3 GetPosition(int index)
+    //    {
+    //        if (index < 0 || index >= points.Count) return Vector3.zero;
 
-            if (history[mid].distance < progress) low = mid + 1;
-            else high = mid;
-        }
+    //        return points[index].position;
+    //    }
+    //}
 
-        int upperIndex = low;
-
-        if (upperIndex == 0)
-        {
-            position = history[0].position;
-            rotation = history[0].rotation;
-            return true;
-        }
-
-        LeaderPathPoint lower = history[upperIndex - 1];
-        LeaderPathPoint upper = history[upperIndex];
-
-        float range = upper.distance - lower.distance;
-        float t = range > 0.00001f ? (progress - lower.distance) / range : 0f;
-
-        position = Vector3.Lerp(lower.position, upper.position, t);
-        rotation = Quaternion.Slerp(lower.rotation, upper.rotation, t);
-
-        return true;
-    }
-
-    private void TruncateLeaderHistoryAt(float progress)
-    {
-        if (!TryGetLeaderPoseAtProgress(progress, out Vector3 position, out Quaternion rotation)) return;
-
-        int removeFromIndex = history.Count;
-
-        for (int i = 0; i < history.Count; i++)
-        {
-            if (history[i].distance > progress)
-            {
-                removeFromIndex = i;
-                break;
-            }
-        }
-
-        if (removeFromIndex < history.Count) history.RemoveRange(removeFromIndex, history.Count - removeFromIndex);
-
-        if (history.Count == 0 || Mathf.Abs(history[history.Count - 1].distance - progress) > 0.0001f)
-        {
-            history.Add(new LeaderPathPoint(position, rotation, progress));
-        }
-        else
-        {
-            history[history.Count - 1] = new LeaderPathPoint(position, rotation, progress);
-        }
-
-        currentHistoryProgress = progress;
-        distanceSinceLastStoredSample = 0f;
-
-        liveHistoryPosition = leaderBody.position;
-        liveHistoryRotation = leaderBody.rotation;
-        lastObservedLeaderPosition = leaderBody.position;
-
-        historySampleCount = history.Count;
-    }
-
-    private void PruneLeaderHistory()
-    {
-        float keepFromProgress = currentHistoryProgress - maxHistoryDistance;
-
-        int removeCount = 0;
-
-        while (removeCount < history.Count - 2 && history[removeCount + 1].distance < keepFromProgress) removeCount++;
-
-        if (removeCount > 0) history.RemoveRange(0, removeCount);
-    }
-
-    private void OnDrawGizmos()
-    {
-        if (!drawLeaderHistory || !Application.isPlaying || history.Count < 2) return;
-
-        Gizmos.color = Color.red;
-
-        for (int i = 1; i < history.Count; i++) Gizmos.DrawLine(history[i - 1].position, history[i].position);
-    }
-
-    private void OnDestroy()
-    {
-        if (cartControl != null) cartControl.OnMoveBackwardPressed -= TryBeginMoveBackward;
-    }
+    //#endregion
 }
