@@ -34081,7 +34081,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 157810592}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: f003cdfeefcc44f4fb52cefa929aec56, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -45693,20 +45693,21 @@ MonoBehaviour:
   followerCartSpacing: 1.5
   firstFollowerHingeInfluence: 0.7
   hingeInfluenceFalloffPerCart: 0.2
-  drawFirstFollowerTarget: 1
+  recoveryHingeRestoreSpeed: 5
+  moveBackwardController: {fileID: 0}
   distanceBetween: 0.11
   bodyParts:
   - {fileID: 6597024514049572970, guid: c6c12bfc1b7ace847be00ecc6a8d5d79, type: 3}
   snakeBody: []
   cartsWithOutItem: []
+  needScaleup: 0
   playerIndex: 2
   setupCamera: {fileID: 11400000, guid: a2aa89cd59a0c8f40966246bd2b2532a, type: 2}
-  playerInputManager: {fileID: 447031817}
   cashScoreManager: {fileID: 1773933218}
-  needScaleup: 0
-  numOfCartsWithGroceryItem: 0
   sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
   physicalJointProbe: {fileID: 0}
+  drawFirstFollowerTarget: 1
+  numOfCartsWithGroceryItem: 0
 --- !u!4 &203355759
 Transform:
   m_ObjectHideFlags: 0
@@ -51472,7 +51473,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 230182280}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: f003cdfeefcc44f4fb52cefa929aec56, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -64462,7 +64463,7 @@ Transform:
   m_GameObject: {fileID: 291623577}
   serializedVersion: 2
   m_LocalRotation: {x: 0.19198428, y: 0.45080337, z: -0.09994069, w: 0.8659852}
-  m_LocalPosition: {x: -51.434067, y: 4.086161, z: -645.69855}
+  m_LocalPosition: {x: -75.33407, y: 4.0861754, z: -644.5985}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -67186,9 +67187,9 @@ Transform:
   m_GameObject: {fileID: 303315827}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -30.23, y: -11.78, z: 28.899994}
+  m_LocalPosition: {x: -54.13, y: -11.78, z: 30}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 990624001}
   - {fileID: 1489413485}
@@ -119951,7 +119952,7 @@ Transform:
   m_GameObject: {fileID: 552998240}
   serializedVersion: 2
   m_LocalRotation: {x: 0.19198428, y: 0.45080337, z: -0.09994069, w: 0.8659852}
-  m_LocalPosition: {x: -51.334045, y: 4.0461636, z: -645.43854}
+  m_LocalPosition: {x: -75.23407, y: 4.046164, z: -644.3385}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -139884,20 +139885,21 @@ MonoBehaviour:
   followerCartSpacing: 1.5
   firstFollowerHingeInfluence: 0.7
   hingeInfluenceFalloffPerCart: 0.2
-  drawFirstFollowerTarget: 1
+  recoveryHingeRestoreSpeed: 5
+  moveBackwardController: {fileID: 0}
   distanceBetween: 0.11
   bodyParts:
   - {fileID: 6597024514049572970, guid: ddd4a2478a4ba0643ba10383ce5adb33, type: 3}
   snakeBody: []
   cartsWithOutItem: []
+  needScaleup: 0
   playerIndex: 4
   setupCamera: {fileID: 11400000, guid: 451def84b38fa3848907aef82b322f89, type: 2}
-  playerInputManager: {fileID: 447031817}
   cashScoreManager: {fileID: 1773933218}
-  needScaleup: 0
-  numOfCartsWithGroceryItem: 0
   sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
   physicalJointProbe: {fileID: 0}
+  drawFirstFollowerTarget: 1
+  numOfCartsWithGroceryItem: 0
 --- !u!4 &635788456
 Transform:
   m_ObjectHideFlags: 0
@@ -199786,7 +199788,7 @@ Camera:
   far clip plane: 1000
   field of view: 30
   orthographic: 1
-  orthographic size: 14
+  orthographic size: 6.5
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -199810,8 +199812,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 797538514}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.39044836, y: 0.346829, z: -0.16172901, w: 0.83731925}
-  m_LocalPosition: {x: -41.935543, y: 11.310254, z: -490.6356}
+  m_LocalRotation: {x: 0.19198428, y: 0.45080337, z: -0.09994069, w: 0.8659852}
+  m_LocalPosition: {x: 42.465954, y: 2.5561604, z: -505.44846}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -199899,7 +199901,7 @@ Camera:
   far clip plane: 1000
   field of view: 30
   orthographic: 1
-  orthographic size: 6.5
+  orthographic size: 14
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -199923,8 +199925,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 797802257}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.19198428, y: 0.45080337, z: -0.09994069, w: 0.8659852}
-  m_LocalPosition: {x: 64.54597, y: 3.186157, z: -507.93845}
+  m_LocalRotation: {x: 0.39044836, y: 0.346829, z: -0.16172901, w: 0.83731925}
+  m_LocalPosition: {x: -22, y: 122.6, z: -490.6356}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -362644,20 +362646,21 @@ MonoBehaviour:
   followerCartSpacing: 1.5
   firstFollowerHingeInfluence: 0.7
   hingeInfluenceFalloffPerCart: 0.2
-  drawFirstFollowerTarget: 1
+  recoveryHingeRestoreSpeed: 5
+  moveBackwardController: {fileID: 0}
   distanceBetween: 0.11
   bodyParts:
   - {fileID: 6597024514049572970, guid: eb604ccf023d8ae44a3f75176632b652, type: 3}
   snakeBody: []
   cartsWithOutItem: []
+  needScaleup: 0
   playerIndex: 3
   setupCamera: {fileID: 11400000, guid: ac80406201c49794989b643d47ea750a, type: 2}
-  playerInputManager: {fileID: 447031817}
   cashScoreManager: {fileID: 1773933218}
-  needScaleup: 0
-  numOfCartsWithGroceryItem: 0
   sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
   physicalJointProbe: {fileID: 0}
+  drawFirstFollowerTarget: 1
+  numOfCartsWithGroceryItem: 0
 --- !u!4 &1417757268
 Transform:
   m_ObjectHideFlags: 0
@@ -414800,7 +414803,7 @@ Transform:
   m_GameObject: {fileID: 1662179171}
   serializedVersion: 2
   m_LocalRotation: {x: 0.19198428, y: 0.45080337, z: -0.09994069, w: 0.8659852}
-  m_LocalPosition: {x: 66.36596, y: 2.5561602, z: -506.54846}
+  m_LocalPosition: {x: 42.465954, y: 2.5561604, z: -505.44846}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -487203,7 +487206,7 @@ Transform:
   m_GameObject: {fileID: 1893519026}
   serializedVersion: 2
   m_LocalRotation: {x: 0.19198428, y: 0.45080337, z: -0.09994069, w: 0.8659852}
-  m_LocalPosition: {x: 64.54597, y: 3.186157, z: -507.93845}
+  m_LocalPosition: {x: 40.645958, y: 3.1861572, z: -506.83844}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -524641,6 +524644,12 @@ GameObject:
   - component: {fileID: 1981863290}
   - component: {fileID: 1981863291}
   - component: {fileID: 1981863292}
+  - component: {fileID: 1981863293}
+  - component: {fileID: 1981863294}
+  - component: {fileID: 1981863295}
+  - component: {fileID: 1981863296}
+  - component: {fileID: 1981863297}
+  - component: {fileID: 1981863298}
   m_Layer: 0
   m_Name: Chain of Carts P1
   m_TagString: SnakeCartManagerP1
@@ -524666,20 +524675,21 @@ MonoBehaviour:
   followerCartSpacing: 3.5
   firstFollowerHingeInfluence: 0.7
   hingeInfluenceFalloffPerCart: 0.35
-  drawFirstFollowerTarget: 1
+  recoveryHingeRestoreSpeed: 5
+  moveBackwardController: {fileID: 0}
   distanceBetween: 0.11
   bodyParts:
   - {fileID: 6597024514049572970, guid: 8b73817db514d35448f8eae48c6e04fb, type: 3}
   snakeBody: []
   cartsWithOutItem: []
+  needScaleup: 0
   playerIndex: 1
   setupCamera: {fileID: 11400000, guid: c694c52992c7f5f4fbfb31d18772ac53, type: 2}
-  playerInputManager: {fileID: 447031817}
   cashScoreManager: {fileID: 1773933218}
-  needScaleup: 0
-  numOfCartsWithGroceryItem: 0
   sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
   physicalJointProbe: {fileID: 1981863291}
+  drawFirstFollowerTarget: 1
+  numOfCartsWithGroceryItem: 0
 --- !u!4 &1981863289
 Transform:
   m_ObjectHideFlags: 0
@@ -524708,7 +524718,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sampleSpacing: 0.1
-  minPathMotionSpeed: 0.5
   movementAcceptanceDistance: 0.01
   ignoreVerticalMotion: 1
   initialBackfillDistance: 20
@@ -524773,6 +524782,356 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fef1c9cd843ec344b9c13fa69e2d522, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  moveBackwardDistance: 10
+  moveBackwardDuration: 1.5
+  moveBackwardMotionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: -0.022740098
+      outSlope: -0.022740098
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.20101951
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 2.595016
+      outSlope: 2.595016
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.079889
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  moveBackwardCooldown: 1.25
+  tangentSampleDistance: 0.1
+  followerRotationFollowSpeed: 12
+  allowStraightExtensionWhenHistoryRunsOut: 1
+  reverseTowExtraSlack: 0.5
+  towActivationTolerance: 0.01
+  leaderTowRotationFollowSpeed: 10
+  rotateLeaderFromReverseTow: 1
+  singleCartReverseSpeed: 6
+  singleCartReverseDuration: 1.5
+  singleCartReverseSpeedCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.5
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.75
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  drawTemporaryPath: 1
+  drawReverseTow: 1
+  debugMoveBackward: 0
+  isInitialized: 0
+  isMovingBackward: 0
+  isSingleCartReversing: 0
+  requestedMoveBackwardDistance: 0
+  movedTailDistance: 0
+  tailMainStartProgress: 0
+  availableOldPathDistance: 0
+  temporaryHeadProgress: 0
+  startingLeaderToC1Distance: 0
+  activeReverseTowDistance: 0
+  currentLeaderToC1Distance: 0
+  reverseTowIsTaut: 0
+  leaderMovedDistance: 0
+--- !u!114 &1981863293
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1981863287}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fd12a572d1b50046bd5813b5cf5d3b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveBackwardDistance: 3
+  historyControlPointSpacing: 0.75
+  historyExtensionBeyondDestination: 1.5
+  zeroFollowerHistoryTrim: 1.5
+  samplesPerCurveSegment: 14
+  recoverySampleSpacing: 0.1
+  duplicatePointTolerance: 0.03
+  enableDebugBKey: 1
+  drawRecoverySpine: 1
+  drawControlPoints: 1
+  drawControlPolygon: 1
+  controlPointRadius: 0.12
+  spinePointRadius: 0.035
+  hasValidSpine: 0
+  currentSnakeCount: 0
+  tailStartPathProgress: 0
+  tailDestinationPathProgress: 0
+  actualRequestedPathDistance: 0
+  tailStartSpineProgress: 0
+  tailDestinationSpineProgress: 0
+  recoverySpineLength: 0
+  tailDestinationPosition: {x: 0, y: 0, z: 0}
+  snakeManager: {fileID: 0}
+  pathHistory: {fileID: 0}
+  leaderBody: {fileID: 0}
+--- !u!114 &1981863294
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1981863287}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb8d0a89deb5a0c4b824ced746666a69, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveBackwardDistance: 5
+  moveBackwardDuration: 1
+  moveBackwardMotionCurve:
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  historyControlPointSpacing: 0.75
+  historyExtensionBeyondDestination: 1.5
+  zeroFollowerHistoryTrim: 1.5
+  samplesPerCurveSegment: 14
+  recoverySampleSpacing: 0.1
+  duplicatePointTolerance: 0.03
+  positionOffsetBlendOutCompletion: 0.25
+  rotationAlignCompletion: 0.35
+  rotateLeader: 1
+  rotateFollowers: 1
+  enableKeyboardB: 1
+  holdRecoveredPoseForInspection: 0
+  drawRecoverySpine: 1
+  drawControlPoints: 1
+  controlPointRadius: 0.1
+  spinePointRadius: 0.03
+  hasValidSpine: 0
+  isRecovering: 0
+  isHoldingRecoveredPose: 0
+  currentSnakeCount: 0
+  tailStartPathProgress: 0
+  tailDestinationPathProgress: 0
+  tailStartSpineProgress: 0
+  tailDestinationSpineProgress: 0
+  targetRecoveryShift: 0
+  currentRecoveryShift: 0
+  recoveryCompletion: 0
+  recoverySpineLength: 0
+  tailDestinationPosition: {x: 0, y: 0, z: 0}
+  snakeManager: {fileID: 0}
+  pathHistory: {fileID: 0}
+  leaderBody: {fileID: 0}
+  leadingMovements: []
+  leaderWasKinematic: 0
+  recoveryElapsedTime: 0
+  initialBodySpineProgress: []
+  initialBodyPositionOffset: []
+  initialBodyRotation: []
+--- !u!114 &1981863295
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1981863287}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1552f25e28f0d8c45bac432183917152, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveBackwardDistance: 6
+  moveBackwardDuration: 0.6
+  moveBackwardCurve:
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  allowKeyboardBForTesting: 1
+  holdAtEndForInspection: 0
+  isInitialized: 0
+  isMovingBackward: 0
+  isHoldingAtEnd: 0
+  startProgress: 0
+  targetProgress: 0
+  currentProgress: 0
+  elapsedTime: 0
+  completion: 0
+  previousPathHeadPosition: {x: 0, y: 0, z: 0}
+  currentPathHeadPosition: {x: 0, y: 0, z: 0}
+  leaderDeltaThisTick: {x: 0, y: 0, z: 0}
+  pathHistory: {fileID: 0}
+  leaderBody: {fileID: 0}
+  leadingMovements: []
+  cartControl: {fileID: 0}
+  leaderWasKinematic: 0
+--- !u!114 &1981863296
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1981863287}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78c9f51092484ce4fb17982d25d512cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1981863297
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1981863287}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd3d2f40b350c154286a350e97cec0d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultRewindDistance: 6
+  defaultRewindSpeed: 3
+  rewindCooldown: 0.25
+  leaderRotationSpeed: 18
+  minimumRotationMovement: 0.002
+  enableKeyboardBTest: 1
+  debugLogs: 1
+  isInitialized: 0
+  isRewinding: 0
+  finalizeNextFixedUpdate: 0
+  startProgress: 0
+  targetProgress: 0
+  currentProgress: 0
+  actualDistance: 0
+  activeRewindSpeed: 0
+  currentPathHeadPosition: {x: 0, y: 0, z: 0}
+  previousPathHeadPosition: {x: 0, y: 0, z: 0}
+  rewindMovementThisTick: {x: 0, y: 0, z: 0}
+  rewindFacingThisTick: {x: 0, y: 0, z: 0}
+  pathHistory: {fileID: 0}
+  physicalProbe: {fileID: 0}
+  leaderBody: {fileID: 0}
+  cartControl: {fileID: 0}
+  leaderWasKinematic: 0
+  nextAllowedRewindTime: 0
+  leaderOffsetFromPathHead: {x: 0, y: 0, z: 0}
+--- !u!114 &1981863298
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1981863287}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 125d337dd2db3cb44b882bb8a07f5d0c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHistorySeconds: 10
+  minimumRecordedLeaderTravel: 0.001
+  defaultRewindDistance: 6
+  playbackSpeedMultiplier: 1
+  rewindCooldown: 0.2
+  enableDebugVKey: 1
+  debugLogs: 1
+  isInitialized: 0
+  isRewinding: 0
+  snapshotCount: 0
+  currentSnakeCount: 0
+  rewindStartSnapshotIndex: -1
+  rewindTargetSnapshotIndex: -1
+  playbackCursor: 0
+  requestedRewindDistance: 0
+  actualHistoricalDistance: 0
+  cumulativeLeaderTravel: 0
+  currentHistoricalHeadProgress: 0
+  snakeManager: {fileID: 0}
+  pathHistory: {fileID: 0}
+  physicalProbe: {fileID: 0}
+  leaderBody: {fileID: 0}
+  leadingMovements: []
+  leadingMovementEnabledStates: []
+  leadingRaycaster: {fileID: 0}
+  leadingRaycasterWasEnabled: 0
+  leaderRearHitch: {fileID: 0}
+  previousLeaderPosition: {x: 0, y: 0, z: 0}
+  leaderWasKinematic: 0
+  leaderDetectCollisionsBeforeRewind: 0
+  nextAllowedRewindTime: 0
 --- !u!43 &1981911432
 Mesh:
   m_ObjectHideFlags: 0

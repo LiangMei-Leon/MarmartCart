@@ -99,7 +99,7 @@ public class LeadingCartRaycaster : MonoBehaviour
                     if (hitCartInfo.isCollectedByPlayer && cooldownTimer <= 0f) DetachSelfCompletely();
                 }
             }
-            else if (hit.transform.gameObject.GetComponent<LeadingCartRaycaster>() != null)
+            else if (hit.transform.gameObject.GetComponent<LeadingCartRaycaster>() != null && !hit.transform.gameObject.CompareTag(this.tag))
             {
                 if (hit.transform.parent.GetChild(0).GetComponentInChildren<CartControlScript>() != null)
                 {
@@ -128,11 +128,13 @@ public class LeadingCartRaycaster : MonoBehaviour
                 }
                 else
                 {
-                    if (cooldownTimer <= 0f && !hit.transform.gameObject.GetComponent<LeadingCartRaycaster>().getIfInGhostMode()) DetachSelfCompletely();
+                    if (cooldownTimer <= 0f && !hit.transform.gameObject.GetComponent<LeadingCartRaycaster>().getIfInGhostMode())
+                        DetachSelfCompletely();
                 }
             }
 
-            if (hit.transform.gameObject.CompareTag("Obstacles") && cartControlInput.IsCharing()) Destroy(hit.transform.gameObject);
+            if (hit.transform.gameObject.CompareTag("Obstacles") && cartControlInput.IsCharing())
+                Destroy(hit.transform.gameObject);
         }
     }
 
@@ -180,7 +182,8 @@ public class LeadingCartRaycaster : MonoBehaviour
         if (collision.gameObject.CompareTag("Obstacles"))
         {
             sfxManager.PlaySFX("CrashWalls");
-            cartControlInput.DisallowActivatePowerUp();
+            //cartControlInput.DisallowActivatePowerUp();
+            //cartControlInput.AllowMoveBackward();
 
             if (cartControlInput.IsCharing()) Destroy(collision.gameObject);
         }
@@ -188,26 +191,77 @@ public class LeadingCartRaycaster : MonoBehaviour
         if (collision.gameObject.CompareTag("Walls"))
         {
             sfxManager.PlaySFX("CrashWalls");
-            cartControlInput.DisallowActivatePowerUp();
+            //cartControlInput.DisallowActivatePowerUp();
+            //cartControlInput.AllowMoveBackward();
         }
     }
 
     private void OnCollisionExit(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Obstacles") || collision.gameObject.CompareTag("Walls")) cartControlInput.AllowActivatePowerUp();
+        if (collision.gameObject.CompareTag("Obstacles") || collision.gameObject.CompareTag("Walls"))
+        {
+            //cartControlInput.AllowActivatePowerUp();
+            //cartControlInput.DisallowMoveBackward();
+        }
     }
 
     private void OnCollisionStay(Collision collision)
     {
         if (collision.gameObject.CompareTag("Obstacles"))
         {
-            if (cartControlInput.IsCharing()) Destroy(collision.gameObject);
-            cartControlInput.DisallowActivatePowerUp();
+            //if (cartControlInput.IsCharing()) Destroy(collision.gameObject);
+            //cartControlInput.DisallowActivatePowerUp();
+            //cartControlInput.AllowMoveBackward();
         }
 
-        if (collision.gameObject.CompareTag("Walls")) cartControlInput.DisallowActivatePowerUp();
+        if (collision.gameObject.CompareTag("Walls"))
+        {
+            //cartControlInput.AllowMoveBackward();
+            //cartControlInput.DisallowActivatePowerUp();
+        }
     }
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("Obstacles"))
+        {
+            cartControlInput.DisallowActivatePowerUp();
+            cartControlInput.AllowMoveBackward();
+        }
 
+        if (other.gameObject.CompareTag("Walls"))
+        {
+            cartControlInput.DisallowActivatePowerUp();
+            cartControlInput.AllowMoveBackward();
+        }
+    }
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.gameObject.CompareTag("Obstacles"))
+        {
+            cartControlInput.DisallowActivatePowerUp();
+            cartControlInput.AllowMoveBackward();
+        }
+
+        if (other.gameObject.CompareTag("Walls"))
+        {
+            cartControlInput.DisallowActivatePowerUp();
+            cartControlInput.AllowMoveBackward();
+        }
+    }
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.CompareTag("Obstacles"))
+        {
+            cartControlInput.AllowActivatePowerUp();
+            cartControlInput.DisallowMoveBackward();
+        }
+
+        if (other.gameObject.CompareTag("Walls"))
+        {
+            cartControlInput.AllowActivatePowerUp();
+            cartControlInput.DisallowMoveBackward();
+        }
+    }
     public bool getIfInGhostMode()
     {
         return cartInGhostMode;

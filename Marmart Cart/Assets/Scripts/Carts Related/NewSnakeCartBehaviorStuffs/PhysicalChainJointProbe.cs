@@ -1,110 +1,62 @@
 ﻿using UnityEngine;
 
 /// <summary>
-/// Experimental physical trailing hinge used as the path source for chained carts.
+/// Isolated physical trailing hinge used as the normal snake path source.
 ///
-/// Real RearHitch
-///      ↓
-/// Kinematic proxy Rigidbody
-///      ↓
-/// Free HingeJoint
-///      ↓
-/// Dynamic trailing arm
-///      ↓
-/// Probe point
+/// Real RearHitch -> Kinematic proxy -> Free HingeJoint -> Dynamic arm -> Probe
 ///
-/// The actual leading-cart Rigidbody is never physically connected to this simulation,
-/// so this probe cannot affect the actual cart movement.
-///
-/// During turns the hinge is free to swing naturally.
-/// When the cart starts travelling mostly straight again, an optional spring quickly
-/// recenters the hinge behind the cart.
+/// The real leading-cart Rigidbody is never physically connected to this
+/// simulation. The hinge only provides a natural trailing path source.
 /// </summary>
 public class PhysicalChainJointProbe : MonoBehaviour
 {
-    #region Source
+    #region Settings
 
     [Header("Runtime Source")]
-    [Tooltip("Assigned at runtime by SnakeCartManager.")]
     [SerializeField] private Transform leaderRearHitch;
 
-    #endregion
-
-    #region Physical Arm
-
     [Header("Physical Arm")]
-
-    [Tooltip("Distance from the RearHitch to the trailing probe point.")]
     [Min(0.1f)]
     [SerializeField] private float armLength = 1.5f;
 
-    [Tooltip("Mass of the simulated trailing arm.")]
     [Min(0.01f)]
     [SerializeField] private float armMass = 1f;
 
-    [Tooltip("Translation damping. Keep fairly low so the arm remains responsive.")]
     [Min(0f)]
     [SerializeField] private float linearDamping = 0.2f;
 
-    [Tooltip("Natural angular damping. Higher values make free swinging settle faster, but do NOT pull the arm back to center.")]
     [Min(0f)]
     [SerializeField] private float angularDamping = 1f;
 
-    [Tooltip("Maximum angular velocity allowed for the simulated arm.")]
     [Min(1f)]
     [SerializeField] private float maxArmAngularVelocity = 25f;
 
-    #endregion
-
-    #region Swing Limits
-
     [Header("Optional Swing Limits")]
-
-    [Tooltip("If enabled, prevents the arm from jackknifing beyond Max Swing Angle.")]
     [SerializeField] private bool limitSwingAngle = false;
 
     [Range(0f, 180f)]
     [SerializeField] private float maxSwingAngle = 120f;
 
-    #endregion
-
-    #region Auto Recenter
-
     [Header("Auto Recenter")]
-
-    [Tooltip("When enabled, the hinge is actively pulled back behind the cart once the cart is moving mostly straight again.")]
     [SerializeField] private bool enableAutoRecenter = true;
 
-    [Tooltip("RearHitch must be moving at least this fast before recentering can activate.")]
     [Min(0f)]
     [SerializeField] private float minSpeedForRecenter = 2f;
 
-    [Tooltip("If the cart is rotating slower than this many degrees per second, it is treated as travelling mostly straight.")]
     [Min(0f)]
     [SerializeField] private float maxYawRateForRecenter = 20f;
 
-    [Tooltip("If the hinge is already within this angle of center, the recenter spring switches off.")]
     [Min(0f)]
     [SerializeField] private float recenterDeadAngle = 1.5f;
 
-    [Tooltip("Strength pulling the hinge back to 0 degrees.")]
     [Min(0f)]
     [SerializeField] private float recenterSpring = 250f;
 
-    [Tooltip("Damping applied while the hinge is being pulled back to center.")]
     [Min(0f)]
     [SerializeField] private float recenterDamper = 25f;
 
-    #endregion
-
-    #region Debug Visual
-
     [Header("Debug Visual")]
-
-    [Tooltip("Shows the simulated rigid arm as a thin cube.")]
     [SerializeField] private bool showPhysicalArm = true;
-
-    [Tooltip("Shows the probe sphere at the end of the arm.")]
     [SerializeField] private bool showProbeSphere = true;
 
     [Min(0.01f)]
@@ -115,20 +67,18 @@ public class PhysicalChainJointProbe : MonoBehaviour
     #region Runtime Debug
 
     [Header("Runtime Debug - Read Only")]
-
     [SerializeField] private float currentHingeAngle;
     [SerializeField] private float currentDistanceToHitch;
     [SerializeField] private float currentProbeSpeed;
 
     [Header("Recenter Debug - Read Only")]
-
     [SerializeField] private bool isRecentering;
     [SerializeField] private float currentHitchSpeed;
     [SerializeField] private float currentHitchYawRate;
 
     #endregion
 
-    #region Runtime Objects
+    #region Runtime
 
     private GameObject proxyObject;
     private Rigidbody proxyBody;
@@ -137,7 +87,6 @@ public class PhysicalChainJointProbe : MonoBehaviour
     private Rigidbody armBody;
 
     private HingeJoint hingeJoint;
-
     private Transform probePoint;
 
     private Vector3 previousProbePosition;
@@ -149,13 +98,8 @@ public class PhysicalChainJointProbe : MonoBehaviour
     #region Public API
 
     public Transform ProbeTransform => probePoint;
-
     public Vector3 ProbePosition => probePoint != null ? probePoint.position : Vector3.zero;
 
-    /// <summary>
-    /// Arm forward points from the trailing probe toward the hitch / leading cart.
-    /// This is useful for blending Cart 1 rotation with the path tangent.
-    /// </summary>
     public Vector3 ProbeForward
     {
         get
@@ -163,19 +107,13 @@ public class PhysicalChainJointProbe : MonoBehaviour
             if (probePoint == null) return Vector3.forward;
 
             Vector3 forward = Vector3.ProjectOnPlane(probePoint.forward, Vector3.up);
-
-            if (forward.sqrMagnitude < 0.0001f) return Vector3.forward;
-
-            return forward.normalized;
+            return forward.sqrMagnitude > 0.0001f ? forward.normalized : Vector3.forward;
         }
     }
 
-    #endregion
-
-    #region Initialization
-
     /// <summary>
-    /// Called by SnakeCartManager after the runtime leading cart has been instantiated.
+    /// Creates or rebuilds the isolated hinge at the current RearHitch pose.
+    /// Recovery intentionally uses this same normal initialization path.
     /// </summary>
     public void Initialize(Transform rearHitch)
     {
@@ -213,6 +151,7 @@ public class PhysicalChainJointProbe : MonoBehaviour
 
         currentHitchSpeed = 0f;
         currentHitchYawRate = 0f;
+        currentHingeAngle = 0f;
         isRecentering = false;
     }
 
@@ -236,7 +175,6 @@ public class PhysicalChainJointProbe : MonoBehaviour
         Vector3 forward = Vector3.ProjectOnPlane(leaderRearHitch.forward, Vector3.up);
 
         if (forward.sqrMagnitude < 0.0001f) forward = Vector3.forward;
-
         forward.Normalize();
 
         Quaternion startingRotation = Quaternion.LookRotation(forward, Vector3.up);
@@ -268,11 +206,8 @@ public class PhysicalChainJointProbe : MonoBehaviour
         hingeJoint.connectedBody = proxyBody;
         hingeJoint.autoConfigureConnectedAnchor = false;
 
-        // Front of the arm is attached to RearHitch.
         hingeJoint.anchor = new Vector3(0f, 0f, 0.5f);
         hingeJoint.connectedAnchor = Vector3.zero;
-
-        // Vertical axis means free left/right swing in top-down view.
         hingeJoint.axis = Vector3.up;
 
         hingeJoint.useMotor = false;
@@ -317,14 +252,12 @@ public class PhysicalChainJointProbe : MonoBehaviour
 
     #endregion
 
-    #region Physics
+    #region Physics Update
 
     private void FixedUpdate()
     {
         if (leaderRearHitch == null || proxyBody == null || hingeJoint == null) return;
 
-        // Kinematic proxy follows the real RearHitch.
-        // The actual cart still receives zero forces from this experiment.
         proxyBody.MovePosition(leaderRearHitch.position);
         proxyBody.MoveRotation(leaderRearHitch.rotation);
 
@@ -335,11 +268,6 @@ public class PhysicalChainJointProbe : MonoBehaviour
         UpdateProbeDebug();
     }
 
-    /// <summary>
-    /// Measures how quickly the physical cart is translating and rotating.
-    /// RearHitch should now be parented under the actual physics/Rigidbody hierarchy,
-    /// not under the fake drift visual.
-    /// </summary>
     private void UpdateHitchMotionState()
     {
         float dt = Mathf.Max(Time.fixedDeltaTime, 0.00001f);
@@ -366,14 +294,10 @@ public class PhysicalChainJointProbe : MonoBehaviour
         previousHitchPosition = currentPosition;
     }
 
-    /// <summary>
-    /// Leaves the hinge free during meaningful turning.
-    ///
-    /// Once the cart is travelling mostly straight again, a temporary spring
-    /// pulls the arm quickly back to 0 degrees behind the cart.
-    /// </summary>
     private void UpdateAutoRecenter()
     {
+        if (hingeJoint == null) return;
+
         if (!enableAutoRecenter)
         {
             hingeJoint.useSpring = false;
@@ -394,7 +318,6 @@ public class PhysicalChainJointProbe : MonoBehaviour
         }
 
         JointSpring spring = hingeJoint.spring;
-
         spring.spring = recenterSpring;
         spring.damper = recenterDamper;
         spring.targetPosition = 0f;
@@ -405,7 +328,7 @@ public class PhysicalChainJointProbe : MonoBehaviour
 
     private void UpdateProbeDebug()
     {
-        if (probePoint == null) return;
+        if (probePoint == null || leaderRearHitch == null) return;
 
         currentDistanceToHitch = Vector3.Distance(leaderRearHitch.position, probePoint.position);
 
