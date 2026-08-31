@@ -5739,7 +5739,7 @@ GameObject:
   - component: {fileID: 8786900379161667977}
   - component: {fileID: 788132411500653732}
   m_Layer: 7
-  m_Name: Leading Cart P2
+  m_Name: Leading Cart P2 old
   m_TagString: Player2
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

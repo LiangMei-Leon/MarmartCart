@@ -23,7 +23,6 @@ public class LeadingCartRaycaster : MonoBehaviour
 
     [Header("Events")]
     [SerializeField] GameEvent disableDetachEvent;
-
     [SerializeField] SfxManager sfxManager;
     [SerializeField] GameObject chargingVFX;
 
@@ -165,9 +164,9 @@ public class LeadingCartRaycaster : MonoBehaviour
         LeadingCartBehaviour leadingCartBehaviour3 = this.gameObject.transform.GetChild(0).GetChild(3).GetComponent<LeadingCartBehaviour>();
 
         leadingCartBehaviour0.SetSpeedToZero(2f);
-        leadingCartBehaviour1.SetSpeedToZero(2f);
-        leadingCartBehaviour2.SetSpeedToZero(2f);
-        leadingCartBehaviour3.SetSpeedToZero(2f);
+        //leadingCartBehaviour1.SetSpeedToZero(2f);
+        //leadingCartBehaviour2.SetSpeedToZero(2f);
+        //leadingCartBehaviour3.SetSpeedToZero(2f);
     }
 
     void OnDrawGizmos()

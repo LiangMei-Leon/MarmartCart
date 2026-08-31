@@ -3843,7 +3843,7 @@ GameObject:
   - component: {fileID: 8786900379161667977}
   - component: {fileID: 7224351662108201960}
   m_Layer: 7
-  m_Name: Leading Cart P3
+  m_Name: Leading Cart P3 old
   m_TagString: Player3
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

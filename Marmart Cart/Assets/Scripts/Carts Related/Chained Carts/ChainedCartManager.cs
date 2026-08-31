@@ -55,8 +55,11 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
     [SerializeField] private GameObject expensiveGroceryItemVisual;
     private bool _heldBySpawner = false;
 
+    private CartMaterialManager cartMaterialManagerScript;
     void Awake()
     {
+        cartMaterialManagerScript = GetComponentInChildren<CartMaterialManager>();
+
         maxPlayers = Mathf.Clamp(GMode.Instance.PlayerCount(), 1, MaxSupportedPlayers);
         allowCollect = new bool[maxPlayers];
 
@@ -135,7 +138,7 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
 
             if (countTimer - (disappearTime - 3f) <= 0.1f && countTimer - (disappearTime - 3f) > 0f)
             {
-                this.gameObject.GetComponent<CartMaterialManager>()?.SetCooldown(3f);
+                cartMaterialManagerScript.SetCooldown(3f);
                 //Debug.Log("enter ghost mode");
             }
             else if (countTimer >= disappearTime)

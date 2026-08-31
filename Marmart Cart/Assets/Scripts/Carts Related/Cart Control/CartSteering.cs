@@ -79,7 +79,7 @@ public class CartSteering : MonoBehaviour
 
     private void UpdatePrototypeLeftRightSteering()
     {
-        float steerInput = cartControlInput.GetPrototypeSteerInput();
+        float steerInput = cartControlInput.GetSteerInput();
         float targetWheelAngle = steerInput * prototypeMaxSteerAngle;
 
         currentRotationAngle = Mathf.MoveTowards(

@@ -1,61 +1,101 @@
 ﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Users;
-using UnityEngine.Windows;
+using UnityEngine.Serialization;
 
+/// <summary>
+/// Central input/state gateway for the leading cart.
+/// Reads the assigned player's Input System actions and exposes movement state/events.
+/// It does not directly move the Rigidbody.
+/// </summary>
 public class CartControlScript : MonoBehaviour
 {
-    private InputSystem_Actions _inputActions; // reference to the new input system class
-    private Vector2 _inputVector; // 2D Vector variable that stores the raw input read from the input system
-    private Vector3 _input; // 3D Vector variable that stores the raw input from 2D to 3D coordinate system (xy -> xz)
+    #region Input Runtime
 
+    private InputSystem_Actions _inputActions;
     private InputUser user;
-    private InputDevice assignedDevice;
 
-    public Vector3 desiredDirection { get; private set; } // Public property to provide desired direction
+    private Vector2 _inputVector;
+    private Vector3 _input;
+
+    public Vector3 desiredDirection { get; private set; }
     public Vector2 MoveInput => _inputVector;
 
-    [Header("Drift Prototype")]
-    [SerializeField] private bool canDrift = true;
-    private bool isDriftHeld = false;
+    #endregion
 
-    // Prototype left and right cart control 
-    [SerializeField] private float prototypeSteerDeadzone = 0.15f;
-    public float GetPrototypeSteerInput()
-    {
-        if (Mathf.Abs(_inputVector.x) < prototypeSteerDeadzone)
-            return 0f;
+    #region General Control State
 
-        return Mathf.Clamp(_inputVector.x, -1f, 1f);
-    }
+    [Header("Control State")]
+    [SerializeField] private bool controllable = true;
+    [SerializeField] private bool isInPit = false;
+
+    #endregion
+
+    #region Drift
+
+    [Header("Drift")]
+    [FormerlySerializedAs("canDrift")]
+    [SerializeField] private bool allowDrift = true;
+
+    [FormerlySerializedAs("prototypeSteerDeadzone")]
+    [SerializeField] private float steerDeadzone = 0.15f;
+
     [Header("Drift / Speedup Mutual Override")]
     [SerializeField] private CartDriftController driftController;
-
     [SerializeField] private bool enableDriftSpeedupOverride = true;
 
-    [SerializeField] private bool debugDriftSpeedupOverride = false;
-    // Aiming input
+    private bool isDriftHeld;
+
+    public float GetSteerInput()
+    {
+        if (Mathf.Abs(_inputVector.x) < steerDeadzone) return 0f;
+        return Mathf.Clamp(_inputVector.x, -1f, 1f);
+    }
+    #endregion
+
+    #region Aiming
+
     private Vector2 _aimInputVector;
     private Vector3 _aimDirection;
-    private bool canAim = false;
+
+    [SerializeField] private bool canAim = false;
+
     public Vector3 AimDirection => _aimDirection;
 
-    [SerializeField] private bool controllable = true; // variable that controls if the system gonna read input
-    [SerializeField] private bool isInPit = false;
-    [Header("SpeedUp Movement")]
+    #endregion
+
+    #region Speedup
+
+    [Header("Speedup")]
     [SerializeField] private float speedUpMeter = 100f;
     [SerializeField] private float speedUpConsumeRate = 10f;
-    private bool isSpeedingUp = false;
     [SerializeField] private bool canSpeedup = true;
+
+    [FormerlySerializedAs("boostEvent")]
+    [SerializeField] private GameEvent speedupEvent;
+
+    private bool isSpeedingUp;
+
+    #endregion
+
+    #region Move Backward
+
     [Header("Move Backward")]
     [SerializeField] private bool canMoveBackward = false;
+
+    #endregion
+
+    #region Powerup / Checkout
+
+    [Header("Powerup")]
     [SerializeField] private bool canActivatePowerUp = false;
+    [SerializeField] private PowerupsManager powerupsManager;
 
-    [SerializeField] private PowerupsManager powerupsManager; // Reference to the PowerupsManager script
-
-    [SerializeField] private GameEvent boostEvent; // raise this event when the player accelerates (boost)
-    // fro cart pit check out actions
     private CheckOutManager activeCheckoutManager;
+
+    #endregion
+
+    #region Input Events
 
     public System.Action OnTutorialPrev;
     public System.Action OnTutorialNext;
@@ -69,52 +109,65 @@ public class CartControlScript : MonoBehaviour
     public System.Action<bool> OnAimHeld;
     public System.Action<bool> OnSpeedupHeld;
 
+    #endregion
+
+    #region Initialization
+
     public void InitializeWithDevice(InputDevice device)
     {
-        assignedDevice = device;
         _inputActions = new InputSystem_Actions();
 
-        // Pair an InputUser with this device and bind actions
         user = InputUser.CreateUserWithoutPairedDevices();
         user.AssociateActionsWithUser(_inputActions);
         InputUser.PerformPairingWithDevice(device, user);
 
+        BindControllerActions(device);
         _inputActions.Enable();
+    }
 
-        // Hook up filtered actions for controller only, left stick for movement
+    public void InitializeWithKeyboard()
+    {
+        _inputActions = new InputSystem_Actions();
+
+        user = InputUser.CreateUserWithoutPairedDevices();
+        user.AssociateActionsWithUser(_inputActions);
+        InputUser.PerformPairingWithDevice(Keyboard.current, user);
+
+        BindKeyboardActions();
+        _inputActions.Enable();
+    }
+
+    private void BindControllerActions(InputDevice device)
+    {
         _inputActions.Player.Move.performed += ctx =>
         {
-            if (ctx.control.device == device)
-            {
-                _inputVector = ctx.ReadValue<Vector2>();
-            }
+            if (ctx.control.device == device) _inputVector = ctx.ReadValue<Vector2>();
         };
+
         _inputActions.Player.Move.canceled += ctx =>
         {
-            if (ctx.control.device == device)
-                _inputVector = Vector2.zero;
+            if (ctx.control.device == device) _inputVector = Vector2.zero;
         };
-        // for drift prototype
+
         _inputActions.Player.Drift.performed += ctx =>
         {
-            if (ctx.control.device == device && canDrift)
-                HandleDriftPressed();
+            if (ctx.control.device == device && allowDrift) HandleDriftPressed();
         };
 
         _inputActions.Player.Drift.canceled += ctx =>
         {
-            if (ctx.control.device == device)
-                HandleDriftReleased();
+            if (ctx.control.device == device) HandleDriftReleased();
         };
-        // Aim input for controller (right stick)
+
         _inputActions.Player.Aim.performed += ctx =>
         {
             if (ctx.control.device == device && canAim)
             {
                 _aimInputVector = ctx.ReadValue<Vector2>();
-                _aimDirection = new Vector3(_aimInputVector.x, 0, _aimInputVector.y).ToIso();
+                _aimDirection = new Vector3(_aimInputVector.x, 0f, _aimInputVector.y).ToIso();
             }
         };
+
         _inputActions.Player.Aim.canceled += ctx =>
         {
             if (ctx.control.device == device)
@@ -123,18 +176,17 @@ public class CartControlScript : MonoBehaviour
                 _aimDirection = Vector3.zero;
             }
         };
-        // for speed up
+
         _inputActions.Player.Speedup.performed += ctx =>
         {
-            if (ctx.control.device == device && speedUpMeter > speedUpConsumeRate && canSpeedup)
-                HandleSpeedupPressed();
+            if (ctx.control.device == device && speedUpMeter > speedUpConsumeRate && canSpeedup) HandleSpeedupPressed();
         };
+
         _inputActions.Player.Speedup.canceled += ctx =>
         {
-            if (ctx.control.device == device)
-                HandleSpeedupReleased();
+            if (ctx.control.device == device) HandleSpeedupReleased();
         };
-        // for powerful charged boost
+
         _inputActions.Player.ActivatePowerUp.performed += ctx =>
         {
             if (ctx.control.device == device && canActivatePowerUp)
@@ -143,6 +195,7 @@ public class CartControlScript : MonoBehaviour
                 OnShootPressed?.Invoke();
             }
         };
+
         _inputActions.Player.MoveBackward.performed += ctx =>
         {
             if (ctx.control.device == device && canMoveBackward)
@@ -151,7 +204,7 @@ public class CartControlScript : MonoBehaviour
                 OnMoveBackwardPressed?.Invoke();
             }
         };
-        // inputs for check out pit
+
         _inputActions.Player.CheckOut.performed += ctx =>
         {
             if (ctx.control.device == device && activeCheckoutManager != null)
@@ -160,6 +213,7 @@ public class CartControlScript : MonoBehaviour
                 OnCheckoutReleased?.Invoke();
             }
         };
+
         _inputActions.Player.QuitCheckOut.performed += ctx =>
         {
             if (ctx.control.device == device && activeCheckoutManager != null)
@@ -168,55 +222,40 @@ public class CartControlScript : MonoBehaviour
                 OnExitReleased?.Invoke();
             }
         };
-        // Tutorial page inputs (D-pad left/right)
+
         _inputActions.Player.TutorialPrev.performed += ctx =>
         {
-            if (ctx.control.device == device)
-                OnTutorialPrev?.Invoke();
+            if (ctx.control.device == device) OnTutorialPrev?.Invoke();
         };
 
         _inputActions.Player.TutorialNext.performed += ctx =>
         {
-            if (ctx.control.device == device)
-                OnTutorialNext?.Invoke();
+            if (ctx.control.device == device) OnTutorialNext?.Invoke();
         };
-        _inputActions.Enable(); // Only enable after setup is complete
     }
-    public void InitializeWithKeyboard()
+
+    private void BindKeyboardActions()
     {
-        assignedDevice = Keyboard.current;
-
-        _inputActions = new InputSystem_Actions();
-        user = InputUser.CreateUserWithoutPairedDevices();
-        user.AssociateActionsWithUser(_inputActions);
-        InputUser.PerformPairingWithDevice(Keyboard.current, user);
-
-        _inputActions.Enable();
-
-        // Hook up filtered actions for keyboard, WASD for movement, mouse for aim
         _inputActions.Player.Move.performed += ctx =>
         {
-            if (ctx.control.device == Keyboard.current)
-                _inputVector = ctx.ReadValue<Vector2>();
+            if (ctx.control.device == Keyboard.current) _inputVector = ctx.ReadValue<Vector2>();
         };
+
         _inputActions.Player.Move.canceled += ctx =>
         {
-            if (ctx.control.device == Keyboard.current)
-                _inputVector = Vector2.zero;
+            if (ctx.control.device == Keyboard.current) _inputVector = Vector2.zero;
         };
-        // for drift prototype
+
         _inputActions.Player.Drift.performed += ctx =>
         {
-            if (ctx.control.device == Keyboard.current && canDrift)
-                HandleDriftPressed();
+            if (ctx.control.device == Keyboard.current && allowDrift) HandleDriftPressed();
         };
 
         _inputActions.Player.Drift.canceled += ctx =>
         {
-            if (ctx.control.device == Keyboard.current)
-                HandleDriftReleased();
+            if (ctx.control.device == Keyboard.current) HandleDriftReleased();
         };
-        // Aim input for controller (mouse position)
+
         _inputActions.Player.Aim.performed += ctx =>
         {
             if (ctx.control.device == Keyboard.current && canAim)
@@ -224,10 +263,12 @@ public class CartControlScript : MonoBehaviour
                 Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
                 Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
                 Vector2 offset = mouseScreenPos - screenCenter;
+
                 _aimInputVector = offset.normalized;
-                _aimDirection = new Vector3(_aimInputVector.x, 0, _aimInputVector.y).ToIso();
+                _aimDirection = new Vector3(_aimInputVector.x, 0f, _aimInputVector.y).ToIso();
             }
         };
+
         _inputActions.Player.Aim.canceled += ctx =>
         {
             if (ctx.control.device == Keyboard.current)
@@ -236,18 +277,17 @@ public class CartControlScript : MonoBehaviour
                 _aimDirection = Vector3.zero;
             }
         };
-        // for speed up
+
         _inputActions.Player.Speedup.performed += ctx =>
         {
-            if (ctx.control.device == Keyboard.current && speedUpMeter > speedUpConsumeRate && canSpeedup)
-                HandleSpeedupPressed();
+            if (ctx.control.device == Keyboard.current && speedUpMeter > speedUpConsumeRate && canSpeedup) HandleSpeedupPressed();
         };
+
         _inputActions.Player.Speedup.canceled += ctx =>
         {
-            if (ctx.control.device == Keyboard.current)
-                HandleSpeedupReleased();
+            if (ctx.control.device == Keyboard.current) HandleSpeedupReleased();
         };
-        // for powerful charged boost
+
         _inputActions.Player.ActivatePowerUp.performed += ctx =>
         {
             if (ctx.control.device == Keyboard.current && canActivatePowerUp)
@@ -256,6 +296,7 @@ public class CartControlScript : MonoBehaviour
                 OnShootPressed?.Invoke();
             }
         };
+
         _inputActions.Player.MoveBackward.performed += ctx =>
         {
             if (ctx.control.device == Keyboard.current && canMoveBackward)
@@ -264,7 +305,7 @@ public class CartControlScript : MonoBehaviour
                 OnMoveBackwardPressed?.Invoke();
             }
         };
-        // inputs for check out pit
+
         _inputActions.Player.CheckOut.performed += ctx =>
         {
             if (ctx.control.device == Keyboard.current && activeCheckoutManager != null)
@@ -273,6 +314,7 @@ public class CartControlScript : MonoBehaviour
                 OnCheckoutReleased?.Invoke();
             }
         };
+
         _inputActions.Player.QuitCheckOut.performed += ctx =>
         {
             if (ctx.control.device == Keyboard.current && activeCheckoutManager != null)
@@ -281,96 +323,64 @@ public class CartControlScript : MonoBehaviour
                 OnExitReleased?.Invoke();
             }
         };
+
         _inputActions.Player.TutorialPrev.performed += ctx =>
         {
-            if (ctx.control.device == Keyboard.current)
-                OnTutorialPrev?.Invoke();
+            if (ctx.control.device == Keyboard.current) OnTutorialPrev?.Invoke();
         };
 
         _inputActions.Player.TutorialNext.performed += ctx =>
         {
-            if (ctx.control.device == Keyboard.current)
-                OnTutorialNext?.Invoke();
+            if (ctx.control.device == Keyboard.current) OnTutorialNext?.Invoke();
         };
     }
-    void Start()
+
+    #endregion
+
+    #region Unity Lifecycle
+
+    private void Start()
     {
         speedUpMeter = 50f;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        //Debug.DrawRay(transform.position + Vector3.up * 0.5f, AimDirection * 30f, Color.red);
-        if (controllable && !isInPit)
-        {
-            GatherInput();
-        }
-        if (!controllable || isInPit || !canDrift)
-        {
-            isDriftHeld = false;
-        }
-        if (!controllable || isInPit || !canSpeedup)
-        {
-            StopSpeedupInput("Control disabled / pit / speedup disabled");
-        }
-        if (isSpeedingUp && speedUpMeter > 0f)
-        {
-            speedUpMeter -= speedUpConsumeRate * Time.deltaTime * 10f;
-            OnSpeedupHeld?.Invoke(true);
-            if (speedUpMeter <= 0f)
-            {
-                speedUpMeter = 0f;
-                isSpeedingUp = false;
-                OnSpeedupHeld?.Invoke(false);
-            }
-        }
-        else
-        {
-            OnSpeedupHeld?.Invoke(false);
-        }
+        if (controllable && !isInPit) GatherInput();
 
-        bool isMoving = _inputVector.sqrMagnitude > 0.05f;
-        OnMoveHeld?.Invoke(isMoving);
+        if (!controllable || isInPit || !allowDrift) isDriftHeld = false;
+        if (!controllable || isInPit || !canSpeedup) StopSpeedupInput();
 
-        bool isAiming = Mathf.Abs(_aimInputVector.sqrMagnitude) > 0.05f;
-        OnAimHeld?.Invoke(isAiming);
-
-        if (UnityEngine.Input.GetKeyDown(KeyCode.T))
-        {
-            RefillSpeedUpMeter(100f);
-        }
+        UpdateSpeedup();
+        UpdateHeldEvents();
     }
 
-    void GatherInput()
-    {
-        // Transfer 2D input to 3D input (from xy to xz)
-        _input = new Vector3(_inputVector.x, 0, _inputVector.y);
+    #endregion
 
+    #region Movement Input
+
+    private void GatherInput()
+    {
+        _input = new Vector3(_inputVector.x, 0f, _inputVector.y);
         desiredDirection = controllable ? _input.ToIso() : Vector3.zero;
-
-        // Draw a ray to visualize the direction of the input in the scene view
-        // Debug.DrawRay(transform.position, desiredDirection, Color.red);
     }
+
     public void CleanupInput()
     {
         _inputActions?.Disable();
-        InputUser.PerformPairingWithDevice(null, user); // unpair
+        InputUser.PerformPairingWithDevice(null, user);
     }
+
+    #endregion
+
+    #region Drift / Speedup Interaction
+
     private void HandleDriftPressed()
     {
-        if (!canDrift)
-            return;
+        if (!allowDrift) return;
 
-        if (enableDriftSpeedupOverride)
-        {
-            StopSpeedupInput("Drift pressed");
-        }
-
+        if (enableDriftSpeedupOverride) StopSpeedupInput();
         isDriftHeld = true;
-
-        if (debugDriftSpeedupOverride)
-            Debug.Log("[CartControlScript] Drift pressed. Speedup stopped.");
     }
 
     private void HandleDriftReleased()
@@ -380,21 +390,10 @@ public class CartControlScript : MonoBehaviour
 
     private void HandleSpeedupPressed()
     {
-        if (speedUpMeter <= speedUpConsumeRate)
-            return;
+        if (speedUpMeter <= speedUpConsumeRate || !canSpeedup) return;
 
-        if (!canSpeedup)
-            return;
-
-        if (enableDriftSpeedupOverride)
-        {
-            StopDriftInputForSpeedup("Speedup pressed");
-        }
-
+        if (enableDriftSpeedupOverride) StopDriftInputForSpeedup("Speedup pressed");
         isSpeedingUp = true;
-
-        if (debugDriftSpeedupOverride)
-            Debug.Log("[CartControlScript] Speedup pressed. Drift stopped.");
     }
 
     private void HandleSpeedupReleased()
@@ -402,39 +401,71 @@ public class CartControlScript : MonoBehaviour
         isSpeedingUp = false;
     }
 
-    private void StopSpeedupInput(string reason)
+    private void StopSpeedupInput()
     {
-        if (!isSpeedingUp)
-            return;
+        if (!isSpeedingUp) return;
 
         isSpeedingUp = false;
         OnSpeedupHeld?.Invoke(false);
-
-        if (debugDriftSpeedupOverride)
-            Debug.Log($"[CartControlScript] Speedup stopped: {reason}");
     }
 
     private void StopDriftInputForSpeedup(string reason)
     {
-        if (!isDriftHeld && (driftController == null || !driftController.IsDrifting))
-            return;
+        if (!isDriftHeld && (driftController == null || !driftController.IsDrifting)) return;
 
         isDriftHeld = false;
 
-        if (driftController != null)
-            driftController.CancelDriftForSpeedup(reason);
+        if (driftController != null) driftController.CancelDriftForSpeedup(reason);
+    }
 
-        if (debugDriftSpeedupOverride)
-            Debug.Log($"[CartControlScript] Drift stopped for speedup: {reason}");
-    }
-    public void SetActiveCheckoutHandler(CheckOutManager currenetCheckoutManager)
+    #endregion
+
+    #region Speedup Runtime
+
+    private void UpdateSpeedup()
     {
-        activeCheckoutManager = currenetCheckoutManager;
+        if (isSpeedingUp && speedUpMeter > 0f)
+        {
+            speedUpMeter -= speedUpConsumeRate * Time.deltaTime * 10f;
+            OnSpeedupHeld?.Invoke(true);
+
+            if (speedUpMeter <= 0f)
+            {
+                speedUpMeter = 0f;
+                isSpeedingUp = false;
+                OnSpeedupHeld?.Invoke(false);
+            }
+
+            return;
+        }
+
+        OnSpeedupHeld?.Invoke(false);
     }
+
+    private void UpdateHeldEvents()
+    {
+        OnMoveHeld?.Invoke(_inputVector.sqrMagnitude > 0.05f);
+        OnAimHeld?.Invoke(_aimInputVector.sqrMagnitude > 0.05f);
+    }
+
+    #endregion
+
+    #region Checkout / Powerup References
+
+    public void SetActiveCheckoutHandler(CheckOutManager currentCheckoutManager)
+    {
+        activeCheckoutManager = currentCheckoutManager;
+    }
+
     public void SetPowerupsManager(PowerupsManager manager)
     {
         powerupsManager = manager;
     }
+
+    #endregion
+
+    #region Move Backward State
+
     public void AllowMoveBackward()
     {
         canMoveBackward = true;
@@ -449,6 +480,11 @@ public class CartControlScript : MonoBehaviour
     {
         return canMoveBackward;
     }
+
+    #endregion
+
+    #region Drift State
+
     public bool IsDriftHeld()
     {
         return isDriftHeld;
@@ -456,93 +492,131 @@ public class CartControlScript : MonoBehaviour
 
     public bool CanDrift()
     {
-        return canDrift;
+        return allowDrift;
     }
 
     public void AllowDrift()
     {
-        canDrift = true;
+        allowDrift = true;
     }
 
     public void DisallowDrift()
     {
-        canDrift = false;
+        allowDrift = false;
         isDriftHeld = false;
     }
+
+    #endregion
+
+    #region Powerup State
+
     public bool GetCanActivatePowerUp()
     {
         return canActivatePowerUp;
     }
+
     public void AllowActivatePowerUp()
     {
         canActivatePowerUp = true;
     }
+
     public void DisallowActivatePowerUp()
     {
         canActivatePowerUp = false;
     }
+
+    public void ActivatePowerUp()
+    {
+        if (!canActivatePowerUp || powerupsManager == null) return;
+        powerupsManager.ActivateStoredPowerup();
+    }
+
+    #endregion
+
+    #region General Control / Pit State
+
     public void DisableControl()
     {
         controllable = false;
         isDriftHeld = false;
     }
-    public bool GetCanAim()
-    {
-        return canAim;
-    }
+
     public void EnableControl()
     {
         controllable = true;
     }
+
     public void SetInPit()
     {
         isInPit = true;
         isDriftHeld = false;
     }
+
     public void SetOutPit()
     {
         isInPit = false;
     }
+
     public bool GetIsInPit()
     {
         return isInPit;
     }
+
+    public bool GetCanAim()
+    {
+        return canAim;
+    }
+
+    public void AllowAim()
+    {
+        canAim = true;
+    }
+
+    public void DisallowAim()
+    {
+        canAim = false;
+    }
+
+    // Legacy charging state used by the old powerup/combat code.
     public bool IsCharing()
     {
         return !controllable;
     }
+
+    #endregion
+
+    #region Speedup State
+
     public bool IsSpeedingUp()
     {
         return isSpeedingUp;
     }
+
     public bool CanSpeedingUp()
     {
         return canSpeedup;
     }
+
     public void AllowSpeedingUp()
     {
         canSpeedup = true;
     }
+
     public void DisallowSpeedingUp()
     {
         canSpeedup = false;
-        StopSpeedupInput("Speedup disallowed");
+        StopSpeedupInput();
     }
+
     public float GetSpeedUpMeter()
     {
         return speedUpMeter;
     }
+
     public void RefillSpeedUpMeter(float amount)
     {
         speedUpMeter = Mathf.Clamp(speedUpMeter + amount, 0f, 100f);
     }
-    public void ActivatePowerUp()
-    {
-        if (!canActivatePowerUp)
-            return;
 
-        powerupsManager.ActivateStoredPowerup(); // Call the method in PowerupsManager to handle the power-up logic
-    }
-    public void AllowAim() => canAim = true;
-    public void DisallowAim() => canAim = false;
+    #endregion
 }
