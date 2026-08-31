@@ -1,55 +1,63 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Controls the visual steering angle of the cart's virtual wheels.
+///
+/// Normal driving steers toward CartControlScript.desiredDirection.
+/// While drifting, steering is driven directly by CartDriftController.
+/// </summary>
 public class CartSteering : MonoBehaviour
 {
-    [SerializeField] CartControlScript cartControlInput;
-    [SerializeField] Rigidbody cartBody;
+    #region References
 
-    public List<GameObject> objectsToRotate;
-
-    [Header("Normal Direction-Seek Steering")]
-    [SerializeField] float maxRotationAngle = 30f;
-    [SerializeField] float rotationSpeed = 80f;
-
-    [Header("Prototype A - Left/Right Steering")]
-    [SerializeField] private bool enablePrototypeLeftRightSteering = false;
-    [SerializeField] private float prototypeMaxSteerAngle = 35f;
-    [SerializeField] private float prototypeSteerDegreesPerSecond = 180f;
-    [SerializeField] private bool debugPrototypeSteering = false;
-
-    [Header("Camera-Mapped Drift Steering")]
-    [SerializeField] private bool enableCameraMappedDriftSteering = true;
+    [Header("References")]
+    [SerializeField] private CartControlScript cartControlInput;
     [SerializeField] private CartDriftController driftController;
+
+    [Tooltip("Wheel objects whose local Y rotation should match the current steering angle.")]
+    [SerializeField] private List<GameObject> objectsToRotate = new List<GameObject>();
+
+    #endregion
+
+    #region Normal Steering
+
+    [Header("Normal Steering")]
+    [SerializeField] private float maxRotationAngle = 30f;
+    [SerializeField] private float rotationSpeed = 80f;
+
+    #endregion
+
+    #region Drift Steering
+
+    [Header("Drift Steering")]
     [SerializeField] private float driftSteerDegreesPerSecond = 220f;
-    [SerializeField] private bool debugDriftSteering = false;
 
-    private float currentRotationAngle = 0f;
+    #endregion
 
-    void Update()
+    #region Runtime
+
+    private float currentRotationAngle;
+
+    #endregion
+
+    #region Unity Lifecycle
+
+    private void Update()
     {
-        if (ShouldUseDriftSteering())
-        {
-            UpdateDriftSteering();
-        }
-        else if (enablePrototypeLeftRightSteering)
-        {
-            UpdatePrototypeLeftRightSteering();
-        }
-        else
-        {
-            UpdateDirectionSeekSteering();
-        }
+        if (ShouldUseDriftSteering()) UpdateDriftSteering();
+        else UpdateDirectionSeekSteering();
 
         ApplyWheelRotation();
     }
 
+    #endregion
+
+    #region Steering Modes
+
     private bool ShouldUseDriftSteering()
     {
-        return enableCameraMappedDriftSteering &&
-               driftController != null &&
-               driftController.IsDrifting &&
-               driftController.EnableDriftSteeringOutput;
+        return driftController != null && driftController.IsDrifting;
     }
 
     private void UpdateDirectionSeekSteering()
@@ -61,77 +69,40 @@ public class CartSteering : MonoBehaviour
             float angleDifference = Vector3.SignedAngle(transform.forward, desiredDirection, Vector3.up);
             float targetWheelAngle = Mathf.Clamp(angleDifference, -maxRotationAngle, maxRotationAngle);
 
-            currentRotationAngle = Mathf.Lerp(
-                currentRotationAngle,
-                targetWheelAngle,
-                Time.deltaTime * rotationSpeed
-            );
+            currentRotationAngle = Mathf.Lerp(currentRotationAngle, targetWheelAngle, Time.deltaTime * rotationSpeed);
         }
         else
         {
-            currentRotationAngle = Mathf.MoveTowards(
-                currentRotationAngle,
-                0f,
-                rotationSpeed * Time.deltaTime
-            );
-        }
-    }
-
-    private void UpdatePrototypeLeftRightSteering()
-    {
-        float steerInput = cartControlInput.GetSteerInput();
-        float targetWheelAngle = steerInput * prototypeMaxSteerAngle;
-
-        currentRotationAngle = Mathf.MoveTowards(
-            currentRotationAngle,
-            targetWheelAngle,
-            prototypeSteerDegreesPerSecond * Time.deltaTime
-        );
-
-        if (debugPrototypeSteering)
-        {
-            Debug.Log(
-                $"[Prototype Steering] input: {steerInput:F2}, " +
-                $"targetAngle: {targetWheelAngle:F1}, " +
-                $"currentAngle: {currentRotationAngle:F1}"
-            );
+            currentRotationAngle = Mathf.MoveTowards(currentRotationAngle, 0f, rotationSpeed * Time.deltaTime);
         }
     }
 
     private void UpdateDriftSteering()
     {
         float targetWheelAngle = driftController.DriftSteeringAngle;
-
-        currentRotationAngle = Mathf.MoveTowards(
-            currentRotationAngle,
-            targetWheelAngle,
-            driftSteerDegreesPerSecond * Time.deltaTime
-        );
-
-        if (debugDriftSteering)
-        {
-            Debug.Log(
-                $"[Drift Steering] side: {driftController.DriftSideName}, " +
-                $"tightness: {driftController.CurrentTightness:F2}, " +
-                $"targetAngle: {targetWheelAngle:F1}, " +
-                $"currentAngle: {currentRotationAngle:F1}"
-            );
-        }
+        currentRotationAngle = Mathf.MoveTowards(currentRotationAngle, targetWheelAngle, driftSteerDegreesPerSecond * Time.deltaTime);
     }
+
+    #endregion
+
+    #region Wheel Visuals
 
     private void ApplyWheelRotation()
     {
         foreach (GameObject obj in objectsToRotate)
         {
-            if (obj != null)
-            {
-                obj.transform.localRotation = Quaternion.Euler(0f, currentRotationAngle, 0f);
-            }
+            if (obj != null) obj.transform.localRotation = Quaternion.Euler(0f, currentRotationAngle, 0f);
         }
     }
+
+    #endregion
+
+    #region Public API
 
     public float GetCurrentSteeringAngle()
     {
         return currentRotationAngle;
     }
+
+    #endregion
 }
