@@ -3,16 +3,13 @@ using UnityEngine;
 /// <summary>
 /// Runtime state and collection behavior for a loose / chained cart.
 ///
-/// Collection still uses the existing ScriptableObject GameEvent arrays:
-/// - Empty cart collection event
-/// - Normal grocery cart collection event
-/// - Expensive grocery cart collection event
+/// Collection uses the existing ScriptableObject GameEvent arrays.
+/// A cart may become Vulnerable only while it is collected by a player.
 ///
-/// A loose cart resolves the player that touched it from that player's
-/// SnakeCartManager hierarchy, checks the player's current battle ghost state,
-/// raises the correct GameEvent, then destroys the loose world cart.
-///
-/// This component no longer depends on LeadingCartRaycaster.
+/// Vulnerable is a chain-only state:
+/// - loose carts can never be vulnerable,
+/// - detached carts immediately lose vulnerability,
+/// - visual presentation is delegated to CartMaterialManager.
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
 [DisallowMultipleComponent]
@@ -35,6 +32,11 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
     [field: SerializeField]
     public bool isCollectedByAI { get; private set; } = false;
 
+    [Header("Runtime - Read Only")]
+    [SerializeField] private bool isVulnerable;
+
+    public bool IsVulnerable => isVulnerable;
+
     public bool isAvailable =>
         !isCollectedByPlayer &&
         !isCollectedByAI &&
@@ -48,6 +50,7 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
     [SerializeField] private ParticleSystem collectVFX;
     [SerializeField] private Renderer cartRenderer;
     [SerializeField] private CartMaterialManager cartMaterialManager;
+    [SerializeField] private CartTeamOutlineController teamOutlineController;
 
     private Rigidbody rb;
 
@@ -72,7 +75,7 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
 
     #endregion
 
-    #region Visual Settings
+    #region Team Color
 
     [Header("Team Color")]
     [SerializeField] private Color defaultColor = Color.white;
@@ -120,9 +123,6 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
 
     #region Runtime Collection State
 
-    // Destroy() is deferred until the end of the frame. With compound player
-    // colliders, several OnTriggerEnter callbacks can happen before destruction.
-    // This guard ensures one loose cart raises exactly one collection event.
     private bool collectionCommitted;
 
     #endregion
@@ -138,15 +138,13 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
             cartMaterialManager = GetComponentInChildren<CartMaterialManager>(true);
         }
 
-        if (collectVFX == null)
+        if (teamOutlineController == null)
         {
-            Debug.LogWarning("[ChainedCartManager] Collect VFX is not assigned.", this);
+            teamOutlineController = GetComponentInChildren<CartTeamOutlineController>(true);
         }
 
-        if (cartRenderer == null)
-        {
-            Debug.LogWarning("[ChainedCartManager] Cart Renderer is not assigned.", this);
-        }
+        if (collectVFX == null) Debug.LogWarning("[ChainedCartManager] Collect VFX is not assigned.", this);
+        if (cartRenderer == null) Debug.LogWarning("[ChainedCartManager] Cart Renderer is not assigned.", this);
 
         RefreshGroceryItemVisuals();
         SetCartTeamColor();
@@ -155,6 +153,21 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
     private void Update()
     {
         UpdateDisappearTimer();
+    }
+
+    #endregion
+
+    #region Vulnerable State
+
+    public void SetVulnerable(bool vulnerable)
+    {
+        bool validVulnerableState = vulnerable && isCollectedByPlayer;
+
+        if (isVulnerable == validVulnerableState) return;
+
+        isVulnerable = validVulnerableState;
+
+        if (cartMaterialManager != null) cartMaterialManager.SetVulnerableMode(isVulnerable);
     }
 
     #endregion
@@ -170,11 +183,7 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
             return;
         }
 
-        // A player in battle ghost/cooldown cannot immediately recollect loose carts.
-        if (battleController != null && battleController.IsInGhostMode)
-        {
-            return;
-        }
+        if (battleController != null && battleController.IsInGhostMode) return;
 
         CommitCollection(playerIndex);
     }
@@ -187,34 +196,18 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
         playerIndex = -1;
         battleController = null;
 
-        // Both the leading cart and its collected followers live below the owning
-        // ChainOfCarts / SnakeCartManager hierarchy, so this works regardless of
-        // which physical collider actually touched the loose cart.
         SnakeCartManager collectingSnake = other.GetComponentInParent<SnakeCartManager>();
-
-        if (collectingSnake == null)
-        {
-            return false;
-        }
+        if (collectingSnake == null) return false;
 
         playerIndex = collectingSnake.GetPlayerId() - 1;
 
-        if (playerIndex < 0 || playerIndex >= MaxSupportedPlayers)
-        {
-            return false;
-        }
+        if (playerIndex < 0 || playerIndex >= MaxSupportedPlayers) return false;
 
-        // Ghost mode belongs to the leading cart's battle controller.
-        // Resolve it only when a loose-cart collection contact actually occurs,
-        // rather than polling all players every frame.
         var snakeBody = collectingSnake.GetSnakeBody();
 
-        if (snakeBody != null &&
-            snakeBody.Count > 0 &&
-            snakeBody[0] != null)
+        if (snakeBody != null && snakeBody.Count > 0 && snakeBody[0] != null)
         {
-            battleController =
-                snakeBody[0].GetComponentInChildren<LeadingCartBattleController>(true);
+            battleController = snakeBody[0].GetComponentInChildren<LeadingCartBattleController>(true);
         }
 
         return true;
@@ -244,25 +237,15 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
 
     private void RaisePlayerEvent(GameEvent[] events, int playerIndex)
     {
-        if (events == null ||
-            playerIndex < 0 ||
-            playerIndex >= events.Length)
+        if (events == null || playerIndex < 0 || playerIndex >= events.Length)
         {
-            Debug.LogError(
-                $"[ChainedCartManager] Missing collection event slot for player index {playerIndex}.",
-                this
-            );
-
+            Debug.LogError($"[ChainedCartManager] Missing collection event slot for player index {playerIndex}.", this);
             return;
         }
 
         if (events[playerIndex] == null)
         {
-            Debug.LogError(
-                $"[ChainedCartManager] Collection GameEvent for Player {playerIndex + 1} is not assigned.",
-                this
-            );
-
+            Debug.LogError($"[ChainedCartManager] Collection GameEvent for Player {playerIndex + 1} is not assigned.", this);
             return;
         }
 
@@ -275,20 +258,36 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
 
     public void CollectByPlayer()
     {
+        SetVulnerable(false);
+
         isCollectedByPlayer = true;
         isCollectedByAI = false;
+        collectionCommitted = false;
 
         ResetDisappearCountDown();
         SetCartTeamColor();
+
+        if (teamOutlineController != null)
+        {
+            int playerId = TagToPlayerIndex(gameObject.tag) + 1;
+
+            if (playerId >= 1 && playerId <= MaxSupportedPlayers) teamOutlineController.SetTeam(playerId);
+            else teamOutlineController.ClearTeam();
+        }
     }
 
     public void CollectByAI()
     {
+        SetVulnerable(false);
+
         isCollectedByAI = true;
         isCollectedByPlayer = false;
+        collectionCommitted = false;
 
         ResetDisappearCountDown();
         SetCartTeamColor();
+
+        if (teamOutlineController != null) teamOutlineController.ClearTeam();
     }
 
     public void ResetDisappearCountDown()
@@ -303,44 +302,28 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
 
     public void OnDetach()
     {
-        Vector3 detachDirection = GetRandomPlanarDirection();
-
-        Detach(
-            detachDirection,
-            Random.Range(10f, 30f),
-            0f
-        );
+        Detach(GetRandomPlanarDirection(), Random.Range(10f, 30f), 0f);
     }
 
     public void OnDetach(Vector3 hitDirection)
     {
-        Vector3 planarDirection =
-            Vector3.ProjectOnPlane(hitDirection, Vector3.up);
+        Vector3 planarDirection = Vector3.ProjectOnPlane(hitDirection, Vector3.up);
 
-        if (planarDirection.sqrMagnitude < 0.0001f)
-        {
-            planarDirection = GetRandomPlanarDirection();
-        }
-        else
-        {
-            planarDirection.Normalize();
-        }
+        if (planarDirection.sqrMagnitude < 0.0001f) planarDirection = GetRandomPlanarDirection();
+        else planarDirection.Normalize();
 
-        Detach(
-            planarDirection,
-            Random.Range(30f, 50f),
-            30f
-        );
+        Detach(planarDirection, Random.Range(30f, 50f), 30f);
     }
 
-    private void Detach(
-        Vector3 baseDirection,
-        float forceMagnitude,
-        float randomDirectionAngle)
+    private void Detach(Vector3 baseDirection, float forceMagnitude, float randomDirectionAngle)
     {
         if (rb == null) return;
 
+        SetVulnerable(false);
+
         gameObject.tag = "Item";
+
+        if (teamOutlineController != null) teamOutlineController.ClearTeam();
 
         isCollectedByPlayer = false;
         isCollectedByAI = false;
@@ -353,44 +336,21 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
 
         if (randomDirectionAngle > 0f)
         {
-            float randomAngle =
-                Random.Range(
-                    -randomDirectionAngle,
-                    randomDirectionAngle
-                );
-
-            forceDirection =
-                Quaternion.Euler(0f, randomAngle, 0f) *
-                forceDirection;
+            float randomAngle = Random.Range(-randomDirectionAngle, randomDirectionAngle);
+            forceDirection = Quaternion.Euler(0f, randomAngle, 0f) * forceDirection;
         }
 
-        rb.AddForce(
-            forceDirection.normalized * forceMagnitude,
-            ForceMode.Impulse
-        );
+        rb.AddForce(forceDirection.normalized * forceMagnitude, ForceMode.Impulse);
 
-        Vector3 randomTorque =
-            Random.insideUnitSphere *
-            Random.Range(20f, 30f);
-
-        rb.AddTorque(
-            randomTorque,
-            ForceMode.Impulse
-        );
+        Vector3 randomTorque = Random.insideUnitSphere * Random.Range(20f, 30f);
+        rb.AddTorque(randomTorque, ForceMode.Impulse);
     }
 
     private Vector3 GetRandomPlanarDirection()
     {
-        Vector3 direction =
-            Vector3.ProjectOnPlane(
-                Random.insideUnitSphere,
-                Vector3.up
-            );
+        Vector3 direction = Vector3.ProjectOnPlane(Random.insideUnitSphere, Vector3.up);
 
-        if (direction.sqrMagnitude < 0.0001f)
-        {
-            direction = Vector3.forward;
-        }
+        if (direction.sqrMagnitude < 0.0001f) direction = Vector3.forward;
 
         return direction.normalized;
     }
@@ -432,11 +392,7 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
 
         countTimer += Time.deltaTime;
 
-        float warningStartTime =
-            Mathf.Max(
-                0f,
-                disappearTime - disappearWarningDuration
-            );
+        float warningStartTime = Mathf.Max(0f, disappearTime - disappearWarningDuration);
 
         if (!disappearWarningStarted &&
             disappearWarningDuration > 0f &&
@@ -444,18 +400,10 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
         {
             disappearWarningStarted = true;
 
-            if (cartMaterialManager != null)
-            {
-                cartMaterialManager.SetGhostMode(
-                    disappearWarningDuration
-                );
-            }
+            if (cartMaterialManager != null) cartMaterialManager.SetGhostMode(disappearWarningDuration);
         }
 
-        if (countTimer >= disappearTime)
-        {
-            Destroy(gameObject);
-        }
+        if (countTimer >= disappearTime) Destroy(gameObject);
     }
 
     #endregion
@@ -479,42 +427,29 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
 
         if (isCollectedByPlayer)
         {
-            int playerIndex =
-                TagToPlayerIndex(gameObject.tag);
+            int playerIndex = TagToPlayerIndex(gameObject.tag);
 
-            if (playerIndex >= 0 &&
-                playerIndex < playerTeamColors.Length)
+            if (playerIndex >= 0 && playerIndex < playerTeamColors.Length)
             {
-                targetColor =
-                    playerTeamColors[playerIndex];
+                targetColor = playerTeamColors[playerIndex];
             }
         }
 
-        materials[teamColorMaterialIndex].color =
-            targetColor;
+        materials[teamColorMaterialIndex].color = targetColor;
+        cartRenderer.materials = materials;
 
-        cartRenderer.materials =
-            materials;
+        if (cartMaterialManager != null) cartMaterialManager.RefreshBaseMaterials();
     }
 
     private int TagToPlayerIndex(string objectTag)
     {
         switch (objectTag)
         {
-            case "Player1":
-                return 0;
-
-            case "Player2":
-                return 1;
-
-            case "Player3":
-                return 2;
-
-            case "Player4":
-                return 3;
-
-            default:
-                return -1;
+            case "Player1": return 0;
+            case "Player2": return 1;
+            case "Player3": return 2;
+            case "Player4": return 3;
+            default: return -1;
         }
     }
 
@@ -526,11 +461,7 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
     {
         if (collectVFX == null) return;
 
-        collectVFX.Stop(
-            true,
-            ParticleSystemStopBehavior.StopEmittingAndClear
-        );
-
+        collectVFX.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         collectVFX.Play();
     }
 
@@ -560,18 +491,12 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
     {
         if (normalGroceryItemVisual != null)
         {
-            normalGroceryItemVisual.SetActive(
-                hasGroceryItem &&
-                hasNormalGroceryItem
-            );
+            normalGroceryItemVisual.SetActive(hasGroceryItem && hasNormalGroceryItem);
         }
 
         if (expensiveGroceryItemVisual != null)
         {
-            expensiveGroceryItemVisual.SetActive(
-                hasGroceryItem &&
-                hasExpensiveGroceryItem
-            );
+            expensiveGroceryItemVisual.SetActive(hasGroceryItem && hasExpensiveGroceryItem);
         }
     }
 
@@ -597,15 +522,8 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
     private void OnValidate()
     {
         disappearTime = Mathf.Max(0f, disappearTime);
-
-        disappearWarningDuration = Mathf.Clamp(
-            disappearWarningDuration,
-            0f,
-            disappearTime
-        );
-
-        teamColorMaterialIndex =
-            Mathf.Max(0, teamColorMaterialIndex);
+        disappearWarningDuration = Mathf.Clamp(disappearWarningDuration, 0f, disappearTime);
+        teamColorMaterialIndex = Mathf.Max(0, teamColorMaterialIndex);
     }
 
     #endregion

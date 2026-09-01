@@ -4,11 +4,8 @@ using UnityEngine;
 using UnityEngine.Serialization;
 
 /// <summary>
-/// Owns the player's cart chain, normal distance-path following, cart creation/removal,
-/// grocery-cart bookkeeping, and the handoff to SnakeMoveBackwardController.
-///
-/// The old MarkerManager follower system and LeadingCartRaycaster integration have
-/// been removed. Distance-based SnakePathHistory is now the only follower system.
+/// Owns the player's cart chain, distance-path following, cart creation/removal,
+/// grocery bookkeeping, stall vulnerability, and MoveBackward handoff.
 /// </summary>
 public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 {
@@ -32,7 +29,7 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
     [Range(0f, 1f)]
     [SerializeField] private float hingeInfluenceFalloffPerCart = 0.2f;
 
-    [Tooltip("How quickly live hinge rotation influence fades back in after MoveBackward recovery.")]
+    [Tooltip("How quickly live hinge influence fades back in after MoveBackward recovery.")]
     [Min(0f)]
     [SerializeField] private float recoveryHingeRestoreSpeed = 5f;
 
@@ -48,6 +45,21 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 
     #endregion
 
+    #region Stall Vulnerability
+
+    [Header("Stall Vulnerability")]
+    [Tooltip("Number of followers nearest the Leader that become Vulnerable when the Leader enters Stall.")]
+    [Min(0)]
+    [SerializeField] private int vulnerableFollowerCount = 2;
+
+    [Header("Vulnerability Runtime - Read Only")]
+    [SerializeField] private bool vulnerabilitySessionActive;
+    [SerializeField] private int currentVulnerableFollowerCount;
+
+    private LeadingCartStallController leadingStallController;
+
+    #endregion
+
     #region Cart Creation / Chain State
 
     [Header("Cart Creation")]
@@ -56,7 +68,7 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
     [Min(0f)]
     [SerializeField] private float followerSpawnDelay = 0.2f;
 
-    [Tooltip("Delay after a new follower is actually spawned before its collect VFX plays.")]
+    [Tooltip("Delay after a follower actually spawns before its collect VFX plays.")]
     [Min(0f)]
     [SerializeField] private float collectVfxDelay = 0.12f;
 
@@ -67,10 +79,13 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
     [SerializeField] private List<GameObject> cartsWithoutItem = new List<GameObject>();
 
     [Header("Follower Scale")]
-    public bool needScaleup = false;
     [SerializeField] private Vector3 normalScale = new Vector3(6f, 6f, 6f);
     [SerializeField] private Vector3 upScale = new Vector3(10f, 10f, 10f);
+
+    [Tooltip("Reserved for future chain shrink/down-scale behavior.")]
     [SerializeField] private Vector3 downScale = new Vector3(3f, 3f, 3f);
+
+    public bool needScaleup = false;
 
     #endregion
 
@@ -92,6 +107,7 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
     #region Runtime
 
     private readonly Dictionary<GameObject, ChainedCartManager> cartManagerCache = new Dictionary<GameObject, ChainedCartManager>();
+    private readonly List<Vector3> recoveryFollowerPositions = new List<Vector3>(16);
 
     private Rigidbody leadingCartBody;
     private Transform leadingRearHitch;
@@ -131,6 +147,12 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 
         if (physicalJointProbe == null) Debug.LogError("[SnakeCartManager] PhysicalChainJointProbe is missing.", this);
 
+        if (moveBackwardController != null)
+        {
+            moveBackwardController.OnMoveBackwardFinished -= HandleMoveBackwardFinished;
+            moveBackwardController.OnMoveBackwardFinished += HandleMoveBackwardFinished;
+        }
+
         lastNeedScaleup = needScaleup;
         CacheExistingCartManagers();
     }
@@ -148,8 +170,6 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 
         UpdateFollowerScaleIfNeeded();
 
-        // A lone-cart reverse still needs its normal physical probe/path to keep
-        // recording. Only the 1+ follower reverse-tow owns the whole snake.
         bool moveBackwardOwnsSnake = moveBackwardTicked && snakeBody.Count > 1;
         if (moveBackwardOwnsSnake) return;
 
@@ -158,6 +178,12 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
         if (pathHistory != null && pathHistory.IsInitialized) pathHistory.TickHistory();
 
         MoveAllFollowersUsingDistancePath();
+    }
+
+    private void OnDestroy()
+    {
+        if (moveBackwardController != null) moveBackwardController.OnMoveBackwardFinished -= HandleMoveBackwardFinished;
+        if (leadingStallController != null) leadingStallController.OnStallStarted -= HandleLeaderStalled;
     }
 
     #endregion
@@ -205,8 +231,7 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
             {
                 Quaternion hingeRotation = Quaternion.LookRotation(hingeForward.normalized, Vector3.up);
                 float hingeInfluence = Mathf.Clamp01(firstFollowerHingeInfluence - followerIndex * hingeInfluenceFalloffPerCart);
-                hingeInfluence *= recoveryHingeBlend;
-                targetRotation = Quaternion.Slerp(pathRotation, hingeRotation, hingeInfluence);
+                targetRotation = Quaternion.Slerp(pathRotation, hingeRotation, hingeInfluence * recoveryHingeBlend);
             }
         }
 
@@ -260,23 +285,19 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 
         CartControlScript leadingControl = leaderInstance.GetComponentInChildren<CartControlScript>(true);
         LeadingCartBehaviour[] leadingMovements = leaderInstance.GetComponentsInChildren<LeadingCartBehaviour>(true);
+        leadingStallController = leaderInstance.GetComponentInChildren<LeadingCartStallController>(true);
 
-        // RearHitch is a direct child of the real physics root in the new Base prefab.
         leadingRearHitch = leaderInstance.transform.Find("RearHitch");
 
-        if (leadingCartBody == null)
-        {
-            Debug.LogError("[SnakeCartManager] Leading Cart Base must have its Rigidbody on the prefab root.", leaderInstance);
-        }
+        if (leadingCartBody == null) Debug.LogError("[SnakeCartManager] Leading Cart Base must have its Rigidbody on the prefab root.", leaderInstance);
+        if (leadingControl == null) Debug.LogError("[SnakeCartManager] Could not find CartControlScript on the leading cart prefab.", leaderInstance);
+        if (leadingMovements == null || leadingMovements.Length == 0) Debug.LogError("[SnakeCartManager] Could not find LeadingCartBehaviour virtual wheels.", leaderInstance);
+        if (leadingStallController == null) Debug.LogError("[SnakeCartManager] Could not find LeadingCartStallController on the leading cart prefab.", leaderInstance);
 
-        if (leadingControl == null)
+        if (leadingStallController != null)
         {
-            Debug.LogError("[SnakeCartManager] Could not find CartControlScript on the leading cart prefab.", leaderInstance);
-        }
-
-        if (leadingMovements == null || leadingMovements.Length == 0)
-        {
-            Debug.LogError("[SnakeCartManager] Could not find any LeadingCartBehaviour virtual wheels.", leaderInstance);
+            leadingStallController.OnStallStarted -= HandleLeaderStalled;
+            leadingStallController.OnStallStarted += HandleLeaderStalled;
         }
 
         if (leadingRearHitch == null)
@@ -337,7 +358,6 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
         if (newCartManager != null)
         {
             newCartManager.CollectByPlayer();
-            newCartManager.SetCartTeamColor();
             CacheCartManager(newCart, newCartManager);
         }
         else
@@ -354,13 +374,88 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
         followerScaleDirty = true;
 
         if (newCartManager != null) StartCoroutine(PlayCollectVfxDelayed(newCartManager));
+
+        if (!vulnerabilitySessionActive &&
+            leadingStallController != null &&
+            leadingStallController.IsStalled)
+        {
+            BeginVulnerabilitySession();
+        }
     }
 
     private IEnumerator PlayCollectVfxDelayed(ChainedCartManager cartManager)
     {
         if (collectVfxDelay > 0f) yield return new WaitForSeconds(collectVfxDelay);
-
         if (cartManager != null) cartManager.PlayVFX();
+    }
+
+    #endregion
+
+    #region Stall Vulnerability
+
+    private void HandleLeaderStalled()
+    {
+        BeginVulnerabilitySession();
+    }
+
+    private void HandleMoveBackwardFinished()
+    {
+        EndVulnerabilitySession();
+    }
+
+    private void BeginVulnerabilitySession()
+    {
+        if (vulnerabilitySessionActive) return;
+        if (vulnerableFollowerCount <= 0 || snakeBody.Count <= 1) return;
+
+        ClearFollowerVulnerability();
+
+        int endIndex = Mathf.Min(snakeBody.Count - 1, vulnerableFollowerCount);
+        int markedCount = 0;
+
+        for (int i = 1; i <= endIndex; i++)
+        {
+            ChainedCartManager cartManager = GetCartManager(snakeBody[i]);
+            if (cartManager == null || !cartManager.isCollectedByPlayer) continue;
+
+            cartManager.SetVulnerable(true);
+
+            if (cartManager.IsVulnerable) markedCount++;
+        }
+
+        vulnerabilitySessionActive = markedCount > 0;
+        currentVulnerableFollowerCount = markedCount;
+    }
+
+    private void EndVulnerabilitySession()
+    {
+        ClearFollowerVulnerability();
+        vulnerabilitySessionActive = false;
+        currentVulnerableFollowerCount = 0;
+    }
+
+    private void ClearFollowerVulnerability()
+    {
+        for (int i = 1; i < snakeBody.Count; i++)
+        {
+            ChainedCartManager cartManager = GetCartManager(snakeBody[i]);
+            if (cartManager != null) cartManager.SetVulnerable(false);
+        }
+
+        currentVulnerableFollowerCount = 0;
+    }
+
+    private int CountVulnerableFollowers()
+    {
+        int count = 0;
+
+        for (int i = 1; i < snakeBody.Count; i++)
+        {
+            ChainedCartManager cartManager = GetCartManager(snakeBody[i]);
+            if (cartManager != null && cartManager.IsVulnerable) count++;
+        }
+
+        return count;
     }
 
     #endregion
@@ -379,6 +474,7 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
             {
                 snakeBody.RemoveAt(i);
                 followerScaleDirty = true;
+                currentVulnerableFollowerCount = CountVulnerableFollowers();
                 break;
             }
 
@@ -418,8 +514,6 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
             cart.transform.localScale = normalScale;
             cart.transform.SetParent(null);
 
-            // C1 may already have been detached by the battle system.
-            // Do not apply its detach impulse a second time.
             if (cartManager != null && cartManager.isCollectedByPlayer) cartManager.OnDetach();
 
             cartsWithoutItem.Remove(cart);
@@ -428,6 +522,55 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 
         snakeBody.RemoveRange(startIndex, snakeBody.Count - startIndex);
         followerScaleDirty = true;
+        currentVulnerableFollowerCount = CountVulnerableFollowers();
+
+        if (snakeBody.Count <= 1 && vulnerabilitySessionActive)
+        {
+            currentVulnerableFollowerCount = 0;
+        }
+    }
+
+    public int DetachAllFollowers()
+    {
+        if (snakeBody.Count <= 1) return 0;
+
+        int detachedCount = snakeBody.Count - 1;
+        DetachChainFromIndex(1);
+
+        if (detachedCount > 0 && sfxManager != null) sfxManager.PlaySFX("Detach");
+
+        return detachedCount;
+    }
+
+    /// <summary>
+    /// Cuts the defender's chain starting AT the vulnerable follower that was hit.
+    /// The hit vulnerable cart and every cart behind it become loose.
+    /// </summary>
+    public int DetachFromVulnerableCart(ChainedCartManager vulnerableCart)
+    {
+        if (vulnerableCart == null || !vulnerableCart.isCollectedByPlayer || !vulnerableCart.IsVulnerable) return 0;
+
+        int vulnerableIndex = FindSnakeIndex(vulnerableCart);
+        if (vulnerableIndex <= 0) return 0;
+
+        int detachedCount = snakeBody.Count - vulnerableIndex;
+        DetachChainFromIndex(vulnerableIndex);
+
+        if (detachedCount > 0 && sfxManager != null) sfxManager.PlaySFX("Detach");
+
+        return detachedCount;
+    }
+
+    private int FindSnakeIndex(ChainedCartManager cartManager)
+    {
+        if (cartManager == null) return -1;
+
+        for (int i = 1; i < snakeBody.Count; i++)
+        {
+            if (GetCartManager(snakeBody[i]) == cartManager) return i;
+        }
+
+        return -1;
     }
 
     #endregion
@@ -464,7 +607,6 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
         if (leadingRearHitch == null || physicalJointProbe == null || pathHistory == null) return false;
 
         Physics.SyncTransforms();
-
         physicalJointProbe.Initialize(leadingRearHitch);
 
         if (physicalJointProbe.ProbeTransform == null)
@@ -473,17 +615,17 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
             return false;
         }
 
-        List<Vector3> followerPositions = new List<Vector3>(snakeBody.Count - 1);
+        recoveryFollowerPositions.Clear();
 
         for (int i = 1; i < snakeBody.Count; i++)
         {
             if (snakeBody[i] == null) return false;
-            followerPositions.Add(snakeBody[i].transform.position);
+            recoveryFollowerPositions.Add(snakeBody[i].transform.position);
         }
 
         bool seeded = pathHistory.ResetHistoryFromCurrentChain(
             physicalJointProbe.ProbeTransform,
-            followerPositions,
+            recoveryFollowerPositions,
             firstFollowerSpacing,
             followerCartSpacing
         );
@@ -529,7 +671,6 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
     public void AddBodyParts(GameObject addedObj)
     {
         if (addedObj == null) return;
-
         bodyParts.Add(addedObj);
     }
 
@@ -538,10 +679,6 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
         return snakeBody.Count;
     }
 
-    /// <summary>
-    /// Runtime chain list. Callers should treat this list as read-only.
-    /// Index 0 is the leading cart.
-    /// </summary>
     public List<GameObject> GetSnakeBody()
     {
         return snakeBody;
@@ -570,7 +707,6 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
             if (sfxManager != null) sfxManager.PlaySFX("CheckoutSingle");
 
             RemoveAndDestroySnakeCartAt(i);
-
             return groceryItemCartCount;
         }
 
@@ -607,7 +743,6 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
             if (cart == null) continue;
 
             cartManager = GetCartManager(cart);
-
             if (cartManager != null) return true;
         }
 
@@ -639,7 +774,6 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
             if (cart == null) continue;
 
             ChainedCartManager cartManager = GetCartManager(cart);
-
             if (cartManager == null || !cartManager.HasGroceryItem()) continue;
 
             groceryItemCartCount = Mathf.Max(0, groceryItemCartCount - 1);
@@ -657,6 +791,7 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
         cartsWithoutItem.Remove(cart);
         UncacheCartManager(cart);
         followerScaleDirty = true;
+        currentVulnerableFollowerCount = CountVulnerableFollowers();
 
         if (cart != null) Destroy(cart);
     }
@@ -682,7 +817,6 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
     private void CacheCartManager(GameObject cart, ChainedCartManager cartManager)
     {
         if (cart == null || cartManager == null) return;
-
         cartManagerCache[cart] = cartManager;
     }
 
@@ -705,7 +839,6 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
     private void UncacheCartManager(GameObject cart)
     {
         if (cart == null) return;
-
         cartManagerCache.Remove(cart);
     }
 

@@ -129,20 +129,20 @@ public class LeadingCartStallController : MonoBehaviour
         // Preserve whether drift was available before the stall instead of
         // blindly enabling it later.
         restoreDriftAfterStall = cartControlInput.CanDrift();
-
         // Cancel active/armed drift immediately, then stop listening to new
         // drift presses while stalled.
         if (driftController != null) driftController.CancelDrift("Cart stalled");
 
         cartControlInput.DisallowDrift();
+        cartControlInput.DisallowSpeedingUp();
         cartControlInput.AllowMoveBackward();
     }
 
     private void ExitStall()
     {
         cartControlInput.DisallowMoveBackward();
-
         if (restoreDriftAfterStall) cartControlInput.AllowDrift();
+        cartControlInput.AllowSpeedingUp();
 
         restoreDriftAfterStall = false;
     }

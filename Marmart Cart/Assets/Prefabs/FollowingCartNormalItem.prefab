@@ -495,6 +495,7 @@ GameObject:
   - component: {fileID: 3607228855711999349}
   - component: {fileID: 5131415986485558397}
   - component: {fileID: 3810541585302008709}
+  - component: {fileID: 3400125302644024510}
   m_Layer: 7
   m_Name: Cart Model
   m_TagString: Untagged
@@ -571,6 +572,24 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6704257294683854989}
   m_Mesh: {fileID: 8857616182904770524, guid: 77d177c25d93642cb8514fd1410af42f, type: 3}
+--- !u!114 &3400125302644024510
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6704257294683854989}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!1 &6914780558269192623
 GameObject:
   m_ObjectHideFlags: 0
@@ -586,10 +605,10 @@ GameObject:
   - component: {fileID: 5340151306066624053}
   - component: {fileID: 62603883547072747}
   - component: {fileID: 3093587261940331399}
-  - component: {fileID: 1604046231476588783}
   - component: {fileID: 6471618177495573124}
   - component: {fileID: 4352900759099298663}
   - component: {fileID: 2029535004146302134}
+  - component: {fileID: 303568491221597637}
   m_Layer: 7
   m_Name: FollowingCartNormalItem
   m_TagString: Item
@@ -960,21 +979,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.32, y: 0.19643794, z: 0.50670165}
   m_Center: {x: 0, y: -0.038015362, z: 0.033435058}
---- !u!114 &1604046231476588783
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6914780558269192623}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eeecd1f966599954fb81aa99cae17cb2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  offsetValueCurve: {fileID: 0}
-  cartMaxSpeed: 30
-  offsetValue: 0
 --- !u!114 &6471618177495573124
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -989,23 +993,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <isBonusCart>k__BackingField: 0
   <CartType>k__BackingField: 0
-  collectVFX: {fileID: 1106169482944890282}
   <isCollectedByPlayer>k__BackingField: 0
   <isCollectedByAI>k__BackingField: 0
-  playerRaycasters:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  disappearTime: 20
-  countTimer: 0
+  isVulnerable: 0
+  collectVFX: {fileID: 1106169482944890282}
   cartRenderer: {fileID: 5131415986485558397}
+  cartMaterialManager: {fileID: 0}
+  teamOutlineController: {fileID: 0}
+  disappearTime: 20
+  disappearWarningDuration: 3
+  countTimer: 0
   defaultColor: {r: 0.32156864, g: 0.3372549, b: 0.3647059, a: 1}
   playerTeamColors:
   - {r: 0, g: 0.7529412, b: 1, a: 1}
   - {r: 1, g: 0, b: 0, a: 1}
   - {r: 0, g: 1, b: 0, a: 1}
   - {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  teamColorMaterialIndex: 1
   collectEmptyCartEvent:
   - {fileID: 11400000, guid: 1c2f6ba77010d5645894c2545add5964, type: 2}
   - {fileID: 11400000, guid: 53bc1f737b4b6ea47a1ddcaf9047cb1a, type: 2}
@@ -1059,11 +1063,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef9636a670c2c4c4a8dc0816d2eb6151, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cartRenderer: {fileID: 5131415986485558397}
   ghostMaterial: {fileID: 2100000, guid: bc4f318dd8cc3e64ab0a5b2490469e51, type: 2}
-  blinkStartTime: 1
-  minBlinkRate: 2
-  maxBlinkRate: 10
-  cartModel: {fileID: 6704257294683854989}
+  vulnerableMaterial: {fileID: 2100000, guid: 166319699ce1e2d4890f8c97af405ea9, type: 2}
+  ghostBlinkAccelerationWindow: 1
+  ghostMinBlinkRate: 2
+  ghostMaxBlinkRate: 8
+  vulnerableFlashRate: 3
+--- !u!114 &303568491221597637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6914780558269192623}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74a2e6aa78313f24faad6175af92eeca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineTargets:
+  - {fileID: 3400125302644024510}
+  startupPlayerId: 0
+  outlineMode: 2
+  outlineWidth: 3
+  teamOutlineColors:
+  - {r: 0.28256378, g: 0.88720524, b: 0.98742133, a: 1}
+  - {r: 1, g: 0.293706, b: 0.25471687, a: 1}
+  - {r: 0.34905648, g: 1, b: 0.43902436, a: 1}
+  - {r: 1, g: 0.87943953, b: 0.25471687, a: 1}
+  currentPlayerId: 0
+  outlineActive: 0
 --- !u!1 &7168617494978913835
 GameObject:
   m_ObjectHideFlags: 0

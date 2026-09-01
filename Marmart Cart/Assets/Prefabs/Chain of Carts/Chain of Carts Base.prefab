@@ -55,12 +55,18 @@ MonoBehaviour:
   recoveryHingeRestoreSpeed: 5
   moveBackwardController: {fileID: 7301706362411791999}
   physicalJointProbe: {fileID: 8147838864649264086}
+  vulnerableFollowerCount: 3
+  vulnerabilitySessionActive: 0
+  currentVulnerableFollowerCount: 0
   followerSpawnDelay: 0.11
   collectVfxDelay: 0.12
   bodyParts:
   - {fileID: 7280288703978135140, guid: 4f3f3c272c30336459d42d34a85faa6c, type: 3}
   snakeBody: []
   cartsWithoutItem: []
+  normalScale: {x: 6, y: 6, z: 6}
+  upScale: {x: 10, y: 10, z: 10}
+  downScale: {x: 3, y: 3, z: 3}
   needScaleup: 0
   playerIndex: 1
   setupCamera: {fileID: 11400000, guid: c694c52992c7f5f4fbfb31d18772ac53, type: 2}

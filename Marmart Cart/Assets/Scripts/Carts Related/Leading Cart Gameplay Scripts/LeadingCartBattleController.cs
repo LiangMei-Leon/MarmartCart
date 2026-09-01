@@ -2,36 +2,34 @@ using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// Detects battle contacts from the leading cart's front battle trigger shape
-/// and resolves this cart's loss.
+/// Resolves battle contacts from the leading cart's front battle trigger shape.
 ///
-/// Battle rule:
-/// - Hit your own collected chain cart -> you lose.
-/// - Hit another player's collected chain cart -> you lose.
-/// - Hit another player's leading cart -> you lose.
-/// - Free/uncollected carts do not count.
+/// Normal battle rule:
+/// - Hit your own non-vulnerable collected cart -> attacker loses.
+/// - Hit another player's non-vulnerable collected cart -> attacker loses.
+/// - Hit another player's leading cart -> attacker loses.
+/// - Loose/uncollected carts do not count.
 ///
-/// Several trigger BoxColliders can live on this same GameObject to build the
-/// desired battle detection shape. Duplicate trigger callbacks are naturally
-/// ignored once this cart enters its battle cooldown.
+/// Vulnerable exception:
+/// - If the contacted collected follower is Vulnerable, the attacker does NOT lose.
+/// - The hit vulnerable cart itself is detached.
+/// - Every defender cart behind that vulnerable cart is also detached and becomes loose.
 /// </summary>
 [RequireComponent(typeof(Collider))]
+[DisallowMultipleComponent]
 public class LeadingCartBattleController : MonoBehaviour
 {
     #region References
 
     [Header("References")]
-    [SerializeField] private CartControlScript cartControlInput;
     [SerializeField] private Rigidbody cartBody;
 
-    [Tooltip("The four virtual-wheel LeadingCartBehaviour components that drive this Rigidbody.")]
+    [Tooltip("The four LeadingCartBehaviour virtual wheels that drive this Rigidbody.")]
     [SerializeField] private LeadingCartBehaviour[] wheelMovements;
 
     [SerializeField] private SfxManager sfxManager;
     [SerializeField] private CartMaterialManager cartMaterialManager;
 
-    // The leading cart is instantiated under SnakeCartManager at runtime, so
-    // this reference is resolved once after spawning instead of being prefab-wired.
     private SnakeCartManager snakeCartManager;
 
     #endregion
@@ -53,10 +51,20 @@ public class LeadingCartBattleController : MonoBehaviour
 
     #endregion
 
+    #region Vulnerable Hit Settings
+
+    [Header("Vulnerable Chain Hit")]
+    [Tooltip("Short gate preventing compound battle triggers from resolving several vulnerable hits at once.")]
+    [Min(0f)]
+    [SerializeField] private float vulnerableHitCooldown = 0.12f;
+
+    #endregion
+
     #region Runtime
 
     [Header("Runtime - Read Only")]
     [SerializeField] private float ghostUntilTime;
+    [SerializeField] private float nextVulnerableHitTime;
 
     private Coroutine stopRoutine;
 
@@ -67,6 +75,7 @@ public class LeadingCartBattleController : MonoBehaviour
     #region Events
 
     public System.Action OnBattleLost;
+    public System.Action<ChainedCartManager, int> OnVulnerableCartHit;
 
     #endregion
 
@@ -75,7 +84,6 @@ public class LeadingCartBattleController : MonoBehaviour
     private void Awake()
     {
         if (cartBody == null) Debug.LogError("[LeadingCartBattleController] Cart Rigidbody is not assigned.", this);
-        if (cartControlInput == null) Debug.LogError("[LeadingCartBattleController] CartControlScript is not assigned.", this);
 
         if ((wheelMovements == null || wheelMovements.Length == 0) && cartBody != null)
         {
@@ -107,6 +115,8 @@ public class LeadingCartBattleController : MonoBehaviour
             StopCoroutine(stopRoutine);
             stopRoutine = null;
         }
+
+        ResetWheelMovement();
     }
 
     #endregion
@@ -117,26 +127,24 @@ public class LeadingCartBattleController : MonoBehaviour
     {
         if (other == null || IsInGhostMode) return;
 
-        // Ignore every collider belonging to this same leading-cart Rigidbody,
-        // including our own physical colliders and our other battle triggers.
+        // Ignore colliders belonging to this same leading-cart Rigidbody.
         if (other.attachedRigidbody == cartBody) return;
 
-        if (IsCollectedChainCart(other))
+        ChainedCartManager contactedCart = other.GetComponentInParent<ChainedCartManager>();
+
+        if (contactedCart != null && contactedCart.isCollectedByPlayer)
         {
+            if (contactedCart.IsVulnerable)
+            {
+                ResolveVulnerableCartHit(contactedCart);
+                return;
+            }
+
             LoseBattle();
             return;
         }
 
-        if (IsOtherLeadingCart(other))
-        {
-            LoseBattle();
-        }
-    }
-
-    private bool IsCollectedChainCart(Collider other)
-    {
-        ChainedCartManager chainedCart = other.GetComponentInParent<ChainedCartManager>();
-        return chainedCart != null && chainedCart.isCollectedByPlayer;
+        if (IsOtherLeadingCart(other)) LoseBattle();
     }
 
     private bool IsOtherLeadingCart(Collider other)
@@ -145,11 +153,33 @@ public class LeadingCartBattleController : MonoBehaviour
 
         if (otherBody == null || otherBody == cartBody) return false;
 
-        // The battle controller lives on a child of the leading-cart Rigidbody,
-        // so resolve it from the contacted Rigidbody's hierarchy.
         LeadingCartBattleController otherBattleController = otherBody.GetComponentInChildren<LeadingCartBattleController>(true);
 
         return otherBattleController != null && otherBattleController != this;
+    }
+
+    #endregion
+
+    #region Vulnerable Hit Resolution
+
+    private void ResolveVulnerableCartHit(ChainedCartManager vulnerableCart)
+    {
+        if (vulnerableCart == null || !vulnerableCart.IsVulnerable) return;
+        if (Time.time < nextVulnerableHitTime) return;
+
+        SnakeCartManager defenderSnake = vulnerableCart.GetComponentInParent<SnakeCartManager>();
+
+        if (defenderSnake == null)
+        {
+            Debug.LogError("[LeadingCartBattleController] Vulnerable cart has no owning SnakeCartManager.", vulnerableCart);
+            return;
+        }
+
+        nextVulnerableHitTime = Time.time + vulnerableHitCooldown;
+
+        int detachedCount = defenderSnake.DetachFromVulnerableCart(vulnerableCart);
+
+        OnVulnerableCartHit?.Invoke(vulnerableCart, detachedCount);
     }
 
     #endregion
@@ -171,24 +201,13 @@ public class LeadingCartBattleController : MonoBehaviour
     {
         if (snakeCartManager == null) return;
 
-        var snakeBody = snakeCartManager.GetSnakeBody();
-
-        if (snakeBody == null || snakeBody.Count < 2 || snakeBody[1] == null) return;
-
-        ChainedCartManager firstFollower = snakeBody[1].GetComponent<ChainedCartManager>();
-
-        if (firstFollower == null) return;
-
-        firstFollower.OnDetach();
-
-        if (sfxManager != null) sfxManager.PlaySFX("Detach");
+        snakeCartManager.DetachAllFollowers();
     }
 
     private void StopAndKnockBackCart()
     {
         if (cartBody == null) return;
 
-        // Capture direction before the wheel scripts stop the Rigidbody.
         Vector3 knockbackDirection = GetSafeKnockbackDirection();
 
         if (stopRoutine != null) StopCoroutine(stopRoutine);
@@ -197,20 +216,10 @@ public class LeadingCartBattleController : MonoBehaviour
 
     private IEnumerator StopCartRoutine(Vector3 knockbackDirection)
     {
-        // Stop all four wheel-drive components, but do NOT use their old
-        // SetSpeedToZero(duration) overload because that applies knockback once
-        // per wheel to the same Rigidbody.
-        if (wheelMovements != null)
-        {
-            foreach (LeadingCartBehaviour wheelMovement in wheelMovements)
-            {
-                if (wheelMovement != null) wheelMovement.SetSpeedToZero();
-            }
-        }
+        StopWheelMovement();
 
         cartBody.linearVelocity = Vector3.zero;
 
-        // Apply exactly one centralized knockback to the Rigidbody.
         if (knockbackImpulse > 0f)
         {
             cartBody.AddForce(knockbackDirection * knockbackImpulse, ForceMode.Impulse);
@@ -218,15 +227,28 @@ public class LeadingCartBattleController : MonoBehaviour
 
         if (stopDuration > 0f) yield return new WaitForSeconds(stopDuration);
 
-        if (wheelMovements != null)
-        {
-            foreach (LeadingCartBehaviour wheelMovement in wheelMovements)
-            {
-                if (wheelMovement != null) wheelMovement.ResetSpeed();
-            }
-        }
-
+        ResetWheelMovement();
         stopRoutine = null;
+    }
+
+    private void StopWheelMovement()
+    {
+        if (wheelMovements == null) return;
+
+        for (int i = 0; i < wheelMovements.Length; i++)
+        {
+            if (wheelMovements[i] != null) wheelMovements[i].SetSpeedToZero();
+        }
+    }
+
+    private void ResetWheelMovement()
+    {
+        if (wheelMovements == null) return;
+
+        for (int i = 0; i < wheelMovements.Length; i++)
+        {
+            if (wheelMovements[i] != null) wheelMovements[i].ResetSpeed();
+        }
     }
 
     private Vector3 GetSafeKnockbackDirection()
@@ -254,11 +276,9 @@ public class LeadingCartBattleController : MonoBehaviour
     private void EnterGhostMode(float duration)
     {
         float safeDuration = Mathf.Max(0f, duration);
+
         ghostUntilTime = Mathf.Max(ghostUntilTime, Time.time + safeDuration);
 
-        // Set the visual immediately instead of waiting for Update. This also
-        // removes the old one-frame race where collection could still occur
-        // before the ghost flag was updated.
         if (cartMaterialManager != null && safeDuration > 0f)
         {
             cartMaterialManager.SetGhostMode(safeDuration);
@@ -275,15 +295,15 @@ public class LeadingCartBattleController : MonoBehaviour
 
         if (colliders.Length == 0)
         {
-            Debug.LogError("[LeadingCartBattleController] No trigger colliders found on this GameObject.", this);
+            Debug.LogError("[LeadingCartBattleController] No battle trigger colliders found on this GameObject.", this);
             return;
         }
 
-        foreach (Collider battleCollider in colliders)
+        for (int i = 0; i < colliders.Length; i++)
         {
-            if (!battleCollider.isTrigger)
+            if (!colliders[i].isTrigger)
             {
-                Debug.LogError("[LeadingCartBattleController] Every battle detection Collider must have Is Trigger enabled.", battleCollider);
+                Debug.LogError("[LeadingCartBattleController] Every battle detection Collider must have Is Trigger enabled.", colliders[i]);
             }
         }
     }
