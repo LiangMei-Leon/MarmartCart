@@ -9,7 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5553913382146881103}
-  m_Layer: 0
+  - component: {fileID: 6419848323879244495}
+  m_Layer: 9
   m_Name: FruitShelf_02
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -32,6 +33,27 @@ Transform:
   - {fileID: 7577646644375851956}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &6419848323879244495
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2243234717130996989}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.015926, y: 1.3745606, z: 3.829588}
+  m_Center: {x: 0.003855584, y: -0.002496964, z: -0.0028816233}
 --- !u!1001 &7972369718105961567
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -95,6 +117,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: ca8f8debf9e270f49b166bb31edb0d45, type: 3}
       propertyPath: m_Name
       value: Object014
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: ca8f8debf9e270f49b166bb31edb0d45, type: 3}
+      propertyPath: m_Layer
+      value: 9
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -9,7 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6682457017795939703}
-  m_Layer: 0
+  - component: {fileID: 4089694151120491737}
+  m_Layer: 9
   m_Name: Fridge_Low_06
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -32,6 +33,27 @@ Transform:
   - {fileID: 9050627191753131844}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &4089694151120491737
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3940299947357685037}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.3592758, y: 5.361853, z: 7.2475586}
+  m_Center: {x: -0.032390594, y: 2.7350757, z: -0.014160156}
 --- !u!1 &8561793511486103038
 GameObject:
   m_ObjectHideFlags: 0
@@ -43,7 +65,7 @@ GameObject:
   - component: {fileID: 9050627191753131844}
   - component: {fileID: 5347341691003128033}
   - component: {fileID: 7913217784626035755}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Fridge_Low_06
   m_TagString: Untagged
   m_Icon: {fileID: 0}

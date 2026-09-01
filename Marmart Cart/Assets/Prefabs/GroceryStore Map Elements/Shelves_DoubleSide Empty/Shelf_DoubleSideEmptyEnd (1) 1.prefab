@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 1610405922267102889}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0, z: 0.086}
+  m_LocalPosition: {x: 0, y: 0, z: 0.086}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -39,7 +39,6 @@ Transform:
   - {fileID: 3716656530145769552}
   - {fileID: 3139632255690926296}
   - {fileID: 6073469360121210534}
-  - {fileID: 4033012107608017298}
   - {fileID: 4973538236171901775}
   - {fileID: 8560013039788058139}
   - {fileID: 9185705637966803628}
@@ -126,61 +125,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.5510544, y: 0.45394272, z: 0.38379094}
-  m_Center: {x: 0.00000076293946, y: 0.022537662, z: 0.1080139}
---- !u!1 &7285722695875061716
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4033012107608017298}
-  - component: {fileID: 7348588363881331074}
-  m_Layer: 13
-  m_Name: Invisible Top
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
-  m_IsActive: 1
---- !u!4 &4033012107608017298
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7285722695875061716}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 4929516611141020708}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &7348588363881331074
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7285722695875061716}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.84436953, y: 0.7570763, z: 0.0445959}
-  m_Center: {x: -0.0015406609, y: 0.021971036, z: 0.47770268}
+  m_Size: {x: 0.5174052, y: 0.45394272, z: 0.604621}
+  m_Center: {x: 0.00080211164, y: 0.022537662, z: 0.2959965}
 --- !u!1001 &505169807063052804
 PrefabInstance:
   m_ObjectHideFlags: 0
