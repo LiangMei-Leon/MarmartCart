@@ -4821,12 +4821,22 @@ MonoBehaviour:
   phase2Duration: 90
   phase2SpawnInterval: 10
   phase2ItemsPerSpawn: 1
+  phase3Duration: 60
   phase3SpawnInterval: 10
   phase3ItemsPerSpawn: 2
-  cartPrefab: {fileID: 7705262396943972690, guid: 86e59ca9b08bae34189cf00486e4e5af, type: 3}
+  phase4SpawnInterval: 10
+  phase4ItemsPerSpawn: 6
+  normalPrefab: {fileID: 0}
+  rarePrefab: {fileID: 0}
+  phase1RareChance: 0
+  phase2RareChance: 0.05
+  phase3RareChance: 0.08
+  phase4RareChance: 0.12
   yOffset: 20
   snakeCartManager1: {fileID: 0}
   snakeCartManager2: {fileID: 0}
+  snakeCartManager3: {fileID: 0}
+  snakeCartManager4: {fileID: 0}
   applyPrefabScaleFix: 0
 --- !u!4 &297019894
 Transform:
@@ -6158,12 +6168,22 @@ MonoBehaviour:
   phase2Duration: 90
   phase2SpawnInterval: 5
   phase2ItemsPerSpawn: 2
+  phase3Duration: 60
   phase3SpawnInterval: 2
   phase3ItemsPerSpawn: 2
-  cartPrefab: {fileID: 6914780558269192623, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
+  phase4SpawnInterval: 10
+  phase4ItemsPerSpawn: 6
+  normalPrefab: {fileID: 0}
+  rarePrefab: {fileID: 0}
+  phase1RareChance: 0
+  phase2RareChance: 0.05
+  phase3RareChance: 0.08
+  phase4RareChance: 0.12
   yOffset: 20
   snakeCartManager1: {fileID: 1981863288}
   snakeCartManager2: {fileID: 203355758}
+  snakeCartManager3: {fileID: 0}
+  snakeCartManager4: {fileID: 0}
   applyPrefabScaleFix: 1
 --- !u!4 &440442713
 Transform:
@@ -10212,12 +10232,22 @@ MonoBehaviour:
   phase2Duration: 90
   phase2SpawnInterval: 3
   phase2ItemsPerSpawn: 1
+  phase3Duration: 60
   phase3SpawnInterval: 4
   phase3ItemsPerSpawn: 2
-  cartPrefab: {fileID: 319821544491134380, guid: 5f722ec503c1c1b429c44eaebcb4a9ed, type: 3}
+  phase4SpawnInterval: 10
+  phase4ItemsPerSpawn: 6
+  normalPrefab: {fileID: 0}
+  rarePrefab: {fileID: 0}
+  phase1RareChance: 0
+  phase2RareChance: 0.05
+  phase3RareChance: 0.08
+  phase4RareChance: 0.12
   yOffset: 20
   snakeCartManager1: {fileID: 0}
   snakeCartManager2: {fileID: 0}
+  snakeCartManager3: {fileID: 0}
+  snakeCartManager4: {fileID: 0}
   applyPrefabScaleFix: 0
 --- !u!4 &707475391
 Transform:
@@ -68111,6 +68141,9 @@ MonoBehaviour:
   firstEventDelay: 30
   minTimeBetweenEvents: 10
   maxTimeBetweenEvents: 20
+  weightedEvents: []
+  limitConsecutiveRepeats: 1
+  maxConsecutiveSameEvent: 2
   useScriptedSequence: 1
   scriptedEvents: 02000000
   rollingTextRootP1: {fileID: 2145234597}
@@ -68121,6 +68154,10 @@ MonoBehaviour:
   rollingTextP2: {fileID: 1305179103}
   rollingTextP3: {fileID: 0}
   rollingTextP4: {fileID: 0}
+  announcementAudioSource: {fileID: 0}
+  playAnnouncementOnWarningStart: 1
+  interruptCurrentAnnouncement: 1
+  announcementClips: []
 --- !u!4 &1771990810
 Transform:
   m_ObjectHideFlags: 0
@@ -68186,6 +68223,8 @@ MonoBehaviour:
   titleScreen: {fileID: 863516544}
   timerTextP1: {fileID: 1553768670}
   timerTextP2: {fileID: 284943943}
+  timerTextP3: {fileID: 0}
+  timerTextP4: {fileID: 0}
   finalScoreScreen: {fileID: 431328474}
   scoreBreakdownTextP1: {fileID: 102568705}
   scoreBreakdownTextP2: {fileID: 508894103}
@@ -68237,16 +68276,36 @@ MonoBehaviour:
   restartKey: 114
   p1Root: {fileID: 0}
   p2Root: {fileID: 0}
+  p3Root: {fileID: 0}
+  p4Root: {fileID: 0}
   p1Rigidbody: {fileID: 0}
   p2Rigidbody: {fileID: 0}
+  p3Rigidbody: {fileID: 0}
+  p4Rigidbody: {fileID: 0}
   p1CartControl: {fileID: 0}
   p2CartControl: {fileID: 0}
+  p3CartControl: {fileID: 0}
+  p4CartControl: {fileID: 0}
   p1TeleportPoint: {fileID: 1981863289}
   p2TeleportPoint: {fileID: 203355759}
+  p3TeleportPoint: {fileID: 0}
+  p4TeleportPoint: {fileID: 0}
   p1TeleportKey: 49
   p2TeleportKey: 50
+  p3TeleportKey: 51
+  p4TeleportKey: 52
   p1AllowFlipKey: 51
   p2AllowFlipKey: 52
+  p3AllowFlipKey: 101
+  p4AllowFlipKey: 114
+  p1AddEmptyCartEvent: {fileID: 0}
+  p2AddEmptyCartEvent: {fileID: 0}
+  p3AddEmptyCartEvent: {fileID: 0}
+  p4AddEmptyCartEvent: {fileID: 0}
+  p1AddCartKey: 122
+  p2AddCartKey: 120
+  p3AddCartKey: 99
+  p4AddCartKey: 118
 --- !u!114 &1773933218
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -68261,6 +68320,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   normalItemValue: 10
   expensiveItemValue: 100
+  streakThresholdLvl1: 10
+  streakThresholdLvl2: 20
+  streakThresholdLvl3: 30
+  streakThresholdLvl4: 30
+  streakThresholdLvl5: 30
+  streakThresholdLvl6: 30
+  streakThresholdBonusPts1: 50
+  streakThresholdBonusPts2: 70
+  streakThresholdBonusPts3: 100
+  streakThresholdBonusPts4: 140
+  streakThresholdBonusPts5: 190
+  streakThresholdBonusPts6: 250
   team1Players: 0100000003000000
   team2Players: 0200000004000000
   playerTotalScore:
@@ -68280,28 +68351,44 @@ MonoBehaviour:
   laneUIs:
   - itemsCountText: {fileID: 0}
     streakTextUI: {fileID: 0}
-    subtotalText: {fileID: 0}
+    bonusPointText: {fileID: 0}
+    bonusPointUI: {fileID: 0}
+    basePointText: {fileID: 0}
   - itemsCountText: {fileID: 0}
     streakTextUI: {fileID: 0}
-    subtotalText: {fileID: 0}
+    bonusPointText: {fileID: 0}
+    bonusPointUI: {fileID: 0}
+    basePointText: {fileID: 0}
   - itemsCountText: {fileID: 0}
     streakTextUI: {fileID: 0}
-    subtotalText: {fileID: 0}
+    bonusPointText: {fileID: 0}
+    bonusPointUI: {fileID: 0}
+    basePointText: {fileID: 0}
   - itemsCountText: {fileID: 0}
     streakTextUI: {fileID: 0}
-    subtotalText: {fileID: 0}
+    bonusPointText: {fileID: 0}
+    bonusPointUI: {fileID: 0}
+    basePointText: {fileID: 0}
   - itemsCountText: {fileID: 0}
     streakTextUI: {fileID: 0}
-    subtotalText: {fileID: 0}
+    bonusPointText: {fileID: 0}
+    bonusPointUI: {fileID: 0}
+    basePointText: {fileID: 0}
   - itemsCountText: {fileID: 0}
     streakTextUI: {fileID: 0}
-    subtotalText: {fileID: 0}
+    bonusPointText: {fileID: 0}
+    bonusPointUI: {fileID: 0}
+    basePointText: {fileID: 0}
   - itemsCountText: {fileID: 0}
     streakTextUI: {fileID: 0}
-    subtotalText: {fileID: 0}
+    bonusPointText: {fileID: 0}
+    bonusPointUI: {fileID: 0}
+    basePointText: {fileID: 0}
   - itemsCountText: {fileID: 0}
     streakTextUI: {fileID: 0}
-    subtotalText: {fileID: 0}
+    bonusPointText: {fileID: 0}
+    bonusPointUI: {fileID: 0}
+    basePointText: {fileID: 0}
 --- !u!1 &1777114522
 GameObject:
   m_ObjectHideFlags: 0
@@ -90814,12 +90901,22 @@ MonoBehaviour:
   phase2Duration: 90
   phase2SpawnInterval: 10
   phase2ItemsPerSpawn: 2
+  phase3Duration: 60
   phase3SpawnInterval: 5
   phase3ItemsPerSpawn: 1
-  cartPrefab: {fileID: 6231759305289963231, guid: c0e0d6bf9993d4a46ad42395087c1d98, type: 3}
+  phase4SpawnInterval: 10
+  phase4ItemsPerSpawn: 6
+  normalPrefab: {fileID: 0}
+  rarePrefab: {fileID: 0}
+  phase1RareChance: 0
+  phase2RareChance: 0.05
+  phase3RareChance: 0.08
+  phase4RareChance: 0.12
   yOffset: 20
   snakeCartManager1: {fileID: 0}
   snakeCartManager2: {fileID: 0}
+  snakeCartManager3: {fileID: 0}
+  snakeCartManager4: {fileID: 0}
   applyPrefabScaleFix: 0
 --- !u!4 &1866954924
 Transform:
@@ -91095,8 +91192,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c9d57216a2c5324fbf682e2c4da7660, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isForPlayer1: 0
+  playerIndex: 1
   offsetDistance: 3
+  yOffset: -1
   player: {fileID: 0}
   pit: {fileID: 1358470168}
   yRotationOffset: 180
@@ -114929,8 +115027,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c9d57216a2c5324fbf682e2c4da7660, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isForPlayer1: 1
+  playerIndex: 1
   offsetDistance: 3
+  yOffset: -1
   player: {fileID: 0}
   pit: {fileID: 1358470168}
   yRotationOffset: 180
@@ -116936,6 +117035,63 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dbcee0f7f13d9e14db8fc44d18ad02da, type: 3}
+--- !u!1001 &493069903501781482
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2381232560024738778, guid: 485e203ad570249409af0238ec4ed2d4, type: 3}
+      propertyPath: m_Name
+      value: COLD MAX
+      objectReference: {fileID: 0}
+    - target: {fileID: 3044440809424159072, guid: 485e203ad570249409af0238ec4ed2d4, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 47.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3044440809424159072, guid: 485e203ad570249409af0238ec4ed2d4, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.68344
+      objectReference: {fileID: 0}
+    - target: {fileID: 3044440809424159072, guid: 485e203ad570249409af0238ec4ed2d4, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -438.42
+      objectReference: {fileID: 0}
+    - target: {fileID: 3044440809424159072, guid: 485e203ad570249409af0238ec4ed2d4, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 3044440809424159072, guid: 485e203ad570249409af0238ec4ed2d4, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.000000015454312
+      objectReference: {fileID: 0}
+    - target: {fileID: 3044440809424159072, guid: 485e203ad570249409af0238ec4ed2d4, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 3044440809424159072, guid: 485e203ad570249409af0238ec4ed2d4, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.000000015454312
+      objectReference: {fileID: 0}
+    - target: {fileID: 3044440809424159072, guid: 485e203ad570249409af0238ec4ed2d4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3044440809424159072, guid: 485e203ad570249409af0238ec4ed2d4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3044440809424159072, guid: 485e203ad570249409af0238ec4ed2d4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 485e203ad570249409af0238ec4ed2d4, type: 3}
 --- !u!1001 &837552452064195117
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -118067,3 +118223,4 @@ SceneRoots:
   - {fileID: 5491768678152309218}
   - {fileID: 3300585322535472059}
   - {fileID: 1886104887861723819}
+  - {fileID: 493069903501781482}
