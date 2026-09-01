@@ -261,7 +261,7 @@ public class LeadingCartBattleController : MonoBehaviour
         // before the ghost flag was updated.
         if (cartMaterialManager != null && safeDuration > 0f)
         {
-            cartMaterialManager.SetCooldown(safeDuration);
+            cartMaterialManager.SetGhostMode(safeDuration);
         }
     }
 

@@ -6,14 +6,15 @@
 /// Real RearHitch -> Kinematic proxy -> Free HingeJoint -> Dynamic arm -> Probe
 ///
 /// The real leading-cart Rigidbody is never physically connected to this
-/// simulation. The hinge only provides a natural trailing path source.
+/// simulation. The isolated hinge only provides a natural trailing path source.
+///
+/// RearHitch is assigned at runtime by SnakeCartManager after the leading cart
+/// prefab has been spawned.
 /// </summary>
+[DisallowMultipleComponent]
 public class PhysicalChainJointProbe : MonoBehaviour
 {
-    #region Settings
-
-    [Header("Runtime Source")]
-    [SerializeField] private Transform leaderRearHitch;
+    #region Physical Arm Settings
 
     [Header("Physical Arm")]
     [Min(0.1f)]
@@ -31,11 +32,19 @@ public class PhysicalChainJointProbe : MonoBehaviour
     [Min(1f)]
     [SerializeField] private float maxArmAngularVelocity = 25f;
 
+    #endregion
+
+    #region Swing Limits
+
     [Header("Optional Swing Limits")]
     [SerializeField] private bool limitSwingAngle = false;
 
     [Range(0f, 180f)]
     [SerializeField] private float maxSwingAngle = 120f;
+
+    #endregion
+
+    #region Auto Recenter
 
     [Header("Auto Recenter")]
     [SerializeField] private bool enableAutoRecenter = true;
@@ -55,7 +64,11 @@ public class PhysicalChainJointProbe : MonoBehaviour
     [Min(0f)]
     [SerializeField] private float recenterDamper = 25f;
 
-    [Header("Debug Visual")]
+    #endregion
+
+    #region Debug Visuals
+
+    [Header("Debug Visuals")]
     [SerializeField] private bool showPhysicalArm = true;
     [SerializeField] private bool showProbeSphere = true;
 
@@ -80,6 +93,8 @@ public class PhysicalChainJointProbe : MonoBehaviour
 
     #region Runtime
 
+    private Transform leaderRearHitch;
+
     private GameObject proxyObject;
     private Rigidbody proxyBody;
 
@@ -95,10 +110,15 @@ public class PhysicalChainJointProbe : MonoBehaviour
 
     #endregion
 
-    #region Public API
+    #region Public State
 
     public Transform ProbeTransform => probePoint;
-    public Vector3 ProbePosition => probePoint != null ? probePoint.position : Vector3.zero;
+    public Transform LeaderRearHitch => leaderRearHitch;
+
+    public Vector3 ProbePosition =>
+        probePoint != null
+            ? probePoint.position
+            : Vector3.zero;
 
     public Vector3 ProbeForward
     {
@@ -106,14 +126,24 @@ public class PhysicalChainJointProbe : MonoBehaviour
         {
             if (probePoint == null) return Vector3.forward;
 
-            Vector3 forward = Vector3.ProjectOnPlane(probePoint.forward, Vector3.up);
-            return forward.sqrMagnitude > 0.0001f ? forward.normalized : Vector3.forward;
+            Vector3 forward = Vector3.ProjectOnPlane(
+                probePoint.forward,
+                Vector3.up
+            );
+
+            return forward.sqrMagnitude > 0.0001f
+                ? forward.normalized
+                : Vector3.forward;
         }
     }
 
+    #endregion
+
+    #region Initialization
+
     /// <summary>
     /// Creates or rebuilds the isolated hinge at the current RearHitch pose.
-    /// Recovery intentionally uses this same normal initialization path.
+    /// MoveBackward recovery intentionally uses the same initialization path.
     /// </summary>
     public void Initialize(Transform rearHitch)
     {
@@ -142,25 +172,35 @@ public class PhysicalChainJointProbe : MonoBehaviour
         CreateHinge();
         CreateProbeVisual();
 
-        if (probePoint != null) previousProbePosition = probePoint.position;
+        previousProbePosition = probePoint != null
+            ? probePoint.position
+            : leaderRearHitch.position;
 
         previousHitchPosition = leaderRearHitch.position;
 
-        Vector3 initialForward = Vector3.ProjectOnPlane(leaderRearHitch.forward, Vector3.up);
-        previousHitchForward = initialForward.sqrMagnitude > 0.0001f ? initialForward.normalized : Vector3.forward;
+        Vector3 initialForward = Vector3.ProjectOnPlane(
+            leaderRearHitch.forward,
+            Vector3.up
+        );
 
-        currentHitchSpeed = 0f;
-        currentHitchYawRate = 0f;
-        currentHingeAngle = 0f;
-        isRecentering = false;
+        previousHitchForward = initialForward.sqrMagnitude > 0.0001f
+            ? initialForward.normalized
+            : Vector3.forward;
+
+        ResetRuntimeDebug();
     }
 
     private void CreateKinematicProxy()
     {
         proxyObject = new GameObject("PhysicalJoint_HitchProxy");
-        proxyObject.transform.SetPositionAndRotation(leaderRearHitch.position, leaderRearHitch.rotation);
+
+        proxyObject.transform.SetPositionAndRotation(
+            leaderRearHitch.position,
+            leaderRearHitch.rotation
+        );
 
         proxyBody = proxyObject.AddComponent<Rigidbody>();
+
         proxyBody.isKinematic = true;
         proxyBody.useGravity = false;
         proxyBody.detectCollisions = false;
@@ -172,24 +212,47 @@ public class PhysicalChainJointProbe : MonoBehaviour
         armObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
         armObject.name = "PhysicalJoint_TrailingArm";
 
-        Vector3 forward = Vector3.ProjectOnPlane(leaderRearHitch.forward, Vector3.up);
+        Vector3 forward = Vector3.ProjectOnPlane(
+            leaderRearHitch.forward,
+            Vector3.up
+        );
 
         if (forward.sqrMagnitude < 0.0001f) forward = Vector3.forward;
         forward.Normalize();
 
-        Quaternion startingRotation = Quaternion.LookRotation(forward, Vector3.up);
-        Vector3 startingPosition = leaderRearHitch.position - forward * (armLength * 0.5f);
+        Quaternion startingRotation = Quaternion.LookRotation(
+            forward,
+            Vector3.up
+        );
 
-        armObject.transform.SetPositionAndRotation(startingPosition, startingRotation);
-        armObject.transform.localScale = new Vector3(0.08f, 0.08f, armLength);
+        Vector3 startingPosition =
+            leaderRearHitch.position -
+            forward * (armLength * 0.5f);
+
+        armObject.transform.SetPositionAndRotation(
+            startingPosition,
+            startingRotation
+        );
+
+        armObject.transform.localScale =
+            new Vector3(0.08f, 0.08f, armLength);
 
         MeshRenderer renderer = armObject.GetComponent<MeshRenderer>();
-        if (renderer != null) renderer.enabled = showPhysicalArm;
+
+        if (renderer != null)
+        {
+            renderer.enabled = showPhysicalArm;
+        }
 
         Collider armCollider = armObject.GetComponent<Collider>();
-        if (armCollider != null) Destroy(armCollider);
+
+        if (armCollider != null)
+        {
+            Destroy(armCollider);
+        }
 
         armBody = armObject.AddComponent<Rigidbody>();
+
         armBody.mass = armMass;
         armBody.useGravity = false;
         armBody.detectCollisions = false;
@@ -214,40 +277,75 @@ public class PhysicalChainJointProbe : MonoBehaviour
         hingeJoint.useSpring = false;
         hingeJoint.enableCollision = false;
 
-        if (limitSwingAngle)
-        {
-            JointLimits limits = hingeJoint.limits;
-            limits.min = -maxSwingAngle;
-            limits.max = maxSwingAngle;
-            limits.bounciness = 0f;
-
-            hingeJoint.limits = limits;
-            hingeJoint.useLimits = true;
-        }
-        else
+        if (!limitSwingAngle)
         {
             hingeJoint.useLimits = false;
+            return;
         }
+
+        JointLimits limits = hingeJoint.limits;
+
+        limits.min = -maxSwingAngle;
+        limits.max = maxSwingAngle;
+        limits.bounciness = 0f;
+
+        hingeJoint.limits = limits;
+        hingeJoint.useLimits = true;
     }
 
     private void CreateProbeVisual()
     {
-        GameObject probeSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        GameObject probeSphere =
+            GameObject.CreatePrimitive(PrimitiveType.Sphere);
+
         probeSphere.name = "PhysicalJoint_Probe";
 
-        Collider probeCollider = probeSphere.GetComponent<Collider>();
-        if (probeCollider != null) Destroy(probeCollider);
+        Collider probeCollider =
+            probeSphere.GetComponent<Collider>();
 
-        probeSphere.transform.SetParent(armObject.transform, false);
-        probeSphere.transform.localPosition = new Vector3(0f, 0f, -0.5f);
+        if (probeCollider != null)
+        {
+            Destroy(probeCollider);
+        }
 
-        float safeArmLength = Mathf.Max(0.01f, armLength);
-        probeSphere.transform.localScale = new Vector3(probeSphereSize / 0.08f, probeSphereSize / 0.08f, probeSphereSize / safeArmLength);
+        probeSphere.transform.SetParent(
+            armObject.transform,
+            false
+        );
 
-        MeshRenderer renderer = probeSphere.GetComponent<MeshRenderer>();
-        if (renderer != null) renderer.enabled = showProbeSphere;
+        probeSphere.transform.localPosition =
+            new Vector3(0f, 0f, -0.5f);
+
+        float safeArmLength =
+            Mathf.Max(0.01f, armLength);
+
+        probeSphere.transform.localScale =
+            new Vector3(
+                probeSphereSize / 0.08f,
+                probeSphereSize / 0.08f,
+                probeSphereSize / safeArmLength
+            );
+
+        MeshRenderer renderer =
+            probeSphere.GetComponent<MeshRenderer>();
+
+        if (renderer != null)
+        {
+            renderer.enabled = showProbeSphere;
+        }
 
         probePoint = probeSphere.transform;
+    }
+
+    private void ResetRuntimeDebug()
+    {
+        currentHingeAngle = 0f;
+        currentDistanceToHitch = armLength;
+        currentProbeSpeed = 0f;
+
+        isRecentering = false;
+        currentHitchSpeed = 0f;
+        currentHitchYawRate = 0f;
     }
 
     #endregion
@@ -256,7 +354,12 @@ public class PhysicalChainJointProbe : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (leaderRearHitch == null || proxyBody == null || hingeJoint == null) return;
+        if (leaderRearHitch == null ||
+            proxyBody == null ||
+            hingeJoint == null)
+        {
+            return;
+        }
 
         proxyBody.MovePosition(leaderRearHitch.position);
         proxyBody.MoveRotation(leaderRearHitch.rotation);
@@ -270,20 +373,40 @@ public class PhysicalChainJointProbe : MonoBehaviour
 
     private void UpdateHitchMotionState()
     {
-        float dt = Mathf.Max(Time.fixedDeltaTime, 0.00001f);
+        float dt =
+            Mathf.Max(Time.fixedDeltaTime, 0.00001f);
 
-        Vector3 currentPosition = leaderRearHitch.position;
-        Vector3 positionDelta = Vector3.ProjectOnPlane(currentPosition - previousHitchPosition, Vector3.up);
+        Vector3 currentPosition =
+            leaderRearHitch.position;
 
-        currentHitchSpeed = positionDelta.magnitude / dt;
+        Vector3 positionDelta =
+            Vector3.ProjectOnPlane(
+                currentPosition - previousHitchPosition,
+                Vector3.up
+            );
 
-        Vector3 currentForward = Vector3.ProjectOnPlane(leaderRearHitch.forward, Vector3.up);
+        currentHitchSpeed =
+            positionDelta.magnitude / dt;
+
+        Vector3 currentForward =
+            Vector3.ProjectOnPlane(
+                leaderRearHitch.forward,
+                Vector3.up
+            );
 
         if (currentForward.sqrMagnitude > 0.0001f)
         {
             currentForward.Normalize();
 
-            currentHitchYawRate = Mathf.Abs(Vector3.SignedAngle(previousHitchForward, currentForward, Vector3.up)) / dt;
+            currentHitchYawRate =
+                Mathf.Abs(
+                    Vector3.SignedAngle(
+                        previousHitchForward,
+                        currentForward,
+                        Vector3.up
+                    )
+                ) / dt;
+
             previousHitchForward = currentForward;
         }
         else
@@ -305,11 +428,19 @@ public class PhysicalChainJointProbe : MonoBehaviour
             return;
         }
 
-        bool movingEnough = currentHitchSpeed >= minSpeedForRecenter;
-        bool movingMostlyStraight = currentHitchYawRate <= maxYawRateForRecenter;
-        bool hingeNeedsCorrection = Mathf.Abs(currentHingeAngle) > recenterDeadAngle;
+        bool movingEnough =
+            currentHitchSpeed >= minSpeedForRecenter;
 
-        isRecentering = movingEnough && movingMostlyStraight && hingeNeedsCorrection;
+        bool movingMostlyStraight =
+            currentHitchYawRate <= maxYawRateForRecenter;
+
+        bool hingeNeedsCorrection =
+            Mathf.Abs(currentHingeAngle) > recenterDeadAngle;
+
+        isRecentering =
+            movingEnough &&
+            movingMostlyStraight &&
+            hingeNeedsCorrection;
 
         if (!isRecentering)
         {
@@ -318,6 +449,7 @@ public class PhysicalChainJointProbe : MonoBehaviour
         }
 
         JointSpring spring = hingeJoint.spring;
+
         spring.spring = recenterSpring;
         spring.damper = recenterDamper;
         spring.targetPosition = 0f;
@@ -330,17 +462,29 @@ public class PhysicalChainJointProbe : MonoBehaviour
     {
         if (probePoint == null || leaderRearHitch == null) return;
 
-        currentDistanceToHitch = Vector3.Distance(leaderRearHitch.position, probePoint.position);
+        currentDistanceToHitch =
+            Vector3.Distance(
+                leaderRearHitch.position,
+                probePoint.position
+            );
 
-        Vector3 probeDelta = Vector3.ProjectOnPlane(probePoint.position - previousProbePosition, Vector3.up);
-        currentProbeSpeed = probeDelta.magnitude / Mathf.Max(Time.fixedDeltaTime, 0.00001f);
+        Vector3 probeDelta =
+            Vector3.ProjectOnPlane(
+                probePoint.position - previousProbePosition,
+                Vector3.up
+            );
 
-        previousProbePosition = probePoint.position;
+        currentProbeSpeed =
+            probeDelta.magnitude /
+            Mathf.Max(Time.fixedDeltaTime, 0.00001f);
+
+        previousProbePosition =
+            probePoint.position;
     }
 
     #endregion
 
-    #region Cleanup
+    #region Cleanup / Validation
 
     private void CleanupSimulation()
     {
@@ -360,6 +504,25 @@ public class PhysicalChainJointProbe : MonoBehaviour
     private void OnDestroy()
     {
         CleanupSimulation();
+    }
+
+    private void OnValidate()
+    {
+        armLength = Mathf.Max(0.1f, armLength);
+        armMass = Mathf.Max(0.01f, armMass);
+        linearDamping = Mathf.Max(0f, linearDamping);
+        angularDamping = Mathf.Max(0f, angularDamping);
+        maxArmAngularVelocity = Mathf.Max(1f, maxArmAngularVelocity);
+
+        maxSwingAngle = Mathf.Clamp(maxSwingAngle, 0f, 180f);
+
+        minSpeedForRecenter = Mathf.Max(0f, minSpeedForRecenter);
+        maxYawRateForRecenter = Mathf.Max(0f, maxYawRateForRecenter);
+        recenterDeadAngle = Mathf.Max(0f, recenterDeadAngle);
+        recenterSpring = Mathf.Max(0f, recenterSpring);
+        recenterDamper = Mathf.Max(0f, recenterDamper);
+
+        probeSphereSize = Mathf.Max(0.01f, probeSphereSize);
     }
 
     #endregion

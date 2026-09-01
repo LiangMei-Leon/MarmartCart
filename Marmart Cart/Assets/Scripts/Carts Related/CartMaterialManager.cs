@@ -1,76 +1,176 @@
 using UnityEngine;
 
+/// <summary>
+/// Controls the leading cart's visual ghost/cooldown effect.
+///
+/// Gameplay systems decide when ghost mode starts and how long it lasts.
+/// This component only handles the visual material swap and blinking.
+/// </summary>
 public class CartMaterialManager : MonoBehaviour
 {
-    [Header("Material References")]
-    [SerializeField] private Material ghostMaterial; // Assign a transparent blinking material
-    private Material[] originalMaterials;
-    private Material[] ghostInstances;
+    #region References
+
+    [Header("References")]
+    [SerializeField] private Renderer cartRenderer;
+    [SerializeField] private Material ghostMaterial;
+
+    #endregion
+
+    #region Blink Settings
 
     [Header("Blink Settings")]
+    [Tooltip("Remaining time at which blinking begins accelerating toward Max Blink Rate.")]
+    [Min(0.01f)]
     [SerializeField] private float blinkStartTime = 1f;
+
+    [Min(0f)]
     [SerializeField] private float minBlinkRate = 2f;
+
+    [Min(0f)]
     [SerializeField] private float maxBlinkRate = 10f;
 
-    [SerializeField] private GameObject cartModel;
-    private Renderer cartRenderer;
-    private bool inGhostMode = false;
-    private float inGhostModeDuration;
-    private float blinkTimer = 0f;
+    #endregion
 
-    void Awake()
+    #region Runtime
+
+    private Material[] originalMaterials;
+    private Material[] ghostMaterialInstances;
+
+    private bool isGhostVisualActive;
+    private float ghostTimeRemaining;
+    private float blinkTimer;
+
+    #endregion
+
+    #region Unity Lifecycle
+
+    private void Awake()
     {
-        cartRenderer = cartModel.GetComponent<Renderer>();
-        originalMaterials = cartRenderer.materials;
-
-        // Create instances of ghostMaterial to animate independently
-        ghostInstances = new Material[originalMaterials.Length];
-        for (int i = 0; i < ghostInstances.Length; i++)
+        if (cartRenderer == null)
         {
-            ghostInstances[i] = new Material(ghostMaterial); // clone instance
+            Debug.LogError("[CartMaterialManager] Cart Renderer is not assigned.", this);
+            enabled = false;
+            return;
         }
+
+        if (ghostMaterial == null)
+        {
+            Debug.LogError("[CartMaterialManager] Ghost Material is not assigned.", this);
+            enabled = false;
+            return;
+        }
+
+        CacheMaterials();
     }
 
-    public void SetCooldown(float duration)
+    private void Update()
     {
-        inGhostModeDuration = duration;
-        inGhostMode = true;
-        blinkTimer = 0f;
-        // Swap to ghost materials
-        cartRenderer.materials = ghostInstances;
-    }
+        if (!isGhostVisualActive) return;
 
-    void Update()
-    {
-        if (!inGhostMode) return;
-
-        inGhostModeDuration -= Time.deltaTime;
-
+        ghostTimeRemaining -= Time.deltaTime;
         blinkTimer += Time.deltaTime;
-        // Animate alpha blink
-        AnimateBlinkAlpha(inGhostModeDuration);
 
-        if (inGhostModeDuration <= 0f)
+        UpdateBlinkAlpha();
+
+        if (ghostTimeRemaining <= 0f) EndGhostVisual();
+    }
+
+    private void OnDestroy()
+    {
+        CleanupGhostMaterialInstances();
+    }
+
+    #endregion
+
+    #region Initialization
+
+    private void CacheMaterials()
+    {
+        originalMaterials = cartRenderer.sharedMaterials;
+
+        ghostMaterialInstances = new Material[originalMaterials.Length];
+
+        for (int i = 0; i < ghostMaterialInstances.Length; i++)
         {
-            // Restore original materials
-            cartRenderer.materials = originalMaterials;
-            inGhostMode = false;
+            ghostMaterialInstances[i] = new Material(ghostMaterial);
         }
     }
 
-    void AnimateBlinkAlpha(float remainingTime)
+    #endregion
+
+    #region Ghost Visual
+
+    public void SetGhostMode(float duration)
     {
-        float blinkSpeed = Mathf.Lerp(minBlinkRate, maxBlinkRate, 1f - Mathf.Clamp01(remainingTime / blinkStartTime));
+        if (cartRenderer == null || ghostMaterialInstances == null) return;
+
+        ghostTimeRemaining = Mathf.Max(0f, duration);
+        blinkTimer = 0f;
+        isGhostVisualActive = ghostTimeRemaining > 0f;
+
+        if (!isGhostVisualActive)
+        {
+            EndGhostVisual();
+            return;
+        }
+
+        cartRenderer.materials = ghostMaterialInstances;
+        SetGhostAlpha(1f);
+    }
+
+    private void EndGhostVisual()
+    {
+        ghostTimeRemaining = 0f;
+        blinkTimer = 0f;
+        isGhostVisualActive = false;
+
+        if (cartRenderer != null && originalMaterials != null)
+        {
+            cartRenderer.sharedMaterials = originalMaterials;
+        }
+    }
+
+    private void UpdateBlinkAlpha()
+    {
+        if (ghostMaterialInstances == null) return;
+
+        float normalizedRemainingTime = blinkStartTime > 0f
+            ? Mathf.Clamp01(ghostTimeRemaining / blinkStartTime)
+            : 0f;
+
+        float blinkSpeed = Mathf.Lerp(minBlinkRate, maxBlinkRate, 1f - normalizedRemainingTime);
         float alpha = Mathf.Abs(Mathf.Sin(blinkTimer * blinkSpeed));
 
-        foreach (var mat in ghostInstances)
+        SetGhostAlpha(alpha);
+    }
+
+    private void SetGhostAlpha(float alpha)
+    {
+        foreach (Material materialInstance in ghostMaterialInstances)
         {
-            if (mat.HasProperty("_Color"))
-            {
-                Color color = mat.color;
-                color.a = alpha;
-                mat.color = color;
-            }
+            if (materialInstance == null || !materialInstance.HasProperty("_Color")) continue;
+
+            Color color = materialInstance.color;
+            color.a = alpha;
+            materialInstance.color = color;
         }
     }
+
+    #endregion
+
+    #region Cleanup
+
+    private void CleanupGhostMaterialInstances()
+    {
+        if (ghostMaterialInstances == null) return;
+
+        foreach (Material materialInstance in ghostMaterialInstances)
+        {
+            if (materialInstance != null) Destroy(materialInstance);
+        }
+
+        ghostMaterialInstances = null;
+    }
+
+    #endregion
 }

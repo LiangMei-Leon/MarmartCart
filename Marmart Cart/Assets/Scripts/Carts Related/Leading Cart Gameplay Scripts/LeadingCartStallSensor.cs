@@ -64,7 +64,15 @@ public class LeadingCartStallSensor : MonoBehaviour
 
         if (!wasBlocked && IsBlocked) OnBlockedChanged?.Invoke(true);
     }
+    private void OnTriggerStay(Collider other)
+    {
+        if (!IsBlockingLayer(other.gameObject.layer)) return;
 
+        bool wasBlocked = IsBlocked;
+        blockingContacts.Add(other);
+
+        if (!wasBlocked && IsBlocked) OnBlockedChanged?.Invoke(true);
+    }
     private void OnTriggerExit(Collider other)
     {
         if (!blockingContacts.Remove(other)) return;

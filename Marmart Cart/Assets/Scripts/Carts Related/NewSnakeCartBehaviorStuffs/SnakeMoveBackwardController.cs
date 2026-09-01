@@ -2,15 +2,25 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// MoveBackward has two deliberately separate modes:
+/// Owns the MoveBackward action for the leading cart.
+///
+/// There are two deliberately separate movement modes:
 ///
 /// 1) Leader only:
-///    Drives the Rigidbody backward with a short speed curve.
+///    Drives the leading Rigidbody backward using a short speed curve.
+///    The normal physical probe/path may continue recording this real motion.
 ///
 /// 2) Leader + followers:
-///    Tail retreats along old path history, C1->Tail follow a temporary reverse
-///    path, and C1 pulls the Leader through a slack reverse-tow constraint.
-///    The final pose is then converted into a fresh normal path.
+///    The tail retreats along old normal path history.
+///    C1 -> Tail follow a temporary reverse path.
+///    C1 then pulls the Leader through a slack reverse-tow constraint.
+///    SnakeCartManager converts the final geometry into a fresh normal path.
+///
+/// During either mode:
+/// - normal player driving is disabled,
+/// - the four LeadingCartBehaviour wheel-drive components are stopped,
+/// - powerup permission is NOT changed,
+/// - normal control is restored when MoveBackward finishes.
 /// </summary>
 public class SnakeMoveBackwardController : MonoBehaviour
 {
@@ -36,7 +46,7 @@ public class SnakeMoveBackwardController : MonoBehaviour
     [Min(0f)]
     [SerializeField] private float followerRotationFollowSpeed = 12f;
 
-    [Tooltip("If old path history is too short, continue backward from the oldest available tangent.")]
+    [Tooltip("If old path history is too short, continue backward from its oldest available tangent.")]
     [SerializeField] private bool allowStraightExtensionWhenHistoryRunsOut = true;
 
     [Header("C1 -> Leader Reverse Tow")]
@@ -76,16 +86,11 @@ public class SnakeMoveBackwardController : MonoBehaviour
 
     #endregion
 
-    #region Debug
-
-    [Header("Debug")]
-    [SerializeField] private bool drawTemporaryPath = true;
-    [SerializeField] private bool drawReverseTow = true;
-    [SerializeField] private bool debugMoveBackward = false;
+    #region Runtime Debug
 
     [Header("Runtime - Read Only")]
     [SerializeField] private bool isInitialized;
-    [SerializeField] private bool isMovingBackward;
+    [SerializeField] private bool isChainReversing;
     [SerializeField] private bool isSingleCartReversing;
 
     [SerializeField] private float requestedMoveBackwardDistance;
@@ -103,13 +108,28 @@ public class SnakeMoveBackwardController : MonoBehaviour
 
     #endregion
 
-    #region References / Runtime
+    #region Debug
+
+    [Header("Debug")]
+    [SerializeField] private bool drawTemporaryPath = true;
+    [SerializeField] private bool drawReverseTow = true;
+    [SerializeField] private bool debugMoveBackward = false;
+
+    #endregion
+
+    #region Runtime References
 
     private SnakeCartManager snakeManager;
     private SnakePathHistory normalPath;
+    private PhysicalChainJointProbe physicalProbe;
 
     private Rigidbody leaderBody;
+    private LeadingCartBehaviour[] leadingMovements;
     private CartControlScript cartControl;
+
+    #endregion
+
+    #region Runtime State
 
     private TemporaryPath temporaryPath;
     private float[] followerOffsetsFromTemporaryHead;
@@ -124,8 +144,10 @@ public class SnakeMoveBackwardController : MonoBehaviour
     private float rewindPlaneY;
 
     private Vector3 leaderStartPosition;
+
     private Vector3 oldestPathPosition;
     private Vector3 oldestPathBackwardDirection;
+
     private Vector3 noHistoryExtensionOrigin;
     private Vector3 noHistoryExtensionDirection;
 
@@ -133,17 +155,29 @@ public class SnakeMoveBackwardController : MonoBehaviour
 
     #region Public API / Events
 
-    /// <summary>
-    /// True for either the lone-cart reverse drive or the full reverse-tow mode.
-    /// </summary>
-    public bool IsMovingBackward => isMovingBackward || isSingleCartReversing;
+    public bool IsMovingBackward => isChainReversing || isSingleCartReversing;
 
     public System.Action OnMoveBackwardStarted;
     public System.Action OnMoveBackwardFinished;
 
-    public void Initialize(SnakeCartManager manager, Rigidbody body, CartControlScript control, SnakePathHistory pathHistory)
+    /// <summary>
+    /// Called once by SnakeCartManager after the runtime leading-cart prefab exists.
+    /// </summary>
+    public void Initialize(
+        SnakeCartManager manager,
+        Rigidbody body,
+        LeadingCartBehaviour[] movements,
+        CartControlScript control,
+        SnakePathHistory pathHistory,
+        PhysicalChainJointProbe probe)
     {
-        if (manager == null || body == null || control == null || pathHistory == null)
+        if (manager == null ||
+            body == null ||
+            movements == null ||
+            movements.Length == 0 ||
+            control == null ||
+            pathHistory == null ||
+            probe == null)
         {
             Debug.LogError("[SnakeMoveBackwardController] Missing initialization reference.", this);
             return;
@@ -153,19 +187,21 @@ public class SnakeMoveBackwardController : MonoBehaviour
 
         snakeManager = manager;
         leaderBody = body;
+        leadingMovements = movements;
         cartControl = control;
         normalPath = pathHistory;
+        physicalProbe = probe;
 
         cartControl.OnMoveBackwardPressed += TryBeginMoveBackward;
 
-        temporaryPath ??= new TemporaryPath();
+        if (temporaryPath == null) temporaryPath = new TemporaryPath();
+
         isInitialized = true;
     }
 
     public bool PlayBackward(float distance)
     {
-        if (!isInitialized || IsMovingBackward) return false;
-        if (Time.time < nextAllowedMoveBackwardTime || distance <= 0f) return false;
+        if (!CanBeginMoveBackward(distance)) return false;
 
         List<GameObject> snakeBody = snakeManager.GetSnakeBody();
         if (snakeBody == null || snakeBody.Count == 0) return false;
@@ -177,6 +213,7 @@ public class SnakeMoveBackwardController : MonoBehaviour
         }
 
         if (normalPath == null || !normalPath.IsInitialized) return false;
+
         return BeginChainMoveBackward(distance, snakeBody);
     }
 
@@ -196,9 +233,11 @@ public class SnakeMoveBackwardController : MonoBehaviour
     }
 
     /// <summary>
+    /// Called by SnakeCartManager every FixedUpdate.
+    ///
     /// Returns TRUE only while the 1+ follower reverse-tow mode owns the full
-    /// snake. The lone-cart speed curve returns FALSE so the normal hinge/path
-    /// may continue recording that cart's real motion.
+    /// chain. Lone-cart reverse returns FALSE so the normal physical probe/path
+    /// can continue recording the leader's real reverse motion.
     /// </summary>
     public bool TickMoveBackward()
     {
@@ -210,10 +249,65 @@ public class SnakeMoveBackwardController : MonoBehaviour
             return false;
         }
 
-        if (!isMovingBackward) return false;
+        if (!isChainReversing) return false;
 
         TickChainMoveBackward();
         return true;
+    }
+
+    private bool CanBeginMoveBackward(float distance)
+    {
+        if (!isInitialized) return false;
+        if (IsMovingBackward) return false;
+        if (Time.time < nextAllowedMoveBackwardTime) return false;
+        if (distance <= 0f) return false;
+        if (snakeManager == null || leaderBody == null || cartControl == null) return false;
+
+        return true;
+    }
+
+    #endregion
+
+    #region Shared MoveBackward Control
+
+    private void BeginMoveBackwardControlLock()
+    {
+        // MoveBackward owns locomotion, but NOT powerup permission.
+        // CartControlScript's powerup input is independent from controllable,
+        // so DisableControl() still allows an already-available powerup to fire.
+        cartControl.DisableControl();
+        cartControl.DisallowMoveBackward();
+
+        StopLeadingMovement();
+    }
+
+    private void EndMoveBackwardControlLock()
+    {
+        ResetLeadingMovement();
+
+        // StallController owns whether MoveBackward becomes available again.
+        // We intentionally do NOT call AllowMoveBackward() here.
+        cartControl.EnableControl();
+    }
+
+    private void StopLeadingMovement()
+    {
+        if (leadingMovements == null) return;
+
+        for (int i = 0; i < leadingMovements.Length; i++)
+        {
+            if (leadingMovements[i] != null) leadingMovements[i].SetSpeedToZero();
+        }
+    }
+
+    private void ResetLeadingMovement()
+    {
+        if (leadingMovements == null) return;
+
+        for (int i = 0; i < leadingMovements.Length; i++)
+        {
+            if (leadingMovements[i] != null) leadingMovements[i].ResetSpeed();
+        }
     }
 
     #endregion
@@ -223,16 +317,31 @@ public class SnakeMoveBackwardController : MonoBehaviour
     private void BeginSingleCartReverse()
     {
         singleCartReverseElapsed = 0f;
+
+        BeginMoveBackwardControlLock();
+
         isSingleCartReversing = true;
+
         OnMoveBackwardStarted?.Invoke();
+
+        if (debugMoveBackward)
+        {
+            Debug.Log($"[MoveBackward] SINGLE START | speed:{singleCartReverseSpeed:F2} | duration:{singleCartReverseDuration:F2}", this);
+        }
     }
 
     private void TickSingleCartReverse()
     {
+        if (leaderBody == null)
+        {
+            FinishSingleCartReverse();
+            return;
+        }
+
         singleCartReverseElapsed += Time.fixedDeltaTime;
 
         float normalizedTime = Mathf.Clamp01(singleCartReverseElapsed / singleCartReverseDuration);
-        float speedMultiplier = Mathf.Max(0f, singleCartReverseSpeedCurve.Evaluate(normalizedTime));
+        float speedMultiplier = singleCartReverseSpeedCurve != null ? Mathf.Max(0f, singleCartReverseSpeedCurve.Evaluate(normalizedTime)) : 1f;
         float reverseSpeed = singleCartReverseSpeed * speedMultiplier;
 
         Vector3 forward = Vector3.ProjectOnPlane(leaderBody.transform.forward, Vector3.up);
@@ -241,17 +350,30 @@ public class SnakeMoveBackwardController : MonoBehaviour
         {
             forward.Normalize();
 
-            // Only planar velocity is authored. Vertical velocity and angular
-            // velocity remain physical so the cart can still pivot naturally.
+            // Author only planar velocity. Vertical velocity and angular velocity
+            // remain physical so the cart can still react naturally to the floor.
             float verticalVelocity = Vector3.Dot(leaderBody.linearVelocity, Vector3.up);
             leaderBody.linearVelocity = -forward * reverseSpeed + Vector3.up * verticalVelocity;
         }
 
-        if (normalizedTime < 1f) return;
+        if (normalizedTime >= 1f) FinishSingleCartReverse();
+    }
+
+    private void FinishSingleCartReverse()
+    {
+        if (!isSingleCartReversing) return;
 
         isSingleCartReversing = false;
         nextAllowedMoveBackwardTime = Time.time + moveBackwardCooldown;
+
+        EndMoveBackwardControlLock();
+
         OnMoveBackwardFinished?.Invoke();
+
+        if (debugMoveBackward)
+        {
+            Debug.Log("[MoveBackward] SINGLE FINISH", this);
+        }
     }
 
     #endregion
@@ -261,6 +383,7 @@ public class SnakeMoveBackwardController : MonoBehaviour
     private bool BeginChainMoveBackward(float distance, List<GameObject> snakeBody)
     {
         if (snakeBody == null || snakeBody.Count < 2) return false;
+        if (physicalProbe == null) return false;
 
         expectedSnakeCount = snakeBody.Count;
         rewindPlaneY = leaderBody.position.y;
@@ -279,7 +402,11 @@ public class SnakeMoveBackwardController : MonoBehaviour
         PrepareOldPathExtensionData(snakeBody);
 
         GameObject firstFollower = snakeBody[1];
-        Vector3 leaderToC1 = Vector3.ProjectOnPlane(leaderBody.position - firstFollower.transform.position, Vector3.up);
+
+        Vector3 leaderToC1 = Vector3.ProjectOnPlane(
+            leaderBody.position - firstFollower.transform.position,
+            Vector3.up
+        );
 
         startingLeaderToC1Distance = leaderToC1.magnitude;
         activeReverseTowDistance = startingLeaderToC1Distance + reverseTowExtraSlack;
@@ -294,20 +421,27 @@ public class SnakeMoveBackwardController : MonoBehaviour
         leaderStartPosition = leaderBody.position;
         leaderMovedDistance = 0f;
 
-        // Reverse-tow owns the Leader pose, so remove old motion and temporarily
-        // make the Rigidbody kinematic. Normal drift/controller state is untouched.
+        BeginMoveBackwardControlLock();
+
+        // Reverse-tow owns the Leader pose. Clear old physical motion before
+        // handing position/rotation ownership to MovePosition / MoveRotation.
         leaderBody.linearVelocity = Vector3.zero;
         leaderBody.angularVelocity = Vector3.zero;
 
         leaderWasKinematic = leaderBody.isKinematic;
         leaderBody.isKinematic = true;
 
-        isMovingBackward = true;
+        isChainReversing = true;
+
         OnMoveBackwardStarted?.Invoke();
 
         if (debugMoveBackward)
         {
-            Debug.Log($"[MoveBackward] START | carts:{snakeBody.Count} | requested:{requestedMoveBackwardDistance:F2} | startTow:{startingLeaderToC1Distance:F2} | activeTow:{activeReverseTowDistance:F2}", this);
+            Debug.Log(
+                $"[MoveBackward] CHAIN START | carts:{snakeBody.Count} | requested:{requestedMoveBackwardDistance:F2} | " +
+                $"availableOldPath:{availableOldPathDistance:F2} | startTow:{startingLeaderToC1Distance:F2} | activeTow:{activeReverseTowDistance:F2}",
+                this
+            );
         }
 
         return true;
@@ -318,8 +452,8 @@ public class SnakeMoveBackwardController : MonoBehaviour
     #region Temporary Reverse Path
 
     /// <summary>
-    /// Seeds only C1 -> C2 -> ... -> Tail. The Leader and normal physical probe
-    /// are intentionally excluded from this temporary path.
+    /// Seeds only C1 -> C2 -> ... -> Tail.
+    /// The Leader and physical probe are deliberately excluded.
     /// </summary>
     private bool BuildTemporaryFollowerPath(List<GameObject> snakeBody)
     {
@@ -331,6 +465,7 @@ public class SnakeMoveBackwardController : MonoBehaviour
         float[] followerInitialProgress = new float[snakeBody.Count];
 
         Vector3 c1Position = FlattenToRewindPlane(snakeBody[1].transform.position);
+
         temporaryPath.Reset(c1Position);
         followerInitialProgress[1] = 0f;
 
@@ -342,11 +477,14 @@ public class SnakeMoveBackwardController : MonoBehaviour
             followerInitialProgress[i] = temporaryPath.Append(position);
         }
 
-        float initialHead = temporaryPath.HeadProgress;
+        float initialHeadProgress = temporaryPath.HeadProgress;
 
-        for (int i = 1; i < snakeBody.Count; i++) followerOffsetsFromTemporaryHead[i] = initialHead - followerInitialProgress[i];
+        for (int i = 1; i < snakeBody.Count; i++)
+        {
+            followerOffsetsFromTemporaryHead[i] = initialHeadProgress - followerInitialProgress[i];
+        }
 
-        temporaryHeadProgress = initialHead;
+        temporaryHeadProgress = initialHeadProgress;
         return true;
     }
 
@@ -357,17 +495,27 @@ public class SnakeMoveBackwardController : MonoBehaviour
         noHistoryExtensionOrigin = FlattenToRewindPlane(tail.transform.position);
 
         Vector3 endTangent = temporaryPath.GetEndTangent();
-        if (endTangent.sqrMagnitude < 0.0001f) endTangent = -Vector3.ProjectOnPlane(tail.transform.forward, Vector3.up);
+
+        if (endTangent.sqrMagnitude < 0.0001f)
+        {
+            endTangent = -Vector3.ProjectOnPlane(tail.transform.forward, Vector3.up);
+        }
+
         if (endTangent.sqrMagnitude < 0.0001f) endTangent = -Vector3.forward;
 
         noHistoryExtensionDirection = endTangent.normalized;
 
-        if (availableOldPathDistance > 0.001f && normalPath.TryGetPoseAtProgress(normalPath.OldestProgress, out Vector3 oldestPosition, out Quaternion oldestRotation))
+        if (availableOldPathDistance > 0.001f &&
+            normalPath.TryGetPoseAtProgress(normalPath.OldestProgress, out Vector3 oldestPosition, out Quaternion oldestRotation))
         {
             oldestPathPosition = FlattenToRewindPlane(oldestPosition);
 
             Vector3 oldestForward = Vector3.ProjectOnPlane(oldestRotation * Vector3.forward, Vector3.up);
-            if (oldestForward.sqrMagnitude < 0.0001f) oldestForward = -noHistoryExtensionDirection;
+
+            if (oldestForward.sqrMagnitude < 0.0001f)
+            {
+                oldestForward = -noHistoryExtensionDirection;
+            }
 
             oldestPathBackwardDirection = -oldestForward.normalized;
         }
@@ -384,7 +532,10 @@ public class SnakeMoveBackwardController : MonoBehaviour
 
         if (desiredTailTravel <= availableOldPathDistance + 0.0001f)
         {
-            float desiredProgress = Mathf.Max(normalPath.OldestProgress, tailMainStartProgress - desiredTailTravel);
+            float desiredProgress = Mathf.Max(
+                normalPath.OldestProgress,
+                tailMainStartProgress - desiredTailTravel
+            );
 
             if (!normalPath.TryGetPositionAtProgress(desiredProgress, out position)) return false;
 
@@ -396,8 +547,14 @@ public class SnakeMoveBackwardController : MonoBehaviour
 
         float extensionDistance = desiredTailTravel - availableOldPathDistance;
 
-        if (availableOldPathDistance > 0.001f) position = oldestPathPosition + oldestPathBackwardDirection * extensionDistance;
-        else position = noHistoryExtensionOrigin + noHistoryExtensionDirection * desiredTailTravel;
+        if (availableOldPathDistance > 0.001f)
+        {
+            position = oldestPathPosition + oldestPathBackwardDirection * extensionDistance;
+        }
+        else
+        {
+            position = noHistoryExtensionOrigin + noHistoryExtensionDirection * desiredTailTravel;
+        }
 
         position = FlattenToRewindPlane(position);
         return true;
@@ -413,7 +570,7 @@ public class SnakeMoveBackwardController : MonoBehaviour
 
         if (snakeBody == null || snakeBody.Count != expectedSnakeCount)
         {
-            Debug.LogWarning("[MoveBackward] Snake count changed during reverse tow. Finishing recovery immediately.", this);
+            Debug.LogWarning("[MoveBackward] Snake count changed during reverse tow. Ending reverse immediately.", this);
             FinishChainMoveBackward();
             return;
         }
@@ -421,7 +578,7 @@ public class SnakeMoveBackwardController : MonoBehaviour
         elapsedTime += Time.fixedDeltaTime;
 
         float normalizedTime = Mathf.Clamp01(elapsedTime / moveBackwardDuration);
-        float curveValue = Mathf.Clamp01(moveBackwardMotionCurve.Evaluate(normalizedTime));
+        float curveValue = moveBackwardMotionCurve != null ? Mathf.Clamp01(moveBackwardMotionCurve.Evaluate(normalizedTime)) : normalizedTime;
         float desiredMovedDistance = Mathf.Max(movedTailDistance, requestedMoveBackwardDistance * curveValue);
 
         if (desiredMovedDistance > movedTailDistance + 0.00001f)
@@ -433,6 +590,7 @@ public class SnakeMoveBackwardController : MonoBehaviour
             }
 
             temporaryPath.Append(tailDestination);
+
             movedTailDistance = desiredMovedDistance;
             temporaryHeadProgress = temporaryPath.HeadProgress;
         }
@@ -440,21 +598,31 @@ public class SnakeMoveBackwardController : MonoBehaviour
         MoveFollowerChain(snakeBody);
         ApplyReverseTowToLeader(snakeBody[1]);
 
-        if (normalizedTime >= 1f || movedTailDistance >= requestedMoveBackwardDistance - 0.001f) FinishChainMoveBackward();
+        if (normalizedTime >= 1f || movedTailDistance >= requestedMoveBackwardDistance - 0.001f)
+        {
+            FinishChainMoveBackward();
+        }
     }
 
     private void MoveFollowerChain(List<GameObject> snakeBody)
     {
-        float head = temporaryPath.HeadProgress;
+        float temporaryHead = temporaryPath.HeadProgress;
 
         for (int i = 1; i < snakeBody.Count; i++)
         {
             GameObject cart = snakeBody[i];
             if (cart == null) continue;
 
-            float cartProgress = head - followerOffsetsFromTemporaryHead[i];
+            float cartProgress = temporaryHead - followerOffsetsFromTemporaryHead[i];
 
-            if (!temporaryPath.TryGetPose(cartProgress, tangentSampleDistance, out Vector3 cartPosition, out Vector3 cartTangent)) continue;
+            if (!temporaryPath.TryGetPose(
+                    cartProgress,
+                    tangentSampleDistance,
+                    out Vector3 cartPosition,
+                    out Vector3 cartTangent))
+            {
+                continue;
+            }
 
             cartPosition = FlattenToRewindPlane(cartPosition);
 
@@ -462,11 +630,16 @@ public class SnakeMoveBackwardController : MonoBehaviour
 
             if (cartTangent.sqrMagnitude > 0.0001f)
             {
-                // Temporary tangent points in reverse-travel direction, so carts
-                // visually face the opposite direction while backing along it.
+                // Temporary path tangent points in reverse-travel direction.
+                // The cart itself faces opposite that tangent while backing up.
                 Quaternion desiredRotation = Quaternion.LookRotation(-cartTangent, Vector3.up);
                 float rotationT = 1f - Mathf.Exp(-followerRotationFollowSpeed * Time.fixedDeltaTime);
-                targetRotation = Quaternion.Slerp(cart.transform.rotation, desiredRotation, rotationT);
+
+                targetRotation = Quaternion.Slerp(
+                    cart.transform.rotation,
+                    desiredRotation,
+                    rotationT
+                );
             }
 
             cart.transform.SetPositionAndRotation(cartPosition, targetRotation);
@@ -478,8 +651,11 @@ public class SnakeMoveBackwardController : MonoBehaviour
     #region Reverse Tow
 
     /// <summary>
-    /// C1 acts as a temporary tractor for the Leader. The connection has slack:
-    /// C1 may retreat by Extra Slack before the maximum tow distance becomes taut.
+    /// C1 temporarily acts as the tractor for the Leader.
+    ///
+    /// Starting spacing + Reverse Tow Extra Slack is the maximum allowed
+    /// separation. Until that distance is exceeded, C1 retreats while the
+    /// Leader remains where it is. Once taut, C1 begins towing the Leader.
     /// </summary>
     private void ApplyReverseTowToLeader(GameObject firstFollower)
     {
@@ -488,7 +664,11 @@ public class SnakeMoveBackwardController : MonoBehaviour
         Vector3 c1Position = FlattenToRewindPlane(firstFollower.transform.position);
         Vector3 currentLeaderPosition = FlattenToRewindPlane(leaderBody.position);
 
-        Vector3 c1ToLeader = Vector3.ProjectOnPlane(currentLeaderPosition - c1Position, Vector3.up);
+        Vector3 c1ToLeader = Vector3.ProjectOnPlane(
+            currentLeaderPosition - c1Position,
+            Vector3.up
+        );
+
         currentLeaderToC1Distance = c1ToLeader.magnitude;
 
         float tautThreshold = activeReverseTowDistance + towActivationTolerance;
@@ -501,7 +681,9 @@ public class SnakeMoveBackwardController : MonoBehaviour
 
         reverseTowIsTaut = true;
 
-        Vector3 towDirection = c1ToLeader.sqrMagnitude > 0.0001f ? c1ToLeader.normalized : Vector3.ProjectOnPlane(leaderBody.transform.forward, Vector3.up).normalized;
+        Vector3 towDirection = c1ToLeader.sqrMagnitude > 0.0001f
+            ? c1ToLeader.normalized
+            : Vector3.ProjectOnPlane(leaderBody.transform.forward, Vector3.up).normalized;
 
         if (towDirection.sqrMagnitude < 0.0001f) towDirection = Vector3.forward;
 
@@ -512,29 +694,48 @@ public class SnakeMoveBackwardController : MonoBehaviour
 
         if (rotateLeaderFromReverseTow)
         {
-            Vector3 desiredForward = Vector3.ProjectOnPlane(targetLeaderPosition - c1Position, Vector3.up);
+            Vector3 desiredForward = Vector3.ProjectOnPlane(
+                targetLeaderPosition - c1Position,
+                Vector3.up
+            );
 
             if (desiredForward.sqrMagnitude > 0.0001f)
             {
-                Quaternion desiredRotation = Quaternion.LookRotation(desiredForward.normalized, Vector3.up);
-                float rotationT = 1f - Mathf.Exp(-leaderTowRotationFollowSpeed * Time.fixedDeltaTime);
-                leaderBody.MoveRotation(Quaternion.Slerp(leaderBody.rotation, desiredRotation, rotationT));
+                Quaternion desiredRotation = Quaternion.LookRotation(
+                    desiredForward.normalized,
+                    Vector3.up
+                );
+
+                float rotationT = 1f - Mathf.Exp(
+                    -leaderTowRotationFollowSpeed * Time.fixedDeltaTime
+                );
+
+                leaderBody.MoveRotation(
+                    Quaternion.Slerp(
+                        leaderBody.rotation,
+                        desiredRotation,
+                        rotationT
+                    )
+                );
             }
         }
 
-        leaderMovedDistance = Vector3.ProjectOnPlane(targetLeaderPosition - leaderStartPosition, Vector3.up).magnitude;
+        leaderMovedDistance = Vector3.ProjectOnPlane(
+            targetLeaderPosition - leaderStartPosition,
+            Vector3.up
+        ).magnitude;
     }
 
     #endregion
 
-    #region Recovery
+    #region Chain Recovery
 
     private void FinishChainMoveBackward()
     {
-        if (!isMovingBackward) return;
+        if (!isChainReversing) return;
 
-        // Build a new normal path from the exact final reverse-tow geometry while
-        // the Leader is still kinematic, then hand movement back to normal physics.
+        // SnakeCartManager rebuilds the physical probe and seeds a fresh normal
+        // path from the exact current Probe -> C1 -> ... -> Tail geometry.
         bool recoveryBuilt = snakeManager.CompleteMoveBackwardRecovery();
 
         leaderBody.isKinematic = leaderWasKinematic;
@@ -545,17 +746,27 @@ public class SnakeMoveBackwardController : MonoBehaviour
             leaderBody.angularVelocity = Vector3.zero;
         }
 
-        isMovingBackward = false;
+        isChainReversing = false;
         nextAllowedMoveBackwardTime = Time.time + moveBackwardCooldown;
 
         temporaryPath.Clear();
+
+        EndMoveBackwardControlLock();
+
         OnMoveBackwardFinished?.Invoke();
 
-        if (!recoveryBuilt) Debug.LogError("[MoveBackward] Recovery path failed to build.", this);
+        if (!recoveryBuilt)
+        {
+            Debug.LogError("[MoveBackward] Recovery path failed to build.", this);
+        }
 
         if (debugMoveBackward)
         {
-            Debug.Log($"[MoveBackward] FINISH | recoveryBuilt:{recoveryBuilt} | tailMoved:{movedTailDistance:F2} | leaderMoved:{leaderMovedDistance:F2}", this);
+            Debug.Log(
+                $"[MoveBackward] CHAIN FINISH | recoveryBuilt:{recoveryBuilt} | " +
+                $"tailMoved:{movedTailDistance:F2} | leaderMoved:{leaderMovedDistance:F2}",
+                this
+            );
         }
     }
 
@@ -569,9 +780,36 @@ public class SnakeMoveBackwardController : MonoBehaviour
         return position;
     }
 
+    private void OnDisable()
+    {
+        RestoreRuntimeStateWithoutEvents();
+    }
+
     private void OnDestroy()
     {
-        if (cartControl != null) cartControl.OnMoveBackwardPressed -= TryBeginMoveBackward;
+        if (cartControl != null)
+        {
+            cartControl.OnMoveBackwardPressed -= TryBeginMoveBackward;
+        }
+    }
+
+    private void RestoreRuntimeStateWithoutEvents()
+    {
+        if (!IsMovingBackward) return;
+
+        if (isChainReversing && leaderBody != null)
+        {
+            leaderBody.isKinematic = leaderWasKinematic;
+        }
+
+        isChainReversing = false;
+        isSingleCartReversing = false;
+
+        if (temporaryPath != null) temporaryPath.Clear();
+
+        if (leadingMovements != null) ResetLeadingMovement();
+
+        if (cartControl != null) cartControl.EnableControl();
     }
 
     #endregion
@@ -586,24 +824,37 @@ public class SnakeMoveBackwardController : MonoBehaviour
         {
             Gizmos.color = Color.magenta;
 
-            for (int i = 1; i < temporaryPath.Count; i++) Gizmos.DrawLine(temporaryPath.GetPosition(i - 1), temporaryPath.GetPosition(i));
+            for (int i = 1; i < temporaryPath.Count; i++)
+            {
+                Gizmos.DrawLine(
+                    temporaryPath.GetPosition(i - 1),
+                    temporaryPath.GetPosition(i)
+                );
+            }
         }
 
         if (drawReverseTow && snakeManager != null)
         {
             List<GameObject> snakeBody = snakeManager.GetSnakeBody();
 
-            if (snakeBody != null && snakeBody.Count >= 2 && snakeBody[1] != null && leaderBody != null)
+            if (snakeBody != null &&
+                snakeBody.Count >= 2 &&
+                snakeBody[1] != null &&
+                leaderBody != null)
             {
                 Gizmos.color = reverseTowIsTaut ? Color.green : Color.yellow;
-                Gizmos.DrawLine(snakeBody[1].transform.position, leaderBody.position);
+
+                Gizmos.DrawLine(
+                    snakeBody[1].transform.position,
+                    leaderBody.position
+                );
             }
         }
     }
 
     #endregion
 
-    #region Temporary Path Type
+    #region Temporary Path
 
     private class TemporaryPath
     {
@@ -622,7 +873,11 @@ public class SnakeMoveBackwardController : MonoBehaviour
         private readonly List<Point> points = new List<Point>(256);
 
         public int Count => points.Count;
-        public float HeadProgress => points.Count > 0 ? points[points.Count - 1].distance : 0f;
+
+        public float HeadProgress =>
+            points.Count > 0
+                ? points[points.Count - 1].distance
+                : 0f;
 
         public void Clear()
         {
@@ -644,13 +899,20 @@ public class SnakeMoveBackwardController : MonoBehaviour
             }
 
             Point lastPoint = points[points.Count - 1];
-            Vector3 delta = Vector3.ProjectOnPlane(position - lastPoint.position, Vector3.up);
-            float distance = delta.magnitude;
 
-            if (distance <= 0.00001f) return lastPoint.distance;
+            Vector3 delta = Vector3.ProjectOnPlane(
+                position - lastPoint.position,
+                Vector3.up
+            );
 
-            float newDistance = lastPoint.distance + distance;
+            float addedDistance = delta.magnitude;
+
+            if (addedDistance <= 0.00001f) return lastPoint.distance;
+
+            float newDistance = lastPoint.distance + addedDistance;
+
             points.Add(new Point(position, newDistance));
+
             return newDistance;
         }
 
@@ -658,13 +920,21 @@ public class SnakeMoveBackwardController : MonoBehaviour
         {
             if (points.Count < 2) return Vector3.zero;
 
-            Vector3 tangent = Vector3.ProjectOnPlane(points[points.Count - 1].position - points[points.Count - 2].position, Vector3.up);
+            Vector3 tangent = Vector3.ProjectOnPlane(
+                points[points.Count - 1].position - points[points.Count - 2].position,
+                Vector3.up
+            );
+
             if (tangent.sqrMagnitude > 0.0001f) tangent.Normalize();
 
             return tangent;
         }
 
-        public bool TryGetPose(float progress, float tangentDistance, out Vector3 position, out Vector3 tangent)
+        public bool TryGetPose(
+            float progress,
+            float tangentDistance,
+            out Vector3 position,
+            out Vector3 tangent)
         {
             position = Vector3.zero;
             tangent = Vector3.zero;
@@ -680,10 +950,14 @@ public class SnakeMoveBackwardController : MonoBehaviour
 
             if (tangent.sqrMagnitude < 0.0001f && points.Count >= 2)
             {
-                tangent = Vector3.ProjectOnPlane(points[points.Count - 1].position - points[points.Count - 2].position, Vector3.up);
+                tangent = Vector3.ProjectOnPlane(
+                    points[points.Count - 1].position - points[points.Count - 2].position,
+                    Vector3.up
+                );
             }
 
             if (tangent.sqrMagnitude > 0.0001f) tangent.Normalize();
+
             return true;
         }
 
@@ -699,7 +973,11 @@ public class SnakeMoveBackwardController : MonoBehaviour
                 return true;
             }
 
-            progress = Mathf.Clamp(progress, points[0].distance, HeadProgress);
+            progress = Mathf.Clamp(
+                progress,
+                points[0].distance,
+                HeadProgress
+            );
 
             int low = 0;
             int high = points.Count - 1;
@@ -724,15 +1002,24 @@ public class SnakeMoveBackwardController : MonoBehaviour
             Point upper = points[upperIndex];
 
             float range = upper.distance - lower.distance;
-            float t = range > 0.00001f ? (progress - lower.distance) / range : 0f;
+            float interpolation = range > 0.00001f
+                ? (progress - lower.distance) / range
+                : 0f;
 
-            position = Vector3.Lerp(lower.position, upper.position, t);
+            position = Vector3.Lerp(
+                lower.position,
+                upper.position,
+                interpolation
+            );
+
             return true;
         }
 
         public Vector3 GetPosition(int index)
         {
-            return index >= 0 && index < points.Count ? points[index].position : Vector3.zero;
+            return index >= 0 && index < points.Count
+                ? points[index].position
+                : Vector3.zero;
         }
     }
 

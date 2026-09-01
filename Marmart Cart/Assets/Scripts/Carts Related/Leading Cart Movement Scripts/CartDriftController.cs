@@ -323,7 +323,7 @@ public class CartDriftController : MonoBehaviour
         currentInputMode = DriftInputMode.Holding;
     }
 
-    public void CancelDriftForSpeedup(string reason = "Speedup started")
+    public void CancelDrift(string reason = "Cancelled")
     {
         if (driftState == DriftState.None) return;
 

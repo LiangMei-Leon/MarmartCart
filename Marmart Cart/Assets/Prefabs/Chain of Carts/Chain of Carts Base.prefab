@@ -1,0 +1,240 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6172510833367344487
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1083702410519722233}
+  - component: {fileID: 6429415885519634099}
+  - component: {fileID: 3341631081010412033}
+  - component: {fileID: 7301706362411791999}
+  - component: {fileID: 8147838864649264086}
+  m_Layer: 0
+  m_Name: Chain of Carts Base
+  m_TagString: Untagged
+  m_Icon: {fileID: 7250588514170254948, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1083702410519722233
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6172510833367344487}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -95.32, y: 13.3, z: -674.37}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6429415885519634099
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6172510833367344487}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da91cadfcafd4164abb3b271e40055dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pathHistory: {fileID: 3341631081010412033}
+  firstFollowerSpacing: 0.5
+  followerCartSpacing: 3.5
+  firstFollowerHingeInfluence: 0.7
+  hingeInfluenceFalloffPerCart: 0.35
+  recoveryHingeRestoreSpeed: 5
+  moveBackwardController: {fileID: 7301706362411791999}
+  physicalJointProbe: {fileID: 8147838864649264086}
+  followerSpawnDelay: 0.11
+  collectVfxDelay: 0.12
+  bodyParts:
+  - {fileID: 7280288703978135140, guid: 4f3f3c272c30336459d42d34a85faa6c, type: 3}
+  snakeBody: []
+  cartsWithoutItem: []
+  needScaleup: 0
+  playerIndex: 1
+  setupCamera: {fileID: 11400000, guid: c694c52992c7f5f4fbfb31d18772ac53, type: 2}
+  cashScoreManager: {fileID: 0}
+  sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
+  groceryItemCartCount: 0
+  drawFirstFollowerTarget: 1
+--- !u!114 &3341631081010412033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6172510833367344487}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba95ac0072a6b414688f2387b6189109, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sampleSpacing: 0.1
+  movementAcceptanceDistance: 0.01
+  ignoreVerticalMotion: 1
+  initialBackfillDistance: 20
+  maxHistoryDistance: 80
+  pruneBatchSize: 32
+  tangentProbeDistance: 0.35
+  isInitialized: 0
+  acceptedMovementThisTick: 0
+  currentPlanarSpeed: 0
+  headProgress: 0
+  recordedEndProgress: 0
+  distanceSinceLastSample: 0
+  currentSampleCount: 0
+  drawPath: 0
+  drawStoredSamples: 0
+  drawEveryNthSample: 5
+  sampleGizmoRadius: 0.15
+--- !u!114 &7301706362411791999
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6172510833367344487}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fef1c9cd843ec344b9c13fa69e2d522, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveBackwardDistance: 10
+  moveBackwardDuration: 1.5
+  moveBackwardMotionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: -0.022740098
+      outSlope: -0.022740098
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.20101951
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 2.595016
+      outSlope: 2.595016
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.079889
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  moveBackwardCooldown: 1.25
+  tangentSampleDistance: 0.1
+  followerRotationFollowSpeed: 12
+  allowStraightExtensionWhenHistoryRunsOut: 1
+  reverseTowExtraSlack: 0.5
+  towActivationTolerance: 0.01
+  leaderTowRotationFollowSpeed: 10
+  rotateLeaderFromReverseTow: 1
+  singleCartReverseSpeed: 6
+  singleCartReverseDuration: 1.5
+  singleCartReverseSpeedCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.5
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.75
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  isInitialized: 0
+  isChainReversing: 0
+  isSingleCartReversing: 0
+  requestedMoveBackwardDistance: 0
+  movedTailDistance: 0
+  tailMainStartProgress: 0
+  availableOldPathDistance: 0
+  temporaryHeadProgress: 0
+  startingLeaderToC1Distance: 0
+  activeReverseTowDistance: 0
+  currentLeaderToC1Distance: 0
+  reverseTowIsTaut: 0
+  leaderMovedDistance: 0
+  drawTemporaryPath: 1
+  drawReverseTow: 1
+  debugMoveBackward: 0
+--- !u!114 &8147838864649264086
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6172510833367344487}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5895e67b586bf54c98a6435f09cd739, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  armLength: 1
+  armMass: 1
+  linearDamping: 1
+  angularDamping: 6
+  maxArmAngularVelocity: 25
+  limitSwingAngle: 1
+  maxSwingAngle: 60
+  enableAutoRecenter: 1
+  minSpeedForRecenter: 2
+  maxYawRateForRecenter: 20
+  recenterDeadAngle: 1.5
+  recenterSpring: 250
+  recenterDamper: 25
+  showPhysicalArm: 1
+  showProbeSphere: 1
+  probeSphereSize: 0.75
+  currentHingeAngle: 0
+  currentDistanceToHitch: 0
+  currentProbeSpeed: 0
+  isRecentering: 0
+  currentHitchSpeed: 0
+  currentHitchYawRate: 0

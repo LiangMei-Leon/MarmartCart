@@ -23,7 +23,7 @@ public class PlayerInputManager : MonoBehaviour
     private CartControlScript GetCartControl(GameObject playerRoot)
     {
         if (!playerRoot) return null;
-        return playerRoot.transform.GetChild(0).GetChild(3).GetComponent<CartControlScript>();
+        return playerRoot.transform.GetChild(0).GetChild(0).GetComponent<CartControlScript>();
     }
     private void Start()
     {

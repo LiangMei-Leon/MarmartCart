@@ -6,7 +6,11 @@ using UnityEngine;
 /// Stall rule:
 /// Front sensor blocked + cart speed below threshold = Stalled.
 ///
-/// No delay and no input-direction requirement.
+/// While stalled:
+/// - MoveBackward becomes available.
+/// - Any current drift is cancelled immediately.
+/// - Drift input is ignored until the stall ends.
+/// - Powerup availability is untouched.
 /// </summary>
 public class LeadingCartStallController : MonoBehaviour
 {
@@ -15,6 +19,7 @@ public class LeadingCartStallController : MonoBehaviour
     [Header("References")]
     [SerializeField] private LeadingCartStallSensor stallSensor;
     [SerializeField] private CartControlScript cartControlInput;
+    [SerializeField] private CartDriftController driftController;
     [SerializeField] private Rigidbody cartBody;
 
     #endregion
@@ -33,6 +38,8 @@ public class LeadingCartStallController : MonoBehaviour
     [Header("Runtime - Read Only")]
     [SerializeField] private bool isStalled;
     [SerializeField] private float currentPlanarSpeed;
+
+    private bool restoreDriftAfterStall;
 
     public bool IsStalled => isStalled;
     public bool IsFrontBlocked => stallSensor != null && stallSensor.IsBlocked;
@@ -54,6 +61,7 @@ public class LeadingCartStallController : MonoBehaviour
 
         if (stallSensor == null) Debug.LogError("[LeadingCartStallController] Stall Sensor is not assigned.", this);
         if (cartControlInput == null) Debug.LogError("[LeadingCartStallController] CartControlScript is not assigned.", this);
+        if (driftController == null) Debug.LogError("[LeadingCartStallController] CartDriftController is not assigned.", this);
         if (cartBody == null) Debug.LogError("[LeadingCartStallController] Cart Rigidbody is not assigned.", this);
     }
 
@@ -64,10 +72,16 @@ public class LeadingCartStallController : MonoBehaviour
 
     private void OnDisable()
     {
-        if (isStalled && cartControlInput != null) cartControlInput.DisallowMoveBackward();
+        if (isStalled && cartControlInput != null)
+        {
+            cartControlInput.DisallowMoveBackward();
+
+            if (restoreDriftAfterStall) cartControlInput.AllowDrift();
+        }
 
         isStalled = false;
         currentPlanarSpeed = 0f;
+        restoreDriftAfterStall = false;
     }
 
     #endregion
@@ -100,14 +114,37 @@ public class LeadingCartStallController : MonoBehaviour
 
         if (isStalled)
         {
-            cartControlInput.AllowMoveBackward();
+            EnterStall();
             OnStallStarted?.Invoke();
         }
         else
         {
-            cartControlInput.DisallowMoveBackward();
+            ExitStall();
             OnStallEnded?.Invoke();
         }
+    }
+
+    private void EnterStall()
+    {
+        // Preserve whether drift was available before the stall instead of
+        // blindly enabling it later.
+        restoreDriftAfterStall = cartControlInput.CanDrift();
+
+        // Cancel active/armed drift immediately, then stop listening to new
+        // drift presses while stalled.
+        if (driftController != null) driftController.CancelDrift("Cart stalled");
+
+        cartControlInput.DisallowDrift();
+        cartControlInput.AllowMoveBackward();
+    }
+
+    private void ExitStall()
+    {
+        cartControlInput.DisallowMoveBackward();
+
+        if (restoreDriftAfterStall) cartControlInput.AllowDrift();
+
+        restoreDriftAfterStall = false;
     }
 
     #endregion

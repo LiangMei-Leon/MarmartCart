@@ -138,7 +138,7 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
 
             if (countTimer - (disappearTime - 3f) <= 0.1f && countTimer - (disappearTime - 3f) > 0f)
             {
-                cartMaterialManagerScript.SetCooldown(3f);
+                cartMaterialManagerScript.SetGhostMode(3f);
                 //Debug.Log("enter ghost mode");
             }
             else if (countTimer >= disappearTime)

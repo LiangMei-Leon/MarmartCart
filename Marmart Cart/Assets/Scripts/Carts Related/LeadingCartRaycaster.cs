@@ -45,7 +45,7 @@ public class LeadingCartRaycaster : MonoBehaviour
         {
             if (!cartInGhostMode)
             {
-                this.gameObject.GetComponent<CartMaterialManager>()?.SetCooldown(cooldownTimer);
+                this.gameObject.GetComponent<CartMaterialManager>()?.SetGhostMode(cooldownTimer);
                 cartInGhostMode = true;
             }
         }
@@ -163,7 +163,7 @@ public class LeadingCartRaycaster : MonoBehaviour
         LeadingCartBehaviour leadingCartBehaviour2 = this.gameObject.transform.GetChild(0).GetChild(2).GetComponent<LeadingCartBehaviour>();
         LeadingCartBehaviour leadingCartBehaviour3 = this.gameObject.transform.GetChild(0).GetChild(3).GetComponent<LeadingCartBehaviour>();
 
-        leadingCartBehaviour0.SetSpeedToZero(2f);
+        //leadingCartBehaviour0.SetSpeedToZero(2f);
         //leadingCartBehaviour1.SetSpeedToZero(2f);
         //leadingCartBehaviour2.SetSpeedToZero(2f);
         //leadingCartBehaviour3.SetSpeedToZero(2f);

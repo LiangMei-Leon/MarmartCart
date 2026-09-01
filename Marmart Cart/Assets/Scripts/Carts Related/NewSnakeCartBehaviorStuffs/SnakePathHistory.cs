@@ -4,12 +4,14 @@ using UnityEngine;
 /// <summary>
 /// Shared spatial path for normal forward snake movement.
 ///
-/// The physical trailing probe writes path samples. Followers never consume
-/// samples; they query a logical progress value behind HeadProgress.
+/// The physical trailing probe writes distance-based path samples.
+/// Followers never consume samples; they query poses at logical progress values
+/// behind HeadProgress.
 ///
-/// After MoveBackward, the current chain geometry can be reseeded as a fresh
-/// normal path so recovery does not snap any follower.
+/// After MoveBackward, the recovered Probe -> C1 -> ... -> Tail geometry can be
+/// reseeded as a fresh normal path without snapping any follower.
 /// </summary>
+[DisallowMultipleComponent]
 public class SnakePathHistory : MonoBehaviour
 {
     #region Data Types
@@ -56,7 +58,7 @@ public class SnakePathHistory : MonoBehaviour
 
     #endregion
 
-    #region History / Rotation Settings
+    #region History Settings
 
     [Header("History")]
     [Min(0f)]
@@ -74,17 +76,24 @@ public class SnakePathHistory : MonoBehaviour
 
     #endregion
 
-    #region Debug
+    #region Runtime
 
-    [Header("Debug")]
-    [SerializeField] private bool drawPath = true;
-    [SerializeField] private bool drawStoredSamples = true;
+    private Transform pathSource;
+    private Rigidbody leaderBody;
 
-    [Min(1)]
-    [SerializeField] private int drawEveryNthSample = 5;
+    private readonly List<PathPoint> samples = new List<PathPoint>(512);
 
-    [Min(0.001f)]
-    [SerializeField] private float sampleGizmoRadius = 0.04f;
+    // Reused only during MoveBackward recovery so repeated recoveries do not
+    // allocate temporary anchor lists every time.
+    private readonly List<SeedAnchor> recoveryFollowerAnchors = new List<SeedAnchor>(32);
+    private readonly List<SeedAnchor> recoveryAnchors = new List<SeedAnchor>(34);
+
+    private Vector3 lastObservedPosition;
+    private Vector3 livePathEndPosition;
+
+    #endregion
+
+    #region Runtime Debug
 
     [Header("Runtime Debug - Read Only")]
     [SerializeField] private bool isInitialized;
@@ -97,19 +106,21 @@ public class SnakePathHistory : MonoBehaviour
 
     #endregion
 
-    #region Runtime
+    #region Debug Drawing
 
-    private Transform pathSource;
-    private Rigidbody leaderBody;
+    [Header("Debug Drawing")]
+    [SerializeField] private bool drawPath = true;
+    [SerializeField] private bool drawStoredSamples = true;
 
-    private readonly List<PathPoint> samples = new List<PathPoint>(512);
+    [Min(1)]
+    [SerializeField] private int drawEveryNthSample = 5;
 
-    private Vector3 lastObservedPosition;
-    private Vector3 livePathEndPosition;
+    [Min(0.001f)]
+    [SerializeField] private float sampleGizmoRadius = 0.04f;
 
     #endregion
 
-    #region Public API
+    #region Public State
 
     public bool IsInitialized => isInitialized;
     public float HeadProgress => headProgress;
@@ -117,6 +128,10 @@ public class SnakePathHistory : MonoBehaviour
     public float OldestProgress => samples.Count > 0 ? samples[0].distance : headProgress;
     public int SampleCount => samples.Count;
     public IReadOnlyList<PathPoint> Samples => samples;
+
+    #endregion
+
+    #region Initialization
 
     public void SetLeaderBody(Rigidbody body)
     {
@@ -127,19 +142,13 @@ public class SnakePathHistory : MonoBehaviour
     {
         if (newPathSource == null)
         {
-            Debug.LogError("[SnakePathHistory] Cannot initialize: Path Source is null.", this);
+            Debug.LogError("[SnakePathHistory] Cannot initialize because Path Source is null.", this);
             return;
         }
 
         pathSource = newPathSource;
         ResetHistoryToSource();
-
-        Debug.Log($"[SnakePathHistory] Initialized from {pathSource.name}.", this);
     }
-
-    #endregion
-
-    #region Initial / Recovery Seeding
 
     public void ResetHistoryToSource()
     {
@@ -166,31 +175,30 @@ public class SnakePathHistory : MonoBehaviour
 
         samples.Add(new PathPoint(sourcePosition, 0f));
 
-        lastObservedPosition = sourcePosition;
-        livePathEndPosition = sourcePosition;
-
-        distanceSinceLastSample = 0f;
-        recordedEndProgress = 0f;
-        headProgress = 0f;
-
-        acceptedMovementThisTick = false;
-        currentPlanarSpeed = 0f;
-        currentSampleCount = samples.Count;
+        ResetRuntimeTracking(sourcePosition);
         isInitialized = true;
     }
 
+    #endregion
+
+    #region MoveBackward Recovery Seeding
+
     /// <summary>
-    /// Recovery handoff after reverse-tow.
+    /// Rebuilds normal path history from the exact current recovered chain pose.
     ///
-    /// Current C1/C2/... world positions become exact anchors at their normal
-    /// logical spacing values. This preserves the recovered shape without
-    /// teleporting carts back to the old path.
+    /// Follower world positions become anchors at their normal logical spacing
+    /// values. Geometric spacing may be compressed, but logical progress remains
+    /// correct and normal forward movement stretches the chain naturally.
     /// </summary>
-    public bool ResetHistoryFromCurrentChain(Transform newPathSource, IReadOnlyList<Vector3> followerPositions, float firstFollowerSpacing, float followerSpacing)
+    public bool ResetHistoryFromCurrentChain(
+        Transform newPathSource,
+        IReadOnlyList<Vector3> followerPositions,
+        float firstFollowerSpacing,
+        float followerSpacing)
     {
         if (newPathSource == null)
         {
-            Debug.LogError("[SnakePathHistory] Recovery source is null.", this);
+            Debug.LogError("[SnakePathHistory] Recovery Path Source is null.", this);
             return false;
         }
 
@@ -208,7 +216,8 @@ public class SnakePathHistory : MonoBehaviour
         Vector3 sourcePosition = pathSource.position;
         float seedY = sourcePosition.y;
 
-        List<SeedAnchor> followerAnchors = new List<SeedAnchor>(followerPositions.Count);
+        recoveryFollowerAnchors.Clear();
+        recoveryAnchors.Clear();
 
         for (int i = 0; i < followerPositions.Count; i++)
         {
@@ -216,17 +225,52 @@ public class SnakePathHistory : MonoBehaviour
             position.y = seedY;
 
             float progress = -(safeFirstSpacing + i * safeFollowerSpacing);
-            followerAnchors.Add(new SeedAnchor(position, progress));
+            recoveryFollowerAnchors.Add(new SeedAnchor(position, progress));
         }
 
-        List<SeedAnchor> anchors = new List<SeedAnchor>(followerPositions.Count + 2);
+        SeedAnchor tail = recoveryFollowerAnchors[recoveryFollowerAnchors.Count - 1];
+        Vector3 backwardDirection = GetRecoveryBackfillDirection(sourcePosition, tail);
 
-        SeedAnchor tail = followerAnchors[followerAnchors.Count - 1];
+        if (initialBackfillDistance > 0.01f)
+        {
+            recoveryAnchors.Add(
+                new SeedAnchor(
+                    tail.position + backwardDirection * initialBackfillDistance,
+                    tail.distance - initialBackfillDistance
+                )
+            );
+        }
+
+        // Samples are stored oldest progress -> newest progress.
+        for (int i = recoveryFollowerAnchors.Count - 1; i >= 0; i--)
+        {
+            recoveryAnchors.Add(recoveryFollowerAnchors[i]);
+        }
+
+        recoveryAnchors.Add(new SeedAnchor(sourcePosition, 0f));
+
+        samples.Clear();
+
+        AddSeedAnchor(recoveryAnchors[0]);
+
+        for (int i = 1; i < recoveryAnchors.Count; i++)
+        {
+            AddSeedSegment(recoveryAnchors[i - 1], recoveryAnchors[i]);
+        }
+
+        ResetRuntimeTracking(sourcePosition);
+        isInitialized = true;
+
+        return true;
+    }
+
+    private Vector3 GetRecoveryBackfillDirection(Vector3 sourcePosition, SeedAnchor tail)
+    {
         Vector3 backwardDirection;
 
-        if (followerAnchors.Count >= 2)
+        if (recoveryFollowerAnchors.Count >= 2)
         {
-            Vector3 previous = followerAnchors[followerAnchors.Count - 2].position;
+            Vector3 previous = recoveryFollowerAnchors[recoveryFollowerAnchors.Count - 2].position;
             backwardDirection = Vector3.ProjectOnPlane(tail.position - previous, Vector3.up);
         }
         else
@@ -234,50 +278,22 @@ public class SnakePathHistory : MonoBehaviour
             backwardDirection = Vector3.ProjectOnPlane(tail.position - sourcePosition, Vector3.up);
         }
 
-        if (backwardDirection.sqrMagnitude < 0.0001f)
+        if (backwardDirection.sqrMagnitude >= 0.0001f)
         {
-            Vector3 sourceForward = Vector3.ProjectOnPlane(pathSource.forward, Vector3.up);
-            backwardDirection = sourceForward.sqrMagnitude > 0.0001f ? -sourceForward.normalized : -Vector3.forward;
-        }
-        else
-        {
-            backwardDirection.Normalize();
+            return backwardDirection.normalized;
         }
 
-        if (initialBackfillDistance > 0.01f)
-        {
-            anchors.Add(new SeedAnchor(tail.position + backwardDirection * initialBackfillDistance, tail.distance - initialBackfillDistance));
-        }
+        Vector3 sourceForward = Vector3.ProjectOnPlane(pathSource.forward, Vector3.up);
 
-        // Stored samples are ordered oldest progress -> newest progress.
-        for (int i = followerAnchors.Count - 1; i >= 0; i--) anchors.Add(followerAnchors[i]);
-
-        anchors.Add(new SeedAnchor(sourcePosition, 0f));
-
-        samples.Clear();
-
-        AddSeedAnchor(anchors[0]);
-
-        for (int i = 1; i < anchors.Count; i++) AddSeedSegment(anchors[i - 1], anchors[i]);
-
-        lastObservedPosition = sourcePosition;
-        livePathEndPosition = sourcePosition;
-
-        distanceSinceLastSample = 0f;
-        recordedEndProgress = 0f;
-        headProgress = 0f;
-
-        acceptedMovementThisTick = false;
-        currentPlanarSpeed = 0f;
-        currentSampleCount = samples.Count;
-        isInitialized = true;
-
-        return true;
+        return sourceForward.sqrMagnitude > 0.0001f
+            ? -sourceForward.normalized
+            : -Vector3.forward;
     }
 
     private void AddSeedAnchor(SeedAnchor anchor)
     {
-        if (samples.Count > 0 && Mathf.Abs(samples[samples.Count - 1].distance - anchor.distance) < 0.0001f)
+        if (samples.Count > 0 &&
+            Mathf.Abs(samples[samples.Count - 1].distance - anchor.distance) < 0.0001f)
         {
             samples[samples.Count - 1] = new PathPoint(anchor.position, anchor.distance);
             return;
@@ -301,8 +317,28 @@ public class SnakePathHistory : MonoBehaviour
         for (int i = 1; i <= steps; i++)
         {
             float t = i / (float)steps;
-            AddSeedAnchor(new SeedAnchor(Vector3.Lerp(from.position, to.position, t), Mathf.Lerp(from.distance, to.distance, t)));
+
+            AddSeedAnchor(
+                new SeedAnchor(
+                    Vector3.Lerp(from.position, to.position, t),
+                    Mathf.Lerp(from.distance, to.distance, t)
+                )
+            );
         }
+    }
+
+    private void ResetRuntimeTracking(Vector3 sourcePosition)
+    {
+        lastObservedPosition = sourcePosition;
+        livePathEndPosition = sourcePosition;
+
+        distanceSinceLastSample = 0f;
+        recordedEndProgress = 0f;
+        headProgress = 0f;
+
+        acceptedMovementThisTick = false;
+        currentPlanarSpeed = 0f;
+        currentSampleCount = samples.Count;
     }
 
     #endregion
@@ -312,6 +348,7 @@ public class SnakePathHistory : MonoBehaviour
     public void TickHistory()
     {
         if (!isInitialized || pathSource == null) return;
+
         RecordPathSourceMovement(pathSource.position);
     }
 
@@ -320,20 +357,30 @@ public class SnakePathHistory : MonoBehaviour
         acceptedMovementThisTick = false;
 
         Vector3 frameDelta = currentSourcePosition - lastObservedPosition;
-        if (ignoreVerticalMotion) frameDelta = Vector3.ProjectOnPlane(frameDelta, Vector3.up);
+
+        if (ignoreVerticalMotion)
+        {
+            frameDelta = Vector3.ProjectOnPlane(frameDelta, Vector3.up);
+        }
 
         float frameDisplacement = frameDelta.magnitude;
 
         currentPlanarSpeed = frameDisplacement / Mathf.Max(Time.fixedDeltaTime, 0.00001f);
         lastObservedPosition = currentSourcePosition;
 
-        // Only reject tiny solver jitter. Legitimate hinge swing remains path data.
+        // Reject solver jitter only. Legitimate physical hinge swing remains
+        // valid path movement.
         if (frameDisplacement < movementAcceptanceDistance) return;
 
         Vector3 segmentDelta = currentSourcePosition - livePathEndPosition;
-        if (ignoreVerticalMotion) segmentDelta = Vector3.ProjectOnPlane(segmentDelta, Vector3.up);
+
+        if (ignoreVerticalMotion)
+        {
+            segmentDelta = Vector3.ProjectOnPlane(segmentDelta, Vector3.up);
+        }
 
         float segmentLength = segmentDelta.magnitude;
+
         if (segmentLength <= 0.00001f) return;
 
         acceptedMovementThisTick = true;
@@ -348,7 +395,10 @@ public class SnakePathHistory : MonoBehaviour
         PruneHistory();
     }
 
-    private void AppendSegment(Vector3 segmentStartPosition, Vector3 segmentEndPosition, float segmentLength)
+    private void AppendSegment(
+        Vector3 segmentStartPosition,
+        Vector3 segmentEndPosition,
+        float segmentLength)
     {
         float remainingLength = segmentLength;
         Vector3 remainingStart = segmentStartPosition;
@@ -358,10 +408,20 @@ public class SnakePathHistory : MonoBehaviour
             float distanceNeeded = sampleSpacing - distanceSinceLastSample;
             float t = remainingLength > 0.00001f ? distanceNeeded / remainingLength : 1f;
 
-            Vector3 newPosition = Vector3.Lerp(remainingStart, segmentEndPosition, Mathf.Clamp01(t));
+            Vector3 newPosition = Vector3.Lerp(
+                remainingStart,
+                segmentEndPosition,
+                Mathf.Clamp01(t)
+            );
+
             PathPoint previous = samples[samples.Count - 1];
 
-            samples.Add(new PathPoint(newPosition, previous.distance + sampleSpacing));
+            samples.Add(
+                new PathPoint(
+                    newPosition,
+                    previous.distance + sampleSpacing
+                )
+            );
 
             remainingStart = newPosition;
             remainingLength -= distanceNeeded;
@@ -375,7 +435,10 @@ public class SnakePathHistory : MonoBehaviour
 
     #region Path Queries
 
-    public bool TryGetPoseAtProgress(float targetProgress, out Vector3 position, out Quaternion rotation)
+    public bool TryGetPoseAtProgress(
+        float targetProgress,
+        out Vector3 position,
+        out Quaternion rotation)
     {
         position = Vector3.zero;
         rotation = Quaternion.identity;
@@ -393,7 +456,10 @@ public class SnakePathHistory : MonoBehaviour
         if (!TryGetPositionAtProgress(beforeProgress, out Vector3 beforePosition)) return false;
         if (!TryGetPositionAtProgress(afterProgress, out Vector3 afterPosition)) return false;
 
-        Vector3 tangent = Vector3.ProjectOnPlane(afterPosition - beforePosition, Vector3.up);
+        Vector3 tangent = Vector3.ProjectOnPlane(
+            afterPosition - beforePosition,
+            Vector3.up
+        );
 
         if (tangent.sqrMagnitude < 0.0001f) tangent = GetFallbackTangent();
         if (tangent.sqrMagnitude < 0.0001f) tangent = Vector3.forward;
@@ -408,7 +474,11 @@ public class SnakePathHistory : MonoBehaviour
 
         if (!isInitialized || samples.Count == 0) return false;
 
-        targetProgress = Mathf.Clamp(targetProgress, samples[0].distance, recordedEndProgress);
+        targetProgress = Mathf.Clamp(
+            targetProgress,
+            samples[0].distance,
+            recordedEndProgress
+        );
 
         PathPoint newestStored = samples[samples.Count - 1];
 
@@ -422,8 +492,16 @@ public class SnakePathHistory : MonoBehaviour
                 return true;
             }
 
-            float t = Mathf.Clamp01((targetProgress - newestStored.distance) / liveDistance);
-            position = Vector3.Lerp(newestStored.position, livePathEndPosition, t);
+            float t = Mathf.Clamp01(
+                (targetProgress - newestStored.distance) / liveDistance
+            );
+
+            position = Vector3.Lerp(
+                newestStored.position,
+                livePathEndPosition,
+                t
+            );
+
             return true;
         }
 
@@ -434,8 +512,14 @@ public class SnakePathHistory : MonoBehaviour
         {
             int mid = (low + high) / 2;
 
-            if (samples[mid].distance < targetProgress) low = mid + 1;
-            else high = mid;
+            if (samples[mid].distance < targetProgress)
+            {
+                low = mid + 1;
+            }
+            else
+            {
+                high = mid;
+            }
         }
 
         int upperIndex = low;
@@ -450,7 +534,10 @@ public class SnakePathHistory : MonoBehaviour
         PathPoint upper = samples[upperIndex];
 
         float distanceRange = upper.distance - lower.distance;
-        float t2 = distanceRange > 0.00001f ? (targetProgress - lower.distance) / distanceRange : 0f;
+
+        float t2 = distanceRange > 0.00001f
+            ? (targetProgress - lower.distance) / distanceRange
+            : 0f;
 
         position = Vector3.Lerp(lower.position, upper.position, t2);
         return true;
@@ -460,19 +547,31 @@ public class SnakePathHistory : MonoBehaviour
     {
         if (samples.Count >= 2)
         {
-            Vector3 tangent = Vector3.ProjectOnPlane(samples[samples.Count - 1].position - samples[samples.Count - 2].position, Vector3.up);
+            Vector3 tangent = Vector3.ProjectOnPlane(
+                samples[samples.Count - 1].position - samples[samples.Count - 2].position,
+                Vector3.up
+            );
+
             if (tangent.sqrMagnitude > 0.0001f) return tangent.normalized;
         }
 
         if (leaderBody != null)
         {
-            Vector3 forward = Vector3.ProjectOnPlane(leaderBody.transform.forward, Vector3.up);
+            Vector3 forward = Vector3.ProjectOnPlane(
+                leaderBody.transform.forward,
+                Vector3.up
+            );
+
             if (forward.sqrMagnitude > 0.0001f) return forward.normalized;
         }
 
         if (pathSource != null)
         {
-            Vector3 forward = Vector3.ProjectOnPlane(pathSource.forward, Vector3.up);
+            Vector3 forward = Vector3.ProjectOnPlane(
+                pathSource.forward,
+                Vector3.up
+            );
+
             if (forward.sqrMagnitude > 0.0001f) return forward.normalized;
         }
 
@@ -490,41 +589,23 @@ public class SnakePathHistory : MonoBehaviour
         float keepFrom = headProgress - maxHistoryDistance;
         int removeCount = 0;
 
-        while (removeCount < samples.Count - 2 && samples[removeCount + 1].distance < keepFrom) removeCount++;
+        while (removeCount < samples.Count - 2 &&
+               samples[removeCount + 1].distance < keepFrom)
+        {
+            removeCount++;
+        }
 
-        if (removeCount >= pruneBatchSize) samples.RemoveRange(0, removeCount);
+        if (removeCount >= pruneBatchSize)
+        {
+            samples.RemoveRange(0, removeCount);
+        }
 
         currentSampleCount = samples.Count;
     }
 
     #endregion
 
-    #region Debug Drawing / Validation
-
-    private void OnDrawGizmos()
-    {
-        if (!drawPath || !Application.isPlaying || !isInitialized || samples.Count == 0) return;
-
-        Gizmos.color = Color.cyan;
-
-        for (int i = 1; i < samples.Count; i++) Gizmos.DrawLine(samples[i - 1].position, samples[i].position);
-
-        Gizmos.DrawLine(samples[samples.Count - 1].position, livePathEndPosition);
-
-        if (drawStoredSamples)
-        {
-            Gizmos.color = Color.yellow;
-            int stride = Mathf.Max(1, drawEveryNthSample);
-
-            for (int i = 0; i < samples.Count; i += stride) Gizmos.DrawSphere(samples[i].position, sampleGizmoRadius);
-        }
-
-        if (TryGetPositionAtProgress(headProgress, out Vector3 activeHeadPosition))
-        {
-            Gizmos.color = Color.green;
-            Gizmos.DrawSphere(activeHeadPosition, sampleGizmoRadius * 2f);
-        }
-    }
+    #region Validation / Debug Drawing
 
     private void OnValidate()
     {
@@ -535,6 +616,48 @@ public class SnakePathHistory : MonoBehaviour
         maxHistoryDistance = Mathf.Max(initialBackfillDistance + sampleSpacing * 2f, maxHistoryDistance);
         pruneBatchSize = Mathf.Max(1, pruneBatchSize);
         drawEveryNthSample = Mathf.Max(1, drawEveryNthSample);
+        sampleGizmoRadius = Mathf.Max(0.001f, sampleGizmoRadius);
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (!drawPath || !Application.isPlaying || !isInitialized || samples.Count == 0) return;
+
+        Gizmos.color = Color.cyan;
+
+        for (int i = 1; i < samples.Count; i++)
+        {
+            Gizmos.DrawLine(
+                samples[i - 1].position,
+                samples[i].position
+            );
+        }
+
+        Gizmos.DrawLine(
+            samples[samples.Count - 1].position,
+            livePathEndPosition
+        );
+
+        if (drawStoredSamples)
+        {
+            Gizmos.color = Color.yellow;
+
+            int stride = Mathf.Max(1, drawEveryNthSample);
+
+            for (int i = 0; i < samples.Count; i += stride)
+            {
+                Gizmos.DrawSphere(
+                    samples[i].position,
+                    sampleGizmoRadius
+                );
+            }
+        }
+
+        if (TryGetPositionAtProgress(headProgress, out Vector3 activeHeadPosition))
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawSphere(activeHeadPosition, sampleGizmoRadius * 2f);
+        }
     }
 
     #endregion

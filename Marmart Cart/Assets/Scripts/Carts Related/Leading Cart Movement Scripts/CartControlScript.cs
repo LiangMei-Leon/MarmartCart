@@ -51,6 +51,13 @@ public class CartControlScript : MonoBehaviour
         if (Mathf.Abs(_inputVector.x) < steerDeadzone) return 0f;
         return Mathf.Clamp(_inputVector.x, -1f, 1f);
     }
+
+    // Temporary compatibility wrapper while other movement scripts are migrated.
+    public float GetPrototypeSteerInput()
+    {
+        return GetSteerInput();
+    }
+
     #endregion
 
     #region Aiming
@@ -415,7 +422,7 @@ public class CartControlScript : MonoBehaviour
 
         isDriftHeld = false;
 
-        if (driftController != null) driftController.CancelDriftForSpeedup(reason);
+        if (driftController != null) driftController.CancelDrift(reason);
     }
 
     #endregion
