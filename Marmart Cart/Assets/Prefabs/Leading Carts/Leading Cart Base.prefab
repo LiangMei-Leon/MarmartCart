@@ -3056,7 +3056,7 @@ MonoBehaviour:
   cartMaterialManager: {fileID: 5514334074713262895}
   ghostDuration: 4
   stopDuration: 2
-  knockbackImpulse: 200
+  knockbackImpulse: 400
   ghostUntilTime: 0
 --- !u!1 &3739934952405941076
 GameObject:

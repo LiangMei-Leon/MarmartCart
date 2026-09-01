@@ -973,23 +973,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <isBonusCart>k__BackingField: 0
   <CartType>k__BackingField: 0
-  collectVFX: {fileID: 1106169482944890282}
   <isCollectedByPlayer>k__BackingField: 0
   <isCollectedByAI>k__BackingField: 0
-  playerRaycasters:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  disappearTime: 15
-  countTimer: 0
+  collectVFX: {fileID: 1106169482944890282}
   cartRenderer: {fileID: 5131415986485558397}
+  cartMaterialManager: {fileID: 2029535004146302134}
+  disappearTime: 15
+  disappearWarningDuration: 3
+  countTimer: 0
   defaultColor: {r: 0.3200426, g: 0.3386831, b: 0.36477977, a: 1}
   playerTeamColors:
   - {r: 0, g: 0.7521682, b: 1, a: 1}
   - {r: 1, g: 0.13840674, b: 0, a: 1}
   - {r: 0, g: 0.74213827, b: 0.16978836, a: 1}
   - {r: 1, g: 0.80507326, b: 0, a: 1}
+  teamColorMaterialIndex: 1
   collectEmptyCartEvent:
   - {fileID: 11400000, guid: 1c2f6ba77010d5645894c2545add5964, type: 2}
   - {fileID: 11400000, guid: 53bc1f737b4b6ea47a1ddcaf9047cb1a, type: 2}

@@ -68,6 +68,9 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 
     [Header("Follower Scale")]
     public bool needScaleup = false;
+    [SerializeField] private Vector3 normalScale = new Vector3(6f, 6f, 6f);
+    [SerializeField] private Vector3 upScale = new Vector3(10f, 10f, 10f);
+    [SerializeField] private Vector3 downScale = new Vector3(3f, 3f, 3f);
 
     #endregion
 
@@ -412,7 +415,7 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
                 groceryItemCartCount = Mathf.Max(0, groceryItemCartCount - 1);
             }
 
-            cart.transform.localScale = new Vector3(6f, 6f, 6f);
+            cart.transform.localScale = normalScale;
             cart.transform.SetParent(null);
 
             // C1 may already have been detached by the battle system.
@@ -441,7 +444,7 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 
         if (!followerScaleDirty) return;
 
-        Vector3 targetScale = needScaleup ? new Vector3(10f, 10f, 10f) : new Vector3(5f, 5f, 5f);
+        Vector3 targetScale = needScaleup ? upScale : normalScale;
 
         for (int i = 1; i < snakeBody.Count; i++)
         {
