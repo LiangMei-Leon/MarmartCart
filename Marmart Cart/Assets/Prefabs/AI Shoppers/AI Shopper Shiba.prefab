@@ -149,6 +149,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 3870df526ee277849912f5f979d3502b, type: 2}
   - {fileID: 11400000, guid: d75c8bb3a2921234da5351bacc7f412e, type: 2}
   - {fileID: 11400000, guid: 60ab87266561dcc49a1dc35a7906ab25, type: 2}
+  startingItemChance: 0.5
   carryingItem: 0
   carryingNormalItem: 0
   carryingExpensiveItem: 0
@@ -171,8 +172,8 @@ MonoBehaviour:
   spinTorque: 10
   destructionDelay: 1
   targetPool: {fileID: 11400000, guid: d3a113ee6ab4f4f4297c8f6fa6c9f262, type: 2}
-  gameManager: {fileID: 0}
   sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
+  isKnockedOut: 0
 --- !u!136 &9073591218000877779
 CapsuleCollider:
   m_ObjectHideFlags: 0

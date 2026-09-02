@@ -1344,7 +1344,7 @@ MonoBehaviour:
   cartController: {fileID: 5901886544005484465}
   enableDriftFuelReward: 1
   minimumSuccessDuration: 0.6
-  baseFuelGainPerSecond: 20
+  baseFuelGainPerSecond: 5
   maxFuelRewardPerDrift: 100
   minimumRewardTightness: 0
   minTightnessRewardMultiplier: 0.5

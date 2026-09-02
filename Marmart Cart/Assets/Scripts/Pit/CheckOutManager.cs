@@ -1,97 +1,142 @@
 ﻿using System.Collections;
 using UnityEngine;
 
+/// <summary>
+/// Controls one checkout station session.
+///
+/// LeadingCartRaycaster has been completely removed.
+/// CartPitZone owns the entered leading-cart references and this manager only
+/// needs the player's SnakeCartManager to process checkout carts.
+/// </summary>
+[DisallowMultipleComponent]
 public class CheckOutManager : MonoBehaviour
 {
+    #region Dependencies
+
     [Header("Dependencies")]
     [SerializeField] private SnakeCartManager enteredSnakeCartManager;
-    [SerializeField] private LeadingCartRaycaster enteredCartRaycaster;
     [SerializeField] private CartPitZone myPitZone;
+
+    #endregion
+
+    #region State
+
     [Header("State")]
-    [SerializeField] private bool isCheckingOut = false;
+    [SerializeField] private bool isCheckingOut;
     [SerializeField] private bool isStationAvailable = true;
+
+    #endregion
+
+    #region Checkout Timer
+
     [Header("Checkout Timer")]
-    [SerializeField] private float checkoutTimeLimit = 20f; // seconds allowed in lane
+    [Min(0f)]
+    [SerializeField] private float checkoutTimeLimit = 20f;
+
     private Coroutine checkoutTimerRoutine;
 
-    //[SerializeField] private GameObject pitInavailableIndictor;
+    #endregion
+
+    #region Unity Lifecycle
+
     private void Start()
     {
-        //if (pitInavailableIndictor == null)
-        //{
-        //    Debug.LogError("pitBlocks not assigned");
-        //}
         EnableStation();
     }
-    public void SetSnakeCartManager(SnakeCartManager script)
+
+    private void OnDisable()
     {
-        enteredSnakeCartManager = script;
+        StopCheckoutTimer();
     }
-    public void SetMyPitZone(CartPitZone script)
+
+    #endregion
+
+    #region Setup
+
+    public void SetSnakeCartManager(SnakeCartManager snakeCartManager)
     {
-        myPitZone = script;
+        enteredSnakeCartManager = snakeCartManager;
     }
-    public void SetCartRaycaster(LeadingCartRaycaster script)
+
+    public void SetMyPitZone(CartPitZone pitZone)
     {
-        enteredCartRaycaster = script;
+        myPitZone = pitZone;
     }
+
+    #endregion
+
+    #region Checkout
+
     public void TryCheckoutCart()
     {
-        if (!isStationAvailable || enteredSnakeCartManager.GetSnakeBodyLength() <= 1)
+        if (!isCheckingOut || !isStationAvailable || enteredSnakeCartManager == null)
         {
             QuitCheckout();
             return;
         }
 
-        int cartWithItemLeft = enteredSnakeCartManager.CheckOutNextCartWithItem();
-        if (cartWithItemLeft <= 0)
+        // No follower carts remain.
+        if (enteredSnakeCartManager.GetSnakeBodyLength() <= 1)
         {
             QuitCheckout();
+            return;
+        }
+
+        // Remove/check out the next cart that actually contains a grocery item.
+        int cartWithItemLeft = enteredSnakeCartManager.CheckOutNextCartWithItem();
+
+        if (cartWithItemLeft <= 0) QuitCheckout();
+    }
+
+    public void SetIsCheckingOut()
+    {
+        isCheckingOut = true;
+
+        StopCheckoutTimer();
+
+        if (checkoutTimeLimit > 0f)
+        {
+            checkoutTimerRoutine = StartCoroutine(CheckoutTimerRoutine());
         }
     }
+
     public void QuitCheckout()
     {
-        isCheckingOut = false;
+        if (!isCheckingOut && enteredSnakeCartManager == null) return;
 
-        if (checkoutTimerRoutine != null)
+        isCheckingOut = false;
+        StopCheckoutTimer();
+
+        if (myPitZone != null)
         {
-            StopCoroutine(checkoutTimerRoutine);
-            checkoutTimerRoutine = null;
+            myPitZone.ExitPitZone();
+        }
+        else
+        {
+            Debug.LogError("[CheckOutManager] CartPitZone reference is missing.", this);
         }
 
-        myPitZone.ExitPitZone(enteredCartRaycaster);
+        enteredSnakeCartManager = null;
     }
+
+    #endregion
+
+    #region Station State
+
     public void EnableStation()
     {
         isStationAvailable = true;
-        //pitInavailableIndictor.SetActive(false);
     }
-    //public void DisableStation()
-    //{
-    //    isStationAvailable = false;
-    //    if(isCheckingOut)
-    //    {
-    //        QuitCheckout();
-    //        Invoke(nameof(DisableStation), 1f);
-    //    }
-    //    else
-    //    {
-    //        pitInavailableIndictor.SetActive(true);
-    //    }
-    //}
+
     public bool IsStationAvailable()
     {
         return isStationAvailable;
     }
-    public void SetIsCheckingOut()
-    {
-        isCheckingOut = true;
-        // Start / restart checkout timer
-        if (checkoutTimerRoutine != null)
-            StopCoroutine(checkoutTimerRoutine);
 
-        checkoutTimerRoutine = StartCoroutine(CheckoutTimerRoutine());
-    }
+    #endregion
+
+    #region Timer
+
     private IEnumerator CheckoutTimerRoutine()
     {
         float timer = checkoutTimeLimit;
@@ -102,10 +147,18 @@ public class CheckOutManager : MonoBehaviour
             yield return null;
         }
 
-        // Time ran out while still checking out → kick player
-        if (isCheckingOut)
-        {
-            QuitCheckout();
-        }
+        checkoutTimerRoutine = null;
+
+        if (isCheckingOut) QuitCheckout();
     }
+
+    private void StopCheckoutTimer()
+    {
+        if (checkoutTimerRoutine == null) return;
+
+        StopCoroutine(checkoutTimerRoutine);
+        checkoutTimerRoutine = null;
+    }
+
+    #endregion
 }

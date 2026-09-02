@@ -1,69 +1,37 @@
 using UnityEngine;
-using TMPro;
 
-public enum SectionId { Red, Green, Blue, Purple }
-
+[DisallowMultipleComponent]
 public class MapSection : MonoBehaviour
 {
-    public SectionId sectionId;
+    [Header("Section")]
+    [SerializeField] private string sectionName = "Section";
 
-    [Header("Label UI")]
-    [SerializeField] private TextMeshPro labelTMP;
+    [Tooltip("Center point that player event arrows point toward. Defaults to this transform.")]
+    [SerializeField] private Transform eventCenter;
 
-    [Header("Ring Mesh")]
-    [SerializeField] private Renderer ringRenderer;
-    [Tooltip("Shader color property used for the ring tint (URP Lit = _BaseColor, Standard = _Color).")]
-    [SerializeField] private string ringColorProperty = "_BaseColor";
+    [Header("Sale Event")]
+    [SerializeField] private EventItemGenerator eventGenerator;
 
-    [Header("Colors")]
-    [SerializeField] private Color normalColor = Color.white;
-    [SerializeField] private Color warningColor = Color.yellow;
-    [SerializeField] private Color activeColor = new Color(1f, 0.8f, 0.2f);
+    [Tooltip("Transparent plane/box shown while this section's sale event is active.")]
+    [SerializeField] private GameObject groundHighlight;
 
-    [Header("Event Generator for this section")]
-    public EventItemGenerator eventGenerator;
+    [Header("Runtime - Read Only")]
+    [SerializeField] private bool isEventActive;
 
-    public void SetNormal()
+    public string SectionName => sectionName;
+    public Transform EventCenter => eventCenter != null ? eventCenter : transform;
+    public EventItemGenerator EventGenerator => eventGenerator;
+    public bool IsEventActive => isEventActive;
+
+    private void Awake()
     {
-        ApplyColor(normalColor);
+        SetEventActive(false);
     }
 
-    public void SetWarning()
+    public void SetEventActive(bool active)
     {
-        ApplyColor(warningColor);
-    }
+        isEventActive = active;
 
-    public void SetActive()
-    {
-        ApplyColor(activeColor);
-    }
-
-    // ----------------- INTERNAL -----------------
-
-    private void ApplyColor(Color c)
-    {
-        // Text
-        if (labelTMP != null)
-            labelTMP.color = c;
-
-        // Ring
-        if (ringRenderer != null)
-        {
-            // Use material (instance), not sharedMaterial
-            Material mat = ringRenderer.material;
-
-            if (!string.IsNullOrEmpty(ringColorProperty) && mat.HasProperty(ringColorProperty))
-            {
-                mat.SetColor(ringColorProperty, c);
-            }
-            else if (mat.HasProperty("_BaseColor"))
-            {
-                mat.SetColor("_BaseColor", c);
-            }
-            else if (mat.HasProperty("_Color"))
-            {
-                mat.SetColor("_Color", c);
-            }
-        }
+        if (groundHighlight != null) groundHighlight.SetActive(active);
     }
 }

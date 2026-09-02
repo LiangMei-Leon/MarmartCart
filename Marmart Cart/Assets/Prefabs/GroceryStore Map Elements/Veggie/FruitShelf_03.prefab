@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1902619083269586039}
   - component: {fileID: 1189342192442585721}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: FruitShelf_03
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -113,6 +113,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 7b658e0fa01e4d14b9472918693c2e64, type: 3}
       propertyPath: m_Name
       value: shelf_Fruit
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 7b658e0fa01e4d14b9472918693c2e64, type: 3}
+      propertyPath: m_Layer
+      value: 9
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

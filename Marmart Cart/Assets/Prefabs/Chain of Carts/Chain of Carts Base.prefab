@@ -235,8 +235,8 @@ MonoBehaviour:
   recenterDeadAngle: 1.5
   recenterSpring: 250
   recenterDamper: 25
-  showPhysicalArm: 1
-  showProbeSphere: 1
+  showPhysicalArm: 0
+  showProbeSphere: 0
   probeSphereSize: 0.75
   currentHingeAngle: 0
   currentDistanceToHitch: 0

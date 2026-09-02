@@ -1,215 +1,151 @@
 using System.Collections;
 using UnityEngine;
 
+public enum SaleLootType
+{
+    Normal,
+    Expensive
+}
+
+[DisallowMultipleComponent]
 public class EventItemGenerator : MonoBehaviour
 {
-    [Header("Spawn Box Boundary Settings")]
-    [SerializeField] private float boxWidth = 40f;
-    [SerializeField] private float boxLength = 30f;
-    [SerializeField] private float boxHeight = 30f;
-    [SerializeField] private float yOffset = 20f;         // spawn height before raycast
-    [SerializeField] private LayerMask groundLayer;
-
-    [Header("Event Prefabs")]
+    [Header("Sale Loot")]
+    [SerializeField] private SaleLootType lootType = SaleLootType.Normal;
     [SerializeField] private GameObject normalItemPrefab;
-    [SerializeField] private GameObject rareItemPrefab;
-    [SerializeField] private GameObject emptyCartPrefab;
-    [SerializeField] private GameObject powerupPrefab;
-    [Header("AI Shopper Variants")]
-    [SerializeField] private GameObject[] aiShopperPrefabs;
+    [SerializeField] private GameObject expensiveItemPrefab;
+
+    [Header("Items Per Drop")]
+    [Min(1)][SerializeField] private int minItemsPerDrop = 1;
+    [Min(1)][SerializeField] private int maxItemsPerDrop = 3;
+
+    [Header("Time Between Drops")]
+    [Min(0.05f)][SerializeField] private float minDropInterval = 0.6f;
+    [Min(0.05f)][SerializeField] private float maxDropInterval = 1.2f;
+
+    [Header("Spawn Area")]
+    [Min(0.1f)][SerializeField] private float boxWidth = 40f;
+    [Min(0.1f)][SerializeField] private float boxLength = 30f;
+    [Min(0.1f)][SerializeField] private float raycastHeight = 30f;
+    [Min(0f)][SerializeField] private float spawnHeightAboveGround = 20f;
+    [SerializeField] private LayerMask groundLayer;
+    [Min(1)][SerializeField] private int maxSpawnPositionAttempts = 30;
+
+    [Header("Runtime - Read Only")]
+    [SerializeField] private bool isRunning;
 
     private Coroutine spawnRoutine;
-    [Header("Poor and Temp fix on prefab scale issue")]
-    [SerializeField] private SnakeCartManager snakeCartManager1;
-    [SerializeField] private SnakeCartManager snakeCartManager2;
-    [SerializeField] private bool applyPrefabScaleFix = false;
 
-    // -------------------------------------------------------
-    // PUBLIC API  (called by EventManager)
-    // -------------------------------------------------------
-    public void StartNormalItemEvent(int total, float interval, int itemsPerSpawn)
-    {
-        if (spawnRoutine != null) StopCoroutine(spawnRoutine);
-        spawnRoutine = StartCoroutine(SpawnEventCoroutine(normalItemPrefab, total, interval, itemsPerSpawn));
-    }
-    public void StartRareItemEvent(int total, float interval, int itemsPerSpawn)
-    {
-        if (spawnRoutine != null) StopCoroutine(spawnRoutine);
-        spawnRoutine = StartCoroutine(SpawnEventCoroutine(rareItemPrefab, total, interval, itemsPerSpawn));
-    }
+    public SaleLootType LootType => lootType;
+    public bool IsRunning => isRunning;
 
-    public void StartEmptyCartEvent(int total, float interval, int itemsPerSpawn)
+    public void StartSaleEvent(float duration)
     {
-        if (spawnRoutine != null) StopCoroutine(spawnRoutine);
-        spawnRoutine = StartCoroutine(SpawnCartEventCoroutine(emptyCartPrefab, total, interval, itemsPerSpawn));
-    }
+        StopEvent();
 
-    public void StartPowerupEvent(int total, float interval, int itemsPerSpawn)
-    {
-        if (spawnRoutine != null) StopCoroutine(spawnRoutine);
-        spawnRoutine = StartCoroutine(SpawnEventCoroutine(powerupPrefab, total, interval, itemsPerSpawn));
-    }
+        if (duration <= 0f) return;
 
-    public void StartShopperRushEvent(int total, float interval, int itemsPerSpawn)
-    {
-        if (spawnRoutine != null) StopCoroutine(spawnRoutine);
-        spawnRoutine = StartCoroutine(SpawnShopperRushCoroutine(total, interval, itemsPerSpawn));
+        GameObject prefab = GetSelectedLootPrefab();
+
+        if (prefab == null)
+        {
+            Debug.LogWarning($"[EventItemGenerator] {name} has no prefab assigned for {lootType} loot.", this);
+            return;
+        }
+
+        spawnRoutine = StartCoroutine(SpawnSaleRoutine(prefab, duration));
     }
 
     public void StopEvent()
     {
         if (spawnRoutine != null)
+        {
             StopCoroutine(spawnRoutine);
+            spawnRoutine = null;
+        }
 
+        isRunning = false;
+    }
+
+    private IEnumerator SpawnSaleRoutine(GameObject prefab, float duration)
+    {
+        isRunning = true;
+        float endTime = Time.time + duration;
+
+        while (Time.time < endTime)
+        {
+            int dropAmount = Random.Range(minItemsPerDrop, maxItemsPerDrop + 1);
+            SpawnLoot(prefab, dropAmount);
+
+            float interval = Random.Range(minDropInterval, maxDropInterval);
+            yield return new WaitForSeconds(interval);
+        }
+
+        isRunning = false;
         spawnRoutine = null;
     }
 
-    // -------------------------------------------------------
-    // INTERNAL: Core spawning logic for ALL event types
-    // -------------------------------------------------------
-
-    private IEnumerator SpawnEventCoroutine(GameObject prefab, int total, float interval, int itemsPerSpawn)
-    {
-        if (prefab == null) yield break;
-        if (total <= 0 || interval <= 0 || itemsPerSpawn <= 0) yield break;
-
-        int spawned = 0;
-
-        while (spawned < total)
-        {
-            int batch = Mathf.Min(itemsPerSpawn, total - spawned);
-            SpawnSpecificPrefab(prefab, batch);
-            spawned += batch;
-
-            yield return new WaitForSeconds(interval);
-        }
-
-        spawnRoutine = null; // finished
-    }
-    private IEnumerator SpawnCartEventCoroutine(GameObject prefab, int total, float interval, int itemsPerSpawn)
-    {
-        if (prefab == null) yield break;
-        if (total <= 0 || interval <= 0 || itemsPerSpawn <= 0) yield break;
-
-        int spawned = 0;
-
-        while (spawned < total)
-        {
-            int batch = Mathf.Min(itemsPerSpawn, total - spawned);
-            SpawnCartPrefab(prefab, batch);
-            spawned += batch;
-
-            yield return new WaitForSeconds(interval);
-        }
-
-        spawnRoutine = null; // finished
-    }
-    private void SpawnSpecificPrefab(GameObject prefab, int count)
+    private void SpawnLoot(GameObject prefab, int count)
     {
         for (int i = 0; i < count; i++)
         {
-            Vector3 pos = GetValidSpawnPosition();
-            if (pos != Vector3.zero)
-            {
-                Instantiate(prefab, pos + new Vector3(0, yOffset, 0), prefab.transform.rotation);
-            }
-        }
-    }
-    private void SpawnCartPrefab(GameObject prefab, int count)
-    {
-        for (int i = 0; i < count; i++)
-        {
-            Vector3 pos = GetValidSpawnPosition();
-            if (pos != Vector3.zero)
-            {
-                GameObject spawned = Instantiate(prefab, pos + new Vector3(0, yOffset, 0), prefab.transform.rotation);
-                if (applyPrefabScaleFix && (snakeCartManager1.needScaleup || snakeCartManager2.needScaleup))
-                {
-                    spawned.transform.localScale = new Vector3(5f, 5f, 5f);
-                }
-            }
-        }
-    }
-    private IEnumerator SpawnShopperRushCoroutine(int total, float interval, int itemsPerSpawn)
-    {
-        if (aiShopperPrefabs == null || aiShopperPrefabs.Length == 0) yield break;
-        if (total <= 0 || interval <= 0 || itemsPerSpawn <= 0) yield break;
+            if (!TryGetValidSpawnPosition(out Vector3 groundPosition)) continue;
 
-        int spawned = 0;
-
-        while (spawned < total)
-        {
-            int batch = Mathf.Min(itemsPerSpawn, total - spawned);
-            SpawnRandomAIShoppers(batch);
-            spawned += batch;
-
-            yield return new WaitForSeconds(interval);
-        }
-
-        spawnRoutine = null;
-    }
-
-    private void SpawnRandomAIShoppers(int count)
-    {
-        for (int i = 0; i < count; i++)
-        {
-            if (aiShopperPrefabs == null || aiShopperPrefabs.Length == 0)
-                return;
-
-            GameObject prefab = aiShopperPrefabs[Random.Range(0, aiShopperPrefabs.Length)];
-            Vector3 pos = GetValidSpawnPosition();
-            if (pos != Vector3.zero)
-            {
-                // AI: spawn right on ground (tiny lift if you like)
-                GameObject ai = Instantiate(prefab, pos + Vector3.up * 0.5f, prefab.transform.rotation);
-                ai.SetActive(true);
-                // Reset the AI logic so they start clean for the event
-                var aiBehaviour = ai.GetComponent<AIShopperBehaviour>();
-                if (aiBehaviour != null)
-                {
-                    aiBehaviour.ResetState();
-                }
-            }
+            Vector3 spawnPosition = groundPosition + Vector3.up * spawnHeightAboveGround;
+            Instantiate(prefab, spawnPosition, prefab.transform.rotation);
         }
     }
 
-
-    // -------------------------------------------------------
-    // Ground-raycast placement within section box
-    // -------------------------------------------------------
-
-    private Vector3 GetValidSpawnPosition()
+    private GameObject GetSelectedLootPrefab()
     {
-        int maxRetries = 30;
-        int attempts = 0;
+        return lootType == SaleLootType.Expensive ? expensiveItemPrefab : normalItemPrefab;
+    }
 
-        while (attempts < maxRetries)
+    private bool TryGetValidSpawnPosition(out Vector3 groundPosition)
+    {
+        groundPosition = Vector3.zero;
+
+        float halfWidth = boxWidth * 0.5f;
+        float halfLength = boxLength * 0.5f;
+
+        for (int attempt = 0; attempt < maxSpawnPositionAttempts; attempt++)
         {
-            float halfWidth = boxWidth * 0.5f;
-            float halfLength = boxLength * 0.5f;
-
             float xOffset = Random.Range(-halfWidth, halfWidth);
             float zOffset = Random.Range(-halfLength, halfLength);
+            Vector3 rayOrigin = transform.position + new Vector3(xOffset, raycastHeight, zOffset);
 
-            Vector3 origin = transform.position + new Vector3(xOffset, yOffset, zOffset);
-
-            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, Mathf.Infinity))
+            if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, Mathf.Infinity, groundLayer, QueryTriggerInteraction.Ignore))
             {
-                if (((1 << hit.collider.gameObject.layer) & groundLayer) != 0)
-                {
-                    return hit.point;
-                }
+                groundPosition = hit.point;
+                return true;
             }
-
-            attempts++;
         }
 
-        return Vector3.zero; // failed
+        return false;
+    }
+
+    private void OnValidate()
+    {
+        minItemsPerDrop = Mathf.Max(1, minItemsPerDrop);
+        maxItemsPerDrop = Mathf.Max(minItemsPerDrop, maxItemsPerDrop);
+
+        minDropInterval = Mathf.Max(0.05f, minDropInterval);
+        maxDropInterval = Mathf.Max(minDropInterval, maxDropInterval);
+
+        boxWidth = Mathf.Max(0.1f, boxWidth);
+        boxLength = Mathf.Max(0.1f, boxLength);
+        raycastHeight = Mathf.Max(0.1f, raycastHeight);
+        spawnHeightAboveGround = Mathf.Max(0f, spawnHeightAboveGround);
+        maxSpawnPositionAttempts = Mathf.Max(1, maxSpawnPositionAttempts);
     }
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireCube(transform.position, new Vector3(boxWidth, boxHeight, boxLength));
+        Gizmos.color = lootType == SaleLootType.Expensive ? Color.yellow : Color.cyan;
+
+        Vector3 center = transform.position + Vector3.up * (raycastHeight * 0.5f);
+        Vector3 size = new Vector3(boxWidth, raycastHeight, boxLength);
+
+        Gizmos.DrawWireCube(center, size);
     }
 }
