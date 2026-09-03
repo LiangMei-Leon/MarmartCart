@@ -8,6 +8,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 380104089869021115, guid: d7c4ee1bf4e644d40bd801fee639c3dd, type: 3}
+      propertyPath: m_TagString
+      value: Player2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1439651876929823840, guid: d7c4ee1bf4e644d40bd801fee639c3dd, type: 3}
+      propertyPath: m_TagString
+      value: Player2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1597159542987854291, guid: d7c4ee1bf4e644d40bd801fee639c3dd, type: 3}
+      propertyPath: m_TagString
+      value: Player2
+      objectReference: {fileID: 0}
     - target: {fileID: 2261444398123183965, guid: d7c4ee1bf4e644d40bd801fee639c3dd, type: 3}
       propertyPath: m_Color.b
       value: 0
@@ -76,6 +88,14 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.x
       value: 429
       objectReference: {fileID: 0}
+    - target: {fileID: 5459420350839818535, guid: d7c4ee1bf4e644d40bd801fee639c3dd, type: 3}
+      propertyPath: m_TagString
+      value: Player2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5673122173310386000, guid: d7c4ee1bf4e644d40bd801fee639c3dd, type: 3}
+      propertyPath: m_TagString
+      value: Player2
+      objectReference: {fileID: 0}
     - target: {fileID: 5811002905432394017, guid: d7c4ee1bf4e644d40bd801fee639c3dd, type: 3}
       propertyPath: m_Color.b
       value: 0.6090919
@@ -93,6 +113,10 @@ PrefabInstance:
       value: Leading Cart P2
       objectReference: {fileID: 0}
     - target: {fileID: 8009443748923827324, guid: d7c4ee1bf4e644d40bd801fee639c3dd, type: 3}
+      propertyPath: m_TagString
+      value: Player2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8102452254402786791, guid: d7c4ee1bf4e644d40bd801fee639c3dd, type: 3}
       propertyPath: m_TagString
       value: Player2
       objectReference: {fileID: 0}

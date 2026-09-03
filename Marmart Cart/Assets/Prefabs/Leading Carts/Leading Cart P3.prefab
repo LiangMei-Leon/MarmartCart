@@ -8,6 +8,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 380104089869021115, guid: d7c4ee1bf4e644d40bd801fee639c3dd, type: 3}
+      propertyPath: m_TagString
+      value: Player3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1439651876929823840, guid: d7c4ee1bf4e644d40bd801fee639c3dd, type: 3}
+      propertyPath: m_TagString
+      value: Player3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1597159542987854291, guid: d7c4ee1bf4e644d40bd801fee639c3dd, type: 3}
+      propertyPath: m_TagString
+      value: Player3
+      objectReference: {fileID: 0}
     - target: {fileID: 2588067417167969815, guid: d7c4ee1bf4e644d40bd801fee639c3dd, type: 3}
       propertyPath: startupPlayerId
       value: 3
@@ -56,11 +68,23 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[1]'
       value: 
       objectReference: {fileID: 2100000, guid: 47cdcc9986833d0479eec4c976711aff, type: 2}
+    - target: {fileID: 5459420350839818535, guid: d7c4ee1bf4e644d40bd801fee639c3dd, type: 3}
+      propertyPath: m_TagString
+      value: Player3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5673122173310386000, guid: d7c4ee1bf4e644d40bd801fee639c3dd, type: 3}
+      propertyPath: m_TagString
+      value: Player3
+      objectReference: {fileID: 0}
     - target: {fileID: 8009443748923827324, guid: d7c4ee1bf4e644d40bd801fee639c3dd, type: 3}
       propertyPath: m_Name
       value: Leading Cart P3
       objectReference: {fileID: 0}
     - target: {fileID: 8009443748923827324, guid: d7c4ee1bf4e644d40bd801fee639c3dd, type: 3}
+      propertyPath: m_TagString
+      value: Player3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8102452254402786791, guid: d7c4ee1bf4e644d40bd801fee639c3dd, type: 3}
       propertyPath: m_TagString
       value: Player3
       objectReference: {fileID: 0}

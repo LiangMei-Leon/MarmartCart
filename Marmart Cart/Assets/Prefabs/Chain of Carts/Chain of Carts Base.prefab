@@ -117,7 +117,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveBackwardDistance: 10
-  moveBackwardDuration: 1.5
+  moveBackwardDuration: 1.25
   moveBackwardMotionCurve:
     serializedVersion: 2
     m_Curve:
@@ -142,7 +142,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  moveBackwardCooldown: 1.25
+  moveBackwardCooldown: 0.2
   tangentSampleDistance: 0.1
   followerRotationFollowSpeed: 12
   allowStraightExtensionWhenHistoryRunsOut: 1
@@ -151,7 +151,7 @@ MonoBehaviour:
   leaderTowRotationFollowSpeed: 10
   rotateLeaderFromReverseTow: 1
   singleCartReverseSpeed: 6
-  singleCartReverseDuration: 1.5
+  singleCartReverseDuration: 1.2
   singleCartReverseSpeedCurve:
     serializedVersion: 2
     m_Curve:
@@ -174,7 +174,7 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.75
+      time: 0.85
       value: 1
       inSlope: 0
       outSlope: 0
@@ -185,11 +185,11 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 0
-      inSlope: 0
-      outSlope: 0
+      inSlope: -1.5394057
+      outSlope: -1.5394057
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0
+      inWeight: 0.25030816
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2

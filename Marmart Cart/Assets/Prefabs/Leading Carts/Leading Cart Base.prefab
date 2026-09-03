@@ -3255,7 +3255,7 @@ MonoBehaviour:
   brakeFactor: 1
   maxBrakeForce: 50
   fullSpeedUntilCarts: 5
-  speedLossPerCart: 0.3
+  speedLossPerCart: 0.05
   excludeLeadingCartFromCount: 1
 --- !u!1 &3988090723409313001
 GameObject:
@@ -3562,7 +3562,7 @@ MonoBehaviour:
   brakeFactor: 1
   maxBrakeForce: 50
   fullSpeedUntilCarts: 5
-  speedLossPerCart: 0.3
+  speedLossPerCart: 0.05
   excludeLeadingCartFromCount: 1
 --- !u!1 &4329385579672087611
 GameObject:
@@ -5756,7 +5756,7 @@ MonoBehaviour:
   brakeFactor: 1
   maxBrakeForce: 50
   fullSpeedUntilCarts: 5
-  speedLossPerCart: 0.1
+  speedLossPerCart: 0.05
   excludeLeadingCartFromCount: 1
 --- !u!1 &6515940038003015164
 GameObject:
@@ -17345,8 +17345,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.23, y: 0.34, z: 0.030130208}
-  m_Center: {x: 0, y: 0, z: 0.30736837}
+  m_Size: {x: 0.24124059, y: 0.34, z: 0.030130228}
+  m_Center: {x: 0.0003122439, y: 0, z: 0.30736837}
 --- !u!114 &6939826346037747174
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17363,7 +17363,7 @@ MonoBehaviour:
   cartControlInput: {fileID: 5901886544005484465}
   driftController: {fileID: 5516393899602412129}
   cartBody: {fileID: 7702077170865368901}
-  maxStallSpeed: 1.5
+  maxStallSpeed: 10
   isStalled: 0
   currentPlanarSpeed: 0
 --- !u!114 &7692159683755731448
@@ -17502,7 +17502,7 @@ MonoBehaviour:
   brakeFactor: 1
   maxBrakeForce: 50
   fullSpeedUntilCarts: 5
-  speedLossPerCart: 0.3
+  speedLossPerCart: 0.05
   excludeLeadingCartFromCount: 1
 --- !u!1 &8861251655955522181
 GameObject:
