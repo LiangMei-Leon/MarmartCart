@@ -5,8 +5,9 @@ using UnityEngine;
 /// Shared spatial path for normal forward snake movement.
 ///
 /// The physical trailing probe writes distance-based path samples.
-/// Followers never consume samples; they query poses at logical progress values
-/// behind HeadProgress.
+/// Active followers never consume samples; they query poses at logical progress
+/// values behind HeadProgress. Pending followers reserve enough history before
+/// they are promoted so long chains cannot collapse onto the oldest sample.
 ///
 /// After MoveBackward, the recovered Probe -> C1 -> ... -> Tail geometry can be
 /// reseeded as a fresh normal path without snapping any follower.
@@ -87,6 +88,7 @@ public class SnakePathHistory : MonoBehaviour
     // allocate temporary anchor lists every time.
     private readonly List<SeedAnchor> recoveryFollowerAnchors = new List<SeedAnchor>(32);
     private readonly List<SeedAnchor> recoveryAnchors = new List<SeedAnchor>(34);
+    private readonly List<PathPoint> backwardExtensionBuffer = new List<PathPoint>(128);
 
     private Vector3 lastObservedPosition;
     private Vector3 livePathEndPosition;
@@ -103,6 +105,11 @@ public class SnakePathHistory : MonoBehaviour
     [SerializeField] private float recordedEndProgress;
     [SerializeField] private float distanceSinceLastSample;
     [SerializeField] private int currentSampleCount;
+
+    [Header("Dynamic Chain Coverage - Read Only")]
+    [SerializeField] private float requiredHistoryDistance;
+    [SerializeField] private float availableHistoryDistance;
+    [SerializeField] private int backwardExtensionCount;
 
     #endregion
 
@@ -128,6 +135,8 @@ public class SnakePathHistory : MonoBehaviour
     public float OldestProgress => samples.Count > 0 ? samples[0].distance : headProgress;
     public int SampleCount => samples.Count;
     public IReadOnlyList<PathPoint> Samples => samples;
+    public float RequiredHistoryDistance => requiredHistoryDistance;
+    public float AvailableHistoryDistance => availableHistoryDistance;
 
     #endregion
 
@@ -177,6 +186,8 @@ public class SnakePathHistory : MonoBehaviour
 
         ResetRuntimeTracking(sourcePosition);
         isInitialized = true;
+
+        EnsureRequiredHistoryCoverage();
     }
 
     #endregion
@@ -261,6 +272,7 @@ public class SnakePathHistory : MonoBehaviour
         ResetRuntimeTracking(sourcePosition);
         isInitialized = true;
 
+        EnsureRequiredHistoryCoverage();
         return true;
     }
 
@@ -339,6 +351,97 @@ public class SnakePathHistory : MonoBehaviour
         acceptedMovementThisTick = false;
         currentPlanarSpeed = 0f;
         currentSampleCount = samples.Count;
+        availableHistoryDistance = samples.Count > 0 ? Mathf.Max(0f, headProgress - samples[0].distance) : 0f;
+    }
+
+    #endregion
+
+    #region Dynamic Chain Coverage
+
+    /// <summary>
+    /// Called by SnakeCartManager with the logical path distance needed to
+    /// support the current chain and queued followers.
+    ///
+    /// maxHistoryDistance remains the normal authored history budget, but the
+    /// chain requirement always wins so a long chain can never be pruned below
+    /// its own required tail distance.
+    /// </summary>
+    public void SetRequiredHistoryDistance(float distance)
+    {
+        requiredHistoryDistance = Mathf.Max(0f, distance);
+
+        if (isInitialized) EnsureRequiredHistoryCoverage();
+    }
+
+    /// <summary>
+    /// If the chain becomes longer than the history currently available
+    /// (for example, many carts are collected before the leader has driven far
+    /// enough), extend the OLDEST end of the history backward along its oldest
+    /// tangent.
+    ///
+    /// Real recorded history is always preferred. This straight extension is
+    /// only filling path space that never existed, and is much safer than
+    /// clamping every extra follower onto the same oldest point.
+    /// </summary>
+    private void EnsureRequiredHistoryCoverage()
+    {
+        if (!isInitialized || samples.Count == 0) return;
+
+        availableHistoryDistance = Mathf.Max(0f, headProgress - samples[0].distance);
+
+        if (availableHistoryDistance + 0.0001f >= requiredHistoryDistance) return;
+
+        float missingDistance = requiredHistoryDistance - availableHistoryDistance;
+        int extensionSteps = Mathf.Max(1, Mathf.CeilToInt(missingDistance / sampleSpacing));
+
+        PathPoint oldest = samples[0];
+        Vector3 oldestForward = GetOldestForwardTangent();
+
+        backwardExtensionBuffer.Clear();
+
+        // Build oldest -> newest so InsertRange preserves ascending progress.
+        for (int i = extensionSteps; i >= 1; i--)
+        {
+            float extensionDistance = i * sampleSpacing;
+
+            backwardExtensionBuffer.Add(
+                new PathPoint(
+                    oldest.position - oldestForward * extensionDistance,
+                    oldest.distance - extensionDistance
+                )
+            );
+        }
+
+        samples.InsertRange(0, backwardExtensionBuffer);
+
+        backwardExtensionCount += extensionSteps;
+        availableHistoryDistance = Mathf.Max(0f, headProgress - samples[0].distance);
+        currentSampleCount = samples.Count;
+    }
+
+    private Vector3 GetOldestForwardTangent()
+    {
+        if (samples.Count >= 2)
+        {
+            Vector3 tangent = samples[1].position - samples[0].position;
+
+            if (ignoreVerticalMotion) tangent = Vector3.ProjectOnPlane(tangent, Vector3.up);
+            if (tangent.sqrMagnitude > 0.0001f) return tangent.normalized;
+        }
+
+        if (pathSource != null)
+        {
+            Vector3 forward = Vector3.ProjectOnPlane(pathSource.forward, Vector3.up);
+            if (forward.sqrMagnitude > 0.0001f) return forward.normalized;
+        }
+
+        if (leaderBody != null)
+        {
+            Vector3 forward = Vector3.ProjectOnPlane(leaderBody.transform.forward, Vector3.up);
+            if (forward.sqrMagnitude > 0.0001f) return forward.normalized;
+        }
+
+        return Vector3.forward;
     }
 
     #endregion
@@ -393,6 +496,7 @@ public class SnakePathHistory : MonoBehaviour
         currentSampleCount = samples.Count;
 
         PruneHistory();
+        availableHistoryDistance = Mathf.Max(0f, headProgress - samples[0].distance);
     }
 
     private void AppendSegment(
@@ -445,12 +549,14 @@ public class SnakePathHistory : MonoBehaviour
 
         if (!TryGetPositionAtProgress(targetProgress, out position)) return false;
 
-        float oldest = samples[0].distance;
         float newest = recordedEndProgress;
 
-        targetProgress = Mathf.Clamp(targetProgress, oldest, newest);
+        // Allow progress older than the oldest real sample. Position queries
+        // extrapolate that missing section backward instead of clamping every
+        // long-chain follower onto one point.
+        targetProgress = Mathf.Min(targetProgress, newest);
 
-        float beforeProgress = Mathf.Max(oldest, targetProgress - tangentProbeDistance);
+        float beforeProgress = targetProgress - tangentProbeDistance;
         float afterProgress = Mathf.Min(newest, targetProgress + tangentProbeDistance);
 
         if (!TryGetPositionAtProgress(beforeProgress, out Vector3 beforePosition)) return false;
@@ -474,11 +580,18 @@ public class SnakePathHistory : MonoBehaviour
 
         if (!isInitialized || samples.Count == 0) return false;
 
-        targetProgress = Mathf.Clamp(
-            targetProgress,
-            samples[0].distance,
-            recordedEndProgress
-        );
+        PathPoint oldestStored = samples[0];
+
+        if (targetProgress < oldestStored.distance)
+        {
+            float distanceBeforeOldest = oldestStored.distance - targetProgress;
+            Vector3 oldestForward = GetOldestForwardTangent();
+
+            position = oldestStored.position - oldestForward * distanceBeforeOldest;
+            return true;
+        }
+
+        targetProgress = Mathf.Min(targetProgress, recordedEndProgress);
 
         PathPoint newestStored = samples[samples.Count - 1];
 
@@ -586,7 +699,8 @@ public class SnakePathHistory : MonoBehaviour
     {
         if (samples.Count <= 2) return;
 
-        float keepFrom = headProgress - maxHistoryDistance;
+        float effectiveHistoryDistance = Mathf.Max(maxHistoryDistance, requiredHistoryDistance);
+        float keepFrom = headProgress - effectiveHistoryDistance;
         int removeCount = 0;
 
         while (removeCount < samples.Count - 2 &&

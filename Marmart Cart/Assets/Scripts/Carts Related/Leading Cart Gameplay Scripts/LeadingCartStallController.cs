@@ -40,6 +40,10 @@ public class LeadingCartStallController : MonoBehaviour
     [Min(0f)]
     [SerializeField] private float lowDisplacementThreshold = 0.12f;
 
+    [Tooltip("While already stalled, moving at least this far during one sample window means the cart clearly freed itself without MoveBackward.")]
+    [Min(0f)]
+    [SerializeField] private float naturalStallExitDisplacement = 0.40f;
+
     #endregion
 
     #region Obstacle Query
@@ -187,9 +191,19 @@ public class LeadingCartStallController : MonoBehaviour
 
         if (isStalled)
         {
-            // Stall is intentionally latched. Once granted, the recovery option
-            // remains available until MoveBackward actually starts or another
-            // known system intentionally suppresses stall detection.
+            // Stall is latched against small physics jitter, but it must also be
+            // able to self-heal if the cart clearly slides/rotates free without
+            // using MoveBackward.
+            //
+            // Use a separate, higher exit threshold than the entry threshold so
+            // tiny collision movement cannot rapidly toggle Stall on/off.
+            if (sampleCompleted && lastSampleDisplacement >= naturalStallExitDisplacement)
+            {
+                ClearStall(true);
+                ResetObservation(0f);
+                return;
+            }
+
             MaintainMoveBackwardPermission();
             return;
         }
@@ -505,6 +519,7 @@ public class LeadingCartStallController : MonoBehaviour
     {
         displacementSampleWindow = Mathf.Max(0.05f, displacementSampleWindow);
         lowDisplacementThreshold = Mathf.Max(0f, lowDisplacementThreshold);
+        naturalStallExitDisplacement = Mathf.Max(lowDisplacementThreshold, naturalStallExitDisplacement);
 
         obstacleCheckSize.x = Mathf.Max(0.01f, Mathf.Abs(obstacleCheckSize.x));
         obstacleCheckSize.y = Mathf.Max(0.01f, Mathf.Abs(obstacleCheckSize.y));

@@ -38045,7 +38045,7 @@ PrefabInstance:
       objectReference: {fileID: 818985103}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4106
+      value: 4115
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -42021,7 +42021,7 @@ PrefabInstance:
       objectReference: {fileID: 1468305010}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4106
+      value: 4115
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -46016,7 +46016,7 @@ PrefabInstance:
       objectReference: {fileID: 355296247}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4106
+      value: 4115
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -56385,6 +56385,148 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7fa80e7116296f4eb4f49ec1544ee22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  renderSettingsBounces: 5
+  renderSettingsGISamples: 16
+  renderSettingsGIBackFaceWeight: 0
+  renderSettingsTileSize: 512
+  renderSettingsPriority: 2
+  renderSettingsTexelsPerUnit: 20
+  renderSettingsForceRefresh: 1
+  renderSettingsForceRebuildGeometry: 1
+  renderSettingsPerformRendering: 1
+  renderSettingsUserRenderMode: 0
+  renderSettingsDistanceShadowmask: 0
+  renderSettingsSettingsMode: 0
+  renderSettingsFixSeams: 1
+  renderSettingsDenoise: 1
+  renderSettingsDenoise2x: 0
+  renderSettingsEncode: 1
+  renderSettingsEncodeMode: 0
+  renderSettingsOverwriteWarning: 0
+  renderSettingsAutoAtlas: 1
+  renderSettingsUnwrapUVs: 1
+  renderSettingsForceDisableUnwrapUVs: 0
+  renderSettingsMaxAutoResolution: 4096
+  renderSettingsMinAutoResolution: 16
+  renderSettingsUnloadScenes: 1
+  renderSettingsAdjustSamples: 1
+  renderSettingsCheckOverlaps: 0
+  renderSettingsSkipOutOfBoundsUVs: 1
+  renderSettingsHackEmissiveBoost: 1
+  renderSettingsHackIndirectBoost: 1
+  renderSettingsTempPath: 
+  renderSettingsOutPath: 
+  renderSettingsUseScenePath: 0
+  renderSettingsHackAOIntensity: 0
+  renderSettingsHackAOSamples: 16
+  renderSettingsHackAOSofter: 0
+  renderSettingsHackAORadius: 1
+  renderSettingsShowAOSettings: 0
+  renderSettingsShowTasks: 1
+  renderSettingsShowTasks2: 0
+  renderSettingsShowPaths: 1
+  renderSettingsShowNet: 1
+  renderSettingsShowSettingsAsset: 0
+  renderSettingsShowAPV: 0
+  renderSettingsUseAPVSkyOcclusion: 0
+  renderSettingsOcclusionProbes: 0
+  renderSettingsTexelsPerMap: 0
+  renderSettingsTexelsColor: 1
+  renderSettingsTexelsMask: 1
+  renderSettingsTexelsDir: 1
+  renderSettingsShowDirWarning: 1
+  renderSettingsRenderDirMode: 0
+  renderSettingsShowCheckerSettings: 0
+  renderSettingsSamplesWarning: 1
+  renderSettingsSuppressPopups: 0
+  renderSettingsSectorWarning: 0
+  renderSettingsPrefabWarning: 1
+  renderSettingsSplitByScene: 0
+  renderSettingsSplitByTag: 0
+  renderSettingsUVPaddingMax: 0
+  renderSettingsUVPaddingPreserveIfExisted: 0
+  renderSettingsPostPacking: 1
+  renderSettingsHoleFilling: 0
+  renderSettingsBruteForce: 1
+  renderSettingsAlphaDithering: 0
+  renderSettingsBeepOnFinish: 0
+  renderSettingsExportTerrainAsHeightmap: 1
+  renderSettingsRTXMode: 0
+  renderSettingsLightProbeMode: 1
+  renderSettingsClientMode: 0
+  renderSettingsServerAddress: 127.0.0.1
+  renderSettingsUnwrapper: 0
+  renderSettingsDenoiserType: 100
+  renderSettingsExportTerrainTrees: 0
+  renderSettingsShowPerf: 1
+  renderSettingsSampleDiv: 1
+  renderSettingsAtlasPacker: 1
+  renderSettingsBatchPoints: 1
+  renderSettingsCompressVolumes: 0
+  renderSettingsBatchAreaLightSampleLimit: 0
+  renderSettingsSector: {fileID: 0}
+  renderSettingsAsset: {fileID: 0}
+  renderSettingsRTPVExport: 1
+  renderSettingsRTPVSceneView: 0
+  renderSettingsRTPVHDR: 0
+  renderSettingsRTPVWidth: 640
+  renderSettingsRTPVHeight: 360
+  renderSettingsRTPVExposure: 1
+  renderSettingsRemoveDuplicateLightmaps: 0
+  lastBakeTime: 0
+  enlightenWarningShown: 0
+  enlightenWarningShown2: 0
+  uniqueLights: []
+  implicitGroups: []
+  implicitGroupedObjects: []
+  bounds: []
+  hasEmissive: 
+  uvBuffOffsets: 
+  uvBuffLengths: 
+  uvSrcBuff: []
+  uvDestBuff: []
+  lmrIndicesOffsets: 
+  lmrIndicesLengths: 
+  lmrIndicesBuff: 
+  lmGroupLODResFlags: 
+  lmGroupMinLOD: 
+  lmGroupLODMatrix: 
+  serverGetFileList: []
+  lightmapHasColor: 
+  lightmapHasMask: 
+  lightmapHasDir: 
+  lightmapHasRNM: 
+  lights: []
+  modifiedAssetPathList: []
+  modifiedAssets: []
+  bakedRenderers: []
+  nonBakedRenderers: []
+  bakedLights: []
+  bakedRenderersTerrain: []
+  maps: []
+  masks: []
+  dirMaps: []
+  rnmMaps0: []
+  rnmMaps1: []
+  rnmMaps2: []
+  mapsMode: 
+  bakedIDs: 
+  bakedScaleOffset: []
+  bakedVertexOffset: 
+  bakedVertexColorMesh: []
+  bakedLightChannels: 
+  bakedIDsTerrain: 
+  bakedScaleOffsetTerrain: []
+  assetList: []
+  uvOverlapAssetList: 
+  idremap: 
+  usesRealtimeGI: 0
+  emptyDirectionTex: {fileID: 0}
+  anyVolumes: 0
+  compressedVolumes: 0
+  sectors: []
+  prevBakedProbes: []
+  prevBakedProbePos: []
 --- !u!4 &240779557
 Transform:
   m_ObjectHideFlags: 1
@@ -61578,7 +61720,7 @@ PrefabInstance:
       objectReference: {fileID: 2126039392}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4106
+      value: 4115
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -75441,7 +75583,7 @@ PrefabInstance:
       objectReference: {fileID: 1655001293}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4106
+      value: 4115
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -102749,7 +102891,7 @@ PrefabInstance:
       objectReference: {fileID: 1741062704}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4106
+      value: 4115
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -131022,7 +131164,7 @@ PrefabInstance:
       objectReference: {fileID: 186369562}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4106
+      value: 4115
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -147643,7 +147785,7 @@ PrefabInstance:
       objectReference: {fileID: 860941776}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4106
+      value: 4115
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -193387,6 +193529,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c74ce2158ae608549902afb4112fd042, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  color: {r: 1, g: 1, b: 1, a: 1}
+  intensity: 1
+  shadowSpread: 0.01
+  samples: 16
+  bitmask: 1
+  bakeToIndirect: 0
+  shadowmask: 0
+  shadowmaskDenoise: 0
+  indirectIntensity: 1
+  cloudShadow: {fileID: 0}
+  cloudShadowTilingX: 0.01
+  cloudShadowTilingY: 0.01
+  cloudShadowOffsetX: 0
+  cloudShadowOffsetY: 0
+  supersample: 0
+  UID: -1249140146
 --- !u!4 &847052578
 Transform:
   m_ObjectHideFlags: 0
@@ -200467,7 +200625,7 @@ PrefabInstance:
       objectReference: {fileID: 525975445}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4106
+      value: 4115
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -236700,7 +236858,7 @@ PrefabInstance:
       objectReference: {fileID: 222044587}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4106
+      value: 4115
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -245314,7 +245472,7 @@ PrefabInstance:
       objectReference: {fileID: 815012674}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4106
+      value: 4115
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -247877,7 +248035,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1072191644
 Transform:
   m_ObjectHideFlags: 0
@@ -301809,7 +301967,7 @@ PrefabInstance:
       objectReference: {fileID: 1212537215}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4106
+      value: 4115
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -327705,7 +327863,7 @@ PrefabInstance:
       objectReference: {fileID: 919854402}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4106
+      value: 4115
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -375242,7 +375400,7 @@ PrefabInstance:
       objectReference: {fileID: 485078453}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4106
+      value: 4115
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -554614,7 +554772,7 @@ PrefabInstance:
       objectReference: {fileID: 1083701875}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4106
+      value: 4115
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -563828,7 +563986,7 @@ PrefabInstance:
       objectReference: {fileID: 465641269}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4106
+      value: 4115
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -564410,7 +564568,7 @@ PrefabInstance:
       objectReference: {fileID: 490470779}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4106
+      value: 4115
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime
@@ -576734,6 +576892,10 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 1294491708}
+    - target: {fileID: 2334039480269808556, guid: 937ae1e654ce7374a9160d288a2cec31, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -388.8
+      objectReference: {fileID: 0}
     - target: {fileID: 2493814849399945069, guid: 937ae1e654ce7374a9160d288a2cec31, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -577018,6 +577180,14 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 193769720}
+    - target: {fileID: 6749414844249517085, guid: 937ae1e654ce7374a9160d288a2cec31, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.01
+      objectReference: {fileID: 0}
+    - target: {fileID: 6749414844249517085, guid: 937ae1e654ce7374a9160d288a2cec31, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.11
+      objectReference: {fileID: 0}
     - target: {fileID: 6815306964275556710, guid: 937ae1e654ce7374a9160d288a2cec31, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -577026,6 +577196,10 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 1410658966}
+    - target: {fileID: 6871721530266776820, guid: 937ae1e654ce7374a9160d288a2cec31, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -232.5
+      objectReference: {fileID: 0}
     - target: {fileID: 6931344178850168853, guid: 937ae1e654ce7374a9160d288a2cec31, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -577697,7 +577871,7 @@ PrefabInstance:
       objectReference: {fileID: 1197134800}
     - target: {fileID: 6287979600128673227, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: m_VersionIndex
-      value: 4106
+      value: 4115
       objectReference: {fileID: 0}
     - target: {fileID: 6471618177495573124, guid: 5ab2dd6a40a9de444865b29eb43285de, type: 3}
       propertyPath: disappearTime

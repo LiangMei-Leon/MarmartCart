@@ -157,6 +157,14 @@ public class SnakeMoveBackwardController : MonoBehaviour
 
     public bool IsMovingBackward => isChainReversing || isSingleCartReversing;
 
+    /// <summary>
+    /// While MoveBackward owns locomotion, SnakeCartManager must not insert newly
+    /// collected followers into the ACTIVE snakeBody topology. New carts may still
+    /// spawn immediately as compact pending followers behind the tail; they simply
+    /// remain outside the temporary reverse-path follower arrays until recovery ends.
+    /// </summary>
+    public bool IsChainTopologyLocked => IsMovingBackward;
+
     public System.Action OnMoveBackwardStarted;
     public System.Action OnMoveBackwardFinished;
 
@@ -570,7 +578,12 @@ public class SnakeMoveBackwardController : MonoBehaviour
 
         if (snakeBody == null || snakeBody.Count != expectedSnakeCount)
         {
-            Debug.LogWarning("[MoveBackward] Snake count changed during reverse tow. Ending reverse immediately.", this);
+            Debug.LogWarning(
+                "[MoveBackward] Active snake topology changed unexpectedly during reverse. " +
+                "Normal collection should only create pending followers and must not change snakeBody. Ending reverse safely.",
+                this
+            );
+
             FinishChainMoveBackward();
             return;
         }

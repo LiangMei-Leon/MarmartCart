@@ -22,6 +22,10 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
     [Min(0.1f)]
     [SerializeField] private float followerCartSpacing = 1.5f;
 
+    [Tooltip("Extra path history kept behind the current tail requirement. Prevents long chains from reaching the oldest stored path point.")]
+    [Min(0f)]
+    [SerializeField] private float pathHistorySafetyBuffer = 3f;
+
     [Header("Follower Rotation")]
     [Range(0f, 1f)]
     [SerializeField] private float firstFollowerHingeInfluence = 0.7f;
@@ -72,6 +76,15 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
     [Min(0f)]
     [SerializeField] private float collectVfxDelay = 0.12f;
 
+    [Header("Pending Follower Join")]
+    [Tooltip("Temporary compact spacing used when a newly collected cart first appears behind the current tail.")]
+    [Min(0.01f)]
+    [SerializeField] private float pendingCompactSpacing = 0.3f;
+
+    [Tooltip("Small tolerance added when checking whether enough path distance has opened for the next pending cart to become a normal follower.")]
+    [Min(0f)]
+    [SerializeField] private float pendingPromotionDistanceTolerance = 0.05f;
+
     [SerializeField] private List<GameObject> bodyParts = new List<GameObject>();
     [SerializeField] private List<GameObject> snakeBody = new List<GameObject>();
 
@@ -106,14 +119,39 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 
     #region Runtime
 
+    private class PendingFollower
+    {
+        public GameObject cart;
+        public ChainedCartManager manager;
+        public Rigidbody body;
+        public Vector3 heldPosition;
+        public Quaternion heldRotation;
+        public float heldPathProgress;
+        public bool hasValidHeldPathProgress;
+    }
+
     private readonly Dictionary<GameObject, ChainedCartManager> cartManagerCache = new Dictionary<GameObject, ChainedCartManager>();
     private readonly List<Vector3> recoveryFollowerPositions = new List<Vector3>(16);
+    private readonly List<PendingFollower> pendingFollowers = new List<PendingFollower>(8);
 
     private Rigidbody leadingCartBody;
     private Transform leadingRearHitch;
 
     private float followerSpawnTimer;
     private float recoveryHingeBlend = 1f;
+
+    [Header("Path Coverage Runtime - Read Only")]
+    [SerializeField] private float requiredPathHistoryDistance;
+
+    [Header("Pending Followers Runtime - Read Only")]
+    [SerializeField] private int pendingFollowerCount;
+    [SerializeField] private float pendingPromotionStartHeadProgress;
+    [SerializeField] private float pendingRequiredForwardTravel;
+    [SerializeField] private float pendingForwardTravelSinceBaseline;
+    [SerializeField] private bool pendingFollowersDockedToTail;
+    [SerializeField] private bool pendingPromotionPausedByStall;
+
+    private float pendingStallPauseHeadProgress;
 
     private bool followerScaleDirty = true;
     private bool lastNeedScaleup;
@@ -164,9 +202,17 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 
     private void FixedUpdate()
     {
+        UpdateRequiredPathHistory();
         ManageSnakeBody();
+        ManagePendingFollowerOwnership();
 
         bool moveBackwardTicked = moveBackwardController != null && moveBackwardController.TickMoveBackward();
+        bool isMovingBackward = moveBackwardController != null && moveBackwardController.IsMovingBackward;
+
+        if (isMovingBackward)
+        {
+            DockPendingFollowersToCurrentTail();
+        }
 
         UpdateFollowerScaleIfNeeded();
 
@@ -177,13 +223,57 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 
         if (pathHistory != null && pathHistory.IsInitialized) pathHistory.TickHistory();
 
+        if (!isMovingBackward)
+        {
+            UpdatePendingFollowerPromotion();
+        }
+
         MoveAllFollowersUsingDistancePath();
     }
 
     private void OnDestroy()
     {
         if (moveBackwardController != null) moveBackwardController.OnMoveBackwardFinished -= HandleMoveBackwardFinished;
-        if (leadingStallController != null) leadingStallController.OnStallStarted -= HandleLeaderStalled;
+
+        if (leadingStallController != null)
+        {
+            leadingStallController.OnStallStarted -= HandleLeaderStalled;
+            leadingStallController.OnStallEnded -= HandleLeaderStallEnded;
+        }
+    }
+
+    #endregion
+
+    #region Dynamic Path Coverage
+
+    /// <summary>
+    /// Keeps enough path history for the current chain plus any followers that
+    /// have already been collected and are waiting in bodyParts.
+    ///
+    /// This removes the old practical chain-length limit where followers beyond
+    /// the oldest stored path sample all clamped onto the same position.
+    /// </summary>
+    private void UpdateRequiredPathHistory()
+    {
+        if (pathHistory == null || !pathHistory.IsInitialized) return;
+
+        int totalCartCountToSupport = snakeBody.Count + pendingFollowers.Count + bodyParts.Count;
+
+        if (totalCartCountToSupport <= 1)
+        {
+            requiredPathHistoryDistance = pathHistorySafetyBuffer;
+            pathHistory.SetRequiredHistoryDistance(requiredPathHistoryDistance);
+            return;
+        }
+
+        int followerCount = totalCartCountToSupport - 1;
+
+        float tailDistanceBehindProbe =
+            firstFollowerSpacing +
+            Mathf.Max(0, followerCount - 1) * followerCartSpacing;
+
+        requiredPathHistoryDistance = tailDistanceBehindProbe + pathHistorySafetyBuffer;
+        pathHistory.SetRequiredHistoryDistance(requiredPathHistoryDistance);
     }
 
     #endregion
@@ -298,6 +388,9 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
         {
             leadingStallController.OnStallStarted -= HandleLeaderStalled;
             leadingStallController.OnStallStarted += HandleLeaderStalled;
+
+            leadingStallController.OnStallEnded -= HandleLeaderStallEnded;
+            leadingStallController.OnStallEnded += HandleLeaderStallEnded;
         }
 
         if (leadingRearHitch == null)
@@ -344,36 +437,41 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
         followerSpawnTimer += Time.fixedDeltaTime;
         if (followerSpawnTimer < followerSpawnDelay) return;
 
+        UpdateRequiredPathHistory();
+
+        bool isMovingBackward = moveBackwardController != null && moveBackwardController.IsMovingBackward;
+        bool canUseDirectFirstFollower = snakeBody.Count == 1 && pendingFollowers.Count == 0 && !isMovingBackward;
+
+        if (canUseDirectFirstFollower)
+        {
+            CreateActiveFirstFollowerCart();
+            return;
+        }
+
+        CreatePendingFollowerCart();
+    }
+
+    /// <summary>
+    /// The first follower remains the one special case that joins the normal
+    /// distance path immediately. Every later follower enters through the
+    /// compact PendingFollower stage first.
+    ///
+    /// If the first follower is collected during MoveBackward, it also uses the
+    /// pending stage temporarily so the active reverse topology cannot change.
+    /// </summary>
+    private void CreateActiveFirstFollowerCart()
+    {
         int newSnakeIndex = snakeBody.Count;
 
         if (!TryGetDistancePathTarget(newSnakeIndex, out Vector3 spawnPosition, out Quaternion spawnRotation)) return;
 
         if (leadingCartBody != null) spawnPosition.y = leadingCartBody.position.y;
 
-        GameObject newCart = Instantiate(bodyParts[0], spawnPosition, spawnRotation, transform);
-        newCart.tag = GetPlayerTag();
-
-        ChainedCartManager newCartManager = newCart.GetComponent<ChainedCartManager>();
-
-        if (newCartManager != null)
-        {
-            newCartManager.CollectByPlayer();
-            CacheCartManager(newCart, newCartManager);
-        }
-        else
-        {
-            Debug.LogError("[SnakeCartManager] Spawned follower is missing ChainedCartManager.", newCart);
-        }
+        if (!TrySpawnOwnedFollower(bodyParts[0], spawnPosition, spawnRotation, out GameObject newCart, out ChainedCartManager newCartManager)) return;
 
         snakeBody.Add(newCart);
 
-        if (newCartManager != null && !newCartManager.HasGroceryItem()) cartsWithoutItem.Add(newCart);
-
-        bodyParts.RemoveAt(0);
-        followerSpawnTimer = 0f;
-        followerScaleDirty = true;
-
-        if (newCartManager != null) StartCoroutine(PlayCollectVfxDelayed(newCartManager));
+        FinishFollowerSpawn(newCart, newCartManager);
 
         if (!vulnerabilitySessionActive &&
             leadingStallController != null &&
@@ -381,6 +479,194 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
         {
             BeginVulnerabilitySession();
         }
+    }
+
+    /// <summary>
+    /// Later collected carts become visible immediately in a compact stack
+    /// behind the current tail, but are NOT inserted into snakeBody yet.
+    ///
+    /// Forward:
+    /// - the pending cart holds its world pose,
+    /// - the active path train moves away,
+    /// - once enough logical path distance opens, the oldest pending cart is
+    ///   promoted into snakeBody without a spawn/snap surprise.
+    ///
+    /// MoveBackward:
+    /// - pending carts are soft-docked behind the active tail every physics tick,
+    /// - snakeBody topology remains unchanged,
+    /// - MoveBackward therefore cannot be cancelled by ordinary collection.
+    /// </summary>
+    private void CreatePendingFollowerCart()
+    {
+        bool isMovingBackward = moveBackwardController != null && moveBackwardController.IsMovingBackward;
+
+        Vector3 spawnPosition;
+        Quaternion spawnRotation;
+        float heldPathProgress = 0f;
+        bool hasValidHeldPathProgress = false;
+
+        if (isMovingBackward)
+        {
+            GetNextDockedPendingPose(out spawnPosition, out spawnRotation);
+        }
+        else
+        {
+            TryGetNextPendingHeldPose(out spawnPosition, out spawnRotation, out heldPathProgress, out hasValidHeldPathProgress);
+        }
+
+        if (leadingCartBody != null) spawnPosition.y = leadingCartBody.position.y;
+
+        if (!TrySpawnOwnedFollower(bodyParts[0], spawnPosition, spawnRotation, out GameObject newCart, out ChainedCartManager newCartManager)) return;
+
+        PendingFollower pending = new PendingFollower
+        {
+            cart = newCart,
+            manager = newCartManager,
+            body = newCart.GetComponent<Rigidbody>(),
+            heldPosition = spawnPosition,
+            heldRotation = spawnRotation,
+            heldPathProgress = heldPathProgress,
+            hasValidHeldPathProgress = hasValidHeldPathProgress
+        };
+
+        bool wasEmpty = pendingFollowers.Count == 0;
+        pendingFollowers.Add(pending);
+        pendingFollowerCount = pendingFollowers.Count;
+
+        FinishFollowerSpawn(newCart, newCartManager);
+
+        if (wasEmpty) ResetPendingPromotionBaseline();
+
+        if (isMovingBackward)
+        {
+            DockPendingFollowersToCurrentTail();
+        }
+    }
+
+    private bool TrySpawnOwnedFollower(
+        GameObject sourcePrefab,
+        Vector3 spawnPosition,
+        Quaternion spawnRotation,
+        out GameObject newCart,
+        out ChainedCartManager newCartManager)
+    {
+        newCart = null;
+        newCartManager = null;
+
+        if (sourcePrefab == null) return false;
+
+        newCart = Instantiate(sourcePrefab, spawnPosition, spawnRotation, transform);
+        newCart.tag = GetPlayerTag();
+
+        newCartManager = newCart.GetComponent<ChainedCartManager>();
+
+        if (newCartManager == null)
+        {
+            Debug.LogError("[SnakeCartManager] Spawned follower is missing ChainedCartManager.", newCart);
+            Destroy(newCart);
+            return false;
+        }
+
+        newCartManager.CollectByPlayer();
+        CacheCartManager(newCart, newCartManager);
+
+        return true;
+    }
+
+    private void FinishFollowerSpawn(GameObject newCart, ChainedCartManager newCartManager)
+    {
+        if (newCartManager != null && !newCartManager.HasGroceryItem()) cartsWithoutItem.Add(newCart);
+
+        bodyParts.RemoveAt(0);
+        followerSpawnTimer = 0f;
+        followerScaleDirty = true;
+
+        if (newCartManager != null) StartCoroutine(PlayCollectVfxDelayed(newCartManager));
+    }
+
+    private bool TryGetNextPendingHeldPose(
+        out Vector3 position,
+        out Quaternion rotation,
+        out float heldPathProgress,
+        out bool hasValidHeldPathProgress)
+    {
+        position = Vector3.zero;
+        rotation = Quaternion.identity;
+        heldPathProgress = 0f;
+        hasValidHeldPathProgress = false;
+
+        if (pathHistory != null && pathHistory.IsInitialized)
+        {
+            float anchorProgress;
+
+            if (pendingFollowers.Count > 0 &&
+                pendingFollowers[pendingFollowers.Count - 1] != null &&
+                pendingFollowers[pendingFollowers.Count - 1].hasValidHeldPathProgress)
+            {
+                anchorProgress = pendingFollowers[pendingFollowers.Count - 1].heldPathProgress;
+            }
+            else if (snakeBody.Count <= 1)
+            {
+                // The first pending follower is measured from the physical path
+                // probe because that is also the origin of firstFollowerSpacing.
+                anchorProgress = pathHistory.HeadProgress;
+            }
+            else
+            {
+                anchorProgress = GetDistancePathProgressForSnakeIndex(snakeBody.Count - 1);
+            }
+
+            heldPathProgress = anchorProgress - pendingCompactSpacing;
+
+            if (pathHistory.TryGetPoseAtProgress(heldPathProgress, out position, out rotation))
+            {
+                if (leadingCartBody != null) position.y = leadingCartBody.position.y;
+                hasValidHeldPathProgress = true;
+                return true;
+            }
+        }
+
+        GetNextDockedPendingPose(out position, out rotation);
+        return true;
+    }
+
+    private void GetNextDockedPendingPose(out Vector3 position, out Quaternion rotation)
+    {
+        Transform anchor = GetPendingDockAnchor();
+
+        if (anchor == null)
+        {
+            position = transform.position;
+            rotation = transform.rotation;
+            return;
+        }
+
+        Vector3 backward = -Vector3.ProjectOnPlane(anchor.forward, Vector3.up);
+
+        if (backward.sqrMagnitude < 0.0001f) backward = -Vector3.forward;
+        backward.Normalize();
+
+        position = anchor.position + backward * pendingCompactSpacing;
+
+        if (leadingCartBody != null) position.y = leadingCartBody.position.y;
+
+        rotation = anchor.rotation;
+    }
+
+    private Transform GetPendingDockAnchor()
+    {
+        if (pendingFollowers.Count > 0)
+        {
+            PendingFollower lastPending = pendingFollowers[pendingFollowers.Count - 1];
+            if (lastPending != null && lastPending.cart != null) return lastPending.cart.transform;
+        }
+
+        if (snakeBody.Count > 0 && snakeBody[snakeBody.Count - 1] != null)
+        {
+            return snakeBody[snakeBody.Count - 1].transform;
+        }
+
+        return leadingCartBody != null ? leadingCartBody.transform : null;
     }
 
     private IEnumerator PlayCollectVfxDelayed(ChainedCartManager cartManager)
@@ -391,16 +677,344 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 
     #endregion
 
+    #region Pending Follower Join
+
+    private void ManagePendingFollowerOwnership()
+    {
+        for (int i = 0; i < pendingFollowers.Count; i++)
+        {
+            PendingFollower pending = pendingFollowers[i];
+
+            if (pending == null || pending.cart == null)
+            {
+                pendingFollowers.RemoveAt(i);
+                pendingFollowerCount = pendingFollowers.Count;
+                ResetPendingPromotionBaseline();
+                i--;
+                continue;
+            }
+
+            if (pending.manager == null) pending.manager = GetCartManager(pending.cart);
+
+            if (pending.manager != null && pending.manager.isCollectedByPlayer) continue;
+
+            // Pending followers are ordered behind the active tail. If one
+            // loses ownership, it and every pending cart behind it become loose.
+            DetachPendingFollowersFromIndex(i);
+            break;
+        }
+    }
+
+    private void UpdatePendingFollowerPromotion()
+    {
+        pendingFollowerCount = pendingFollowers.Count;
+
+        if (pendingFollowers.Count == 0)
+        {
+            pendingRequiredForwardTravel = 0f;
+            pendingForwardTravelSinceBaseline = 0f;
+            return;
+        }
+
+        HoldPendingFollowersAtStoredPose();
+
+        if (pathHistory == null || !pathHistory.IsInitialized) return;
+
+        // A stalled cart is intentionally not opening the train spacing.
+        // Pending carts stay exactly where they were collected until either
+        // MoveBackward starts or normal movement genuinely resumes.
+        if (leadingStallController != null && leadingStallController.IsStalled)
+        {
+            BeginPendingPromotionStallPause();
+            return;
+        }
+
+        if (pendingPromotionPausedByStall) EndPendingPromotionStallPause();
+
+        if (moveBackwardController != null && moveBackwardController.IsMovingBackward) return;
+
+        float normalSpacing = snakeBody.Count <= 1 ? firstFollowerSpacing : followerCartSpacing;
+        pendingRequiredForwardTravel = Mathf.Max(0f, normalSpacing - pendingCompactSpacing);
+        pendingForwardTravelSinceBaseline = Mathf.Max(0f, pathHistory.HeadProgress - pendingPromotionStartHeadProgress);
+
+        if (pendingForwardTravelSinceBaseline + pendingPromotionDistanceTolerance < pendingRequiredForwardTravel) return;
+
+        PromoteFirstPendingFollower();
+    }
+
+    private void PromoteFirstPendingFollower()
+    {
+        if (pendingFollowers.Count == 0) return;
+
+        PendingFollower pending = pendingFollowers[0];
+
+        if (pending == null || pending.cart == null)
+        {
+            pendingFollowers.RemoveAt(0);
+            pendingFollowerCount = pendingFollowers.Count;
+            ResetPendingPromotionBaseline();
+            return;
+        }
+
+        if (pending.manager == null) pending.manager = GetCartManager(pending.cart);
+
+        if (pending.manager == null || !pending.manager.isCollectedByPlayer)
+        {
+            DetachPendingFollowersFromIndex(0);
+            return;
+        }
+
+        int newSnakeIndex = snakeBody.Count;
+
+        // The compact-gap timing is based on logical path distance, so this
+        // target should already be almost identical to the cart's held pose.
+        // Assigning the exact target here removes accumulated numerical error.
+        if (TryGetDistancePathTarget(newSnakeIndex, out Vector3 targetPosition, out Quaternion targetRotation))
+        {
+            pending.cart.transform.SetPositionAndRotation(targetPosition, targetRotation);
+        }
+
+        snakeBody.Add(pending.cart);
+        pendingFollowers.RemoveAt(0);
+
+        pendingFollowerCount = pendingFollowers.Count;
+        followerScaleDirty = true;
+
+        ResetPendingPromotionBaseline();
+    }
+
+    private void BeginPendingPromotionStallPause()
+    {
+        if (pendingPromotionPausedByStall) return;
+        if (pendingFollowers.Count == 0 || pathHistory == null || !pathHistory.IsInitialized) return;
+
+        pendingPromotionPausedByStall = true;
+        pendingStallPauseHeadProgress = pathHistory.HeadProgress;
+    }
+
+    private void EndPendingPromotionStallPause()
+    {
+        if (!pendingPromotionPausedByStall) return;
+
+        if (pathHistory != null && pathHistory.IsInitialized)
+        {
+            float pathProgressCreatedWhileStalled = Mathf.Max(0f, pathHistory.HeadProgress - pendingStallPauseHeadProgress);
+
+            // Shift the baseline forward by any probe/path jitter accumulated
+            // during Stall so that stalled time never helps a pending cart earn
+            // its normal train spacing.
+            pendingPromotionStartHeadProgress += pathProgressCreatedWhileStalled;
+        }
+
+        pendingPromotionPausedByStall = false;
+        pendingStallPauseHeadProgress = 0f;
+    }
+
+    private void HoldPendingFollowersAtStoredPose()
+    {
+        for (int i = 0; i < pendingFollowers.Count; i++)
+        {
+            PendingFollower pending = pendingFollowers[i];
+            if (pending == null || pending.cart == null) continue;
+
+            pending.cart.transform.SetPositionAndRotation(pending.heldPosition, pending.heldRotation);
+
+            if (pending.body == null) pending.body = pending.cart.GetComponent<Rigidbody>();
+
+            if (pending.body != null)
+            {
+                pending.body.linearVelocity = Vector3.zero;
+                pending.body.angularVelocity = Vector3.zero;
+            }
+        }
+    }
+
+    private void ResetPendingPromotionBaseline()
+    {
+        pendingPromotionStartHeadProgress = pathHistory != null && pathHistory.IsInitialized ? pathHistory.HeadProgress : 0f;
+        pendingForwardTravelSinceBaseline = 0f;
+        pendingPromotionPausedByStall = false;
+        pendingStallPauseHeadProgress = 0f;
+
+        float normalSpacing = snakeBody.Count <= 1 ? firstFollowerSpacing : followerCartSpacing;
+        pendingRequiredForwardTravel = pendingFollowers.Count > 0 ? Mathf.Max(0f, normalSpacing - pendingCompactSpacing) : 0f;
+    }
+
+    /// <summary>
+    /// During MoveBackward, pending carts behave like a compact soft-parented
+    /// stack behind the active tail. They are deliberately NOT inserted into
+    /// snakeBody, so the reverse controller's fixed active topology remains
+    /// unchanged even when new carts are collected.
+    /// </summary>
+    private void DockPendingFollowersToCurrentTail()
+    {
+        if (pendingFollowers.Count == 0) return;
+
+        Transform anchor = GetActiveTailTransform();
+        if (anchor == null) return;
+
+        pendingFollowersDockedToTail = true;
+
+        for (int i = 0; i < pendingFollowers.Count; i++)
+        {
+            PendingFollower pending = pendingFollowers[i];
+            if (pending == null || pending.cart == null) continue;
+
+            Vector3 backward = -Vector3.ProjectOnPlane(anchor.forward, Vector3.up);
+
+            if (backward.sqrMagnitude < 0.0001f) backward = -Vector3.forward;
+            backward.Normalize();
+
+            Vector3 targetPosition = anchor.position + backward * pendingCompactSpacing;
+            if (leadingCartBody != null) targetPosition.y = leadingCartBody.position.y;
+
+            Quaternion targetRotation = anchor.rotation;
+
+            pending.cart.transform.SetPositionAndRotation(targetPosition, targetRotation);
+
+            if (pending.body == null) pending.body = pending.cart.GetComponent<Rigidbody>();
+            if (pending.body != null)
+            {
+                pending.body.linearVelocity = Vector3.zero;
+                pending.body.angularVelocity = Vector3.zero;
+            }
+
+            pending.heldPosition = targetPosition;
+            pending.heldRotation = targetRotation;
+            pending.heldPathProgress = 0f;
+            pending.hasValidHeldPathProgress = false;
+
+            anchor = pending.cart.transform;
+        }
+    }
+
+    /// <summary>
+    /// After MoveBackward recovery, the normal path may have been rebuilt.
+    /// Re-seat every pending cart into a compact stack on that fresh path,
+    /// then let normal forward progress unzip them one by one.
+    /// </summary>
+    private void RedockPendingFollowersToCurrentPath()
+    {
+        pendingFollowersDockedToTail = false;
+
+        if (pendingFollowers.Count == 0)
+        {
+            ResetPendingPromotionBaseline();
+            return;
+        }
+
+        if (pathHistory == null || !pathHistory.IsInitialized)
+        {
+            ResetPendingPromotionBaseline();
+            return;
+        }
+
+        float anchorProgress = snakeBody.Count <= 1
+            ? pathHistory.HeadProgress
+            : GetDistancePathProgressForSnakeIndex(snakeBody.Count - 1);
+
+        Transform fallbackAnchor = GetActiveTailTransform();
+
+        for (int i = 0; i < pendingFollowers.Count; i++)
+        {
+            PendingFollower pending = pendingFollowers[i];
+            if (pending == null || pending.cart == null) continue;
+
+            float heldProgress = anchorProgress - pendingCompactSpacing * (i + 1);
+
+            if (pathHistory.TryGetPoseAtProgress(heldProgress, out Vector3 position, out Quaternion rotation))
+            {
+                if (leadingCartBody != null) position.y = leadingCartBody.position.y;
+
+                pending.cart.transform.SetPositionAndRotation(position, rotation);
+
+                if (pending.body == null) pending.body = pending.cart.GetComponent<Rigidbody>();
+                if (pending.body != null)
+                {
+                    pending.body.linearVelocity = Vector3.zero;
+                    pending.body.angularVelocity = Vector3.zero;
+                }
+
+                pending.heldPosition = position;
+                pending.heldRotation = rotation;
+                pending.heldPathProgress = heldProgress;
+                pending.hasValidHeldPathProgress = true;
+
+                fallbackAnchor = pending.cart.transform;
+                continue;
+            }
+
+            if (fallbackAnchor != null)
+            {
+                Vector3 backward = -Vector3.ProjectOnPlane(fallbackAnchor.forward, Vector3.up);
+
+                if (backward.sqrMagnitude < 0.0001f) backward = -Vector3.forward;
+                backward.Normalize();
+
+                Vector3 fallbackPosition = fallbackAnchor.position + backward * pendingCompactSpacing;
+                if (leadingCartBody != null) fallbackPosition.y = leadingCartBody.position.y;
+
+                pending.cart.transform.SetPositionAndRotation(fallbackPosition, fallbackAnchor.rotation);
+
+                if (pending.body == null) pending.body = pending.cart.GetComponent<Rigidbody>();
+                if (pending.body != null)
+                {
+                    pending.body.linearVelocity = Vector3.zero;
+                    pending.body.angularVelocity = Vector3.zero;
+                }
+
+                pending.heldPosition = fallbackPosition;
+                pending.heldRotation = fallbackAnchor.rotation;
+                pending.heldPathProgress = 0f;
+                pending.hasValidHeldPathProgress = false;
+
+                fallbackAnchor = pending.cart.transform;
+            }
+        }
+
+        ResetPendingPromotionBaseline();
+    }
+
+    private Transform GetActiveTailTransform()
+    {
+        if (snakeBody.Count > 0 && snakeBody[snakeBody.Count - 1] != null)
+        {
+            return snakeBody[snakeBody.Count - 1].transform;
+        }
+
+        return leadingCartBody != null ? leadingCartBody.transform : null;
+    }
+
+    #endregion
+
     #region Stall Vulnerability
 
     private void HandleLeaderStalled()
     {
         BeginVulnerabilitySession();
+        BeginPendingPromotionStallPause();
+    }
+
+    private void HandleLeaderStallEnded()
+    {
+        EndPendingPromotionStallPause();
+
+        // Natural escape from Stall has no MoveBackward-finished event, so
+        // vulnerability must clear here. When Stall ends because MoveBackward
+        // successfully started, the reverse controller is already active and
+        // vulnerability intentionally remains until recovery finishes.
+        bool moveBackwardOwnsRecovery = moveBackwardController != null && moveBackwardController.IsMovingBackward;
+
+        if (!moveBackwardOwnsRecovery)
+        {
+            EndVulnerabilitySession();
+        }
     }
 
     private void HandleMoveBackwardFinished()
     {
         EndVulnerabilitySession();
+        RedockPendingFollowersToCurrentPath();
     }
 
     private void BeginVulnerabilitySession()
@@ -475,6 +1089,13 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
                 snakeBody.RemoveAt(i);
                 followerScaleDirty = true;
                 currentVulnerableFollowerCount = CountVulnerableFollowers();
+
+                if (pendingFollowers.Count > 0 &&
+                    (moveBackwardController == null || !moveBackwardController.IsMovingBackward))
+                {
+                    RedockPendingFollowersToCurrentPath();
+                }
+
                 break;
             }
 
@@ -521,6 +1142,11 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
         }
 
         snakeBody.RemoveRange(startIndex, snakeBody.Count - startIndex);
+
+        // Pending carts are always logically behind the active tail, so any
+        // active-chain cut also cuts every pending cart.
+        DetachPendingFollowersFromIndex(0);
+
         followerScaleDirty = true;
         currentVulnerableFollowerCount = CountVulnerableFollowers();
 
@@ -528,14 +1154,60 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
         {
             currentVulnerableFollowerCount = 0;
         }
+
+        ResetPendingPromotionBaseline();
+    }
+
+    private int DetachPendingFollowersFromIndex(int startIndex)
+    {
+        if (startIndex < 0 || startIndex >= pendingFollowers.Count) return 0;
+
+        int detachedCount = pendingFollowers.Count - startIndex;
+
+        for (int i = startIndex; i < pendingFollowers.Count; i++)
+        {
+            PendingFollower pending = pendingFollowers[i];
+            if (pending == null || pending.cart == null) continue;
+
+            ChainedCartManager cartManager = pending.manager != null ? pending.manager : GetCartManager(pending.cart);
+
+            if (cartManager != null && cartManager.HasGroceryItem())
+            {
+                groceryItemCartCount = Mathf.Max(0, groceryItemCartCount - 1);
+            }
+
+            pending.cart.transform.localScale = normalScale;
+            pending.cart.transform.SetParent(null);
+
+            if (cartManager != null && cartManager.isCollectedByPlayer) cartManager.OnDetach();
+
+            cartsWithoutItem.Remove(pending.cart);
+            UncacheCartManager(pending.cart);
+        }
+
+        pendingFollowers.RemoveRange(startIndex, pendingFollowers.Count - startIndex);
+        pendingFollowerCount = pendingFollowers.Count;
+        pendingFollowersDockedToTail = false;
+        followerScaleDirty = true;
+
+        ResetPendingPromotionBaseline();
+        return detachedCount;
     }
 
     public int DetachAllFollowers()
     {
-        if (snakeBody.Count <= 1) return 0;
+        int activeFollowerCount = Mathf.Max(0, snakeBody.Count - 1);
+        int pendingCount = pendingFollowers.Count;
+        int detachedCount = activeFollowerCount + pendingCount;
 
-        int detachedCount = snakeBody.Count - 1;
-        DetachChainFromIndex(1);
+        if (activeFollowerCount > 0)
+        {
+            DetachChainFromIndex(1);
+        }
+        else if (pendingCount > 0)
+        {
+            DetachPendingFollowersFromIndex(0);
+        }
 
         if (detachedCount > 0 && sfxManager != null) sfxManager.PlaySFX("Detach");
 
@@ -544,7 +1216,8 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 
     /// <summary>
     /// Cuts the defender's chain starting AT the vulnerable follower that was hit.
-    /// The hit vulnerable cart and every cart behind it become loose.
+    /// The hit vulnerable cart, every active cart behind it, and every pending
+    /// cart behind the active tail become loose.
     /// </summary>
     public int DetachFromVulnerableCart(ChainedCartManager vulnerableCart)
     {
@@ -553,7 +1226,7 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
         int vulnerableIndex = FindSnakeIndex(vulnerableCart);
         if (vulnerableIndex <= 0) return 0;
 
-        int detachedCount = snakeBody.Count - vulnerableIndex;
+        int detachedCount = snakeBody.Count - vulnerableIndex + pendingFollowers.Count;
         DetachChainFromIndex(vulnerableIndex);
 
         if (detachedCount > 0 && sfxManager != null) sfxManager.PlaySFX("Detach");
@@ -592,6 +1265,12 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
         for (int i = 1; i < snakeBody.Count; i++)
         {
             if (snakeBody[i] != null) snakeBody[i].transform.localScale = targetScale;
+        }
+
+        for (int i = 0; i < pendingFollowers.Count; i++)
+        {
+            PendingFollower pending = pendingFollowers[i];
+            if (pending != null && pending.cart != null) pending.cart.transform.localScale = targetScale;
         }
 
         followerScaleDirty = false;
@@ -674,9 +1353,27 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
         bodyParts.Add(addedObj);
     }
 
+    /// <summary>
+    /// Gameplay-facing owned cart count. Includes compact pending followers
+    /// because they are already visibly collected and owned by the player.
+    /// </summary>
     public int GetSnakeBodyLength()
     {
+        return snakeBody.Count + pendingFollowers.Count;
+    }
+
+    /// <summary>
+    /// Active path-following topology only. MoveBackward intentionally uses
+    /// this stable list and does not include pending followers.
+    /// </summary>
+    public int GetActiveSnakeBodyLength()
+    {
         return snakeBody.Count;
+    }
+
+    public int GetPendingFollowerCount()
+    {
+        return pendingFollowers.Count;
     }
 
     public List<GameObject> GetSnakeBody()
@@ -690,7 +1387,7 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 
     public int CheckOutNextCartWithItem()
     {
-        if (snakeBody.Count <= 1) return groceryItemCartCount;
+        if (snakeBody.Count <= 1 && pendingFollowers.Count == 0) return groceryItemCartCount;
 
         for (int i = 1; i < snakeBody.Count; i++)
         {
@@ -700,17 +1397,38 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
             ChainedCartManager cartManager = GetCartManager(cart);
             if (cartManager == null || !cartManager.HasGroceryItem()) continue;
 
-            bool isExpensiveItem = cartManager.isCarryingExpensiveGroceryItem();
-            groceryItemCartCount = Mathf.Max(0, groceryItemCartCount - 1);
-
-            if (cashScoreManager != null) cashScoreManager.RegisterItemCheckout(playerIndex, isExpensiveItem);
-            if (sfxManager != null) sfxManager.PlaySFX("CheckoutSingle");
-
+            RegisterCheckoutForCart(cartManager);
             RemoveAndDestroySnakeCartAt(i);
             return groceryItemCartCount;
         }
 
+        // Pending carts are already visibly owned and can receive grocery items,
+        // so checkout must also be able to consume them.
+        for (int i = 0; i < pendingFollowers.Count; i++)
+        {
+            PendingFollower pending = pendingFollowers[i];
+            if (pending == null || pending.cart == null) continue;
+
+            ChainedCartManager cartManager = pending.manager != null ? pending.manager : GetCartManager(pending.cart);
+            if (cartManager == null || !cartManager.HasGroceryItem()) continue;
+
+            RegisterCheckoutForCart(cartManager);
+            RemoveAndDestroyPendingCartAt(i);
+            return groceryItemCartCount;
+        }
+
         return groceryItemCartCount;
+    }
+
+    private void RegisterCheckoutForCart(ChainedCartManager cartManager)
+    {
+        if (cartManager == null) return;
+
+        bool isExpensiveItem = cartManager.isCarryingExpensiveGroceryItem();
+        groceryItemCartCount = Mathf.Max(0, groceryItemCartCount - 1);
+
+        if (cashScoreManager != null) cashScoreManager.RegisterItemCheckout(playerIndex, isExpensiveItem);
+        if (sfxManager != null) sfxManager.PlaySFX("CheckoutSingle");
     }
 
     public void CollectNormalGroceryItem()
@@ -779,6 +1497,18 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
             groceryItemCartCount = Mathf.Max(0, groceryItemCartCount - 1);
             RemoveAndDestroySnakeCartAt(i);
         }
+
+        for (int i = pendingFollowers.Count - 1; i >= 0; i--)
+        {
+            PendingFollower pending = pendingFollowers[i];
+            if (pending == null || pending.cart == null) continue;
+
+            ChainedCartManager cartManager = pending.manager != null ? pending.manager : GetCartManager(pending.cart);
+            if (cartManager == null || !cartManager.HasGroceryItem()) continue;
+
+            groceryItemCartCount = Mathf.Max(0, groceryItemCartCount - 1);
+            RemoveAndDestroyPendingCartAt(i);
+        }
     }
 
     private void RemoveAndDestroySnakeCartAt(int index)
@@ -790,10 +1520,46 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
         snakeBody.RemoveAt(index);
         cartsWithoutItem.Remove(cart);
         UncacheCartManager(cart);
+
         followerScaleDirty = true;
         currentVulnerableFollowerCount = CountVulnerableFollowers();
 
         if (cart != null) Destroy(cart);
+
+        if (pendingFollowers.Count > 0 &&
+            (moveBackwardController == null || !moveBackwardController.IsMovingBackward))
+        {
+            RedockPendingFollowersToCurrentPath();
+        }
+    }
+
+    private void RemoveAndDestroyPendingCartAt(int index)
+    {
+        if (index < 0 || index >= pendingFollowers.Count) return;
+
+        PendingFollower pending = pendingFollowers[index];
+        GameObject cart = pending != null ? pending.cart : null;
+
+        pendingFollowers.RemoveAt(index);
+        pendingFollowerCount = pendingFollowers.Count;
+
+        if (cart != null)
+        {
+            cartsWithoutItem.Remove(cart);
+            UncacheCartManager(cart);
+            Destroy(cart);
+        }
+
+        followerScaleDirty = true;
+
+        if (moveBackwardController != null && moveBackwardController.IsMovingBackward)
+        {
+            DockPendingFollowersToCurrentTail();
+        }
+        else
+        {
+            RedockPendingFollowersToCurrentPath();
+        }
     }
 
     #endregion
@@ -863,7 +1629,25 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 
     public int GetCurrentCartCount()
     {
-        return snakeBody.Count;
+        return snakeBody.Count + pendingFollowers.Count;
+    }
+
+    #endregion
+
+    #region Validation
+
+    private void OnValidate()
+    {
+        firstFollowerSpacing = Mathf.Max(0.1f, firstFollowerSpacing);
+        followerCartSpacing = Mathf.Max(0.1f, followerCartSpacing);
+        pathHistorySafetyBuffer = Mathf.Max(0f, pathHistorySafetyBuffer);
+
+        followerSpawnDelay = Mathf.Max(0f, followerSpawnDelay);
+        collectVfxDelay = Mathf.Max(0f, collectVfxDelay);
+
+        float smallestNormalSpacing = Mathf.Min(firstFollowerSpacing, followerCartSpacing);
+        pendingCompactSpacing = Mathf.Clamp(pendingCompactSpacing, 0.01f, Mathf.Max(0.01f, smallestNormalSpacing * 0.95f));
+        pendingPromotionDistanceTolerance = Mathf.Max(0f, pendingPromotionDistanceTolerance);
     }
 
     #endregion
