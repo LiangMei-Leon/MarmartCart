@@ -49,7 +49,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pathHistory: {fileID: 3341631081010412033}
   firstFollowerSpacing: 0.5
-  followerCartSpacing: 3.5
+  followerCartSpacing: 3.4
   pathHistorySafetyBuffer: 3
   firstFollowerHingeInfluence: 0.7
   hingeInfluenceFalloffPerCart: 0.35
