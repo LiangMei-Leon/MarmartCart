@@ -208,6 +208,67 @@ Transform:
   - {fileID: 2403018058486083510}
   m_Father: {fileID: 7689148556561879390}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2354019399270253252
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8497628404592882631}
+  - component: {fileID: 41859216893981576}
+  m_Layer: 7
+  m_Name: Cargo
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8497628404592882631
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2354019399270253252}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0.026, z: 0.003}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7689148556561879390}
+  m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
+--- !u!114 &41859216893981576
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2354019399270253252}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45811b52539406d4e97fe69a1a2f08ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  settings: {fileID: 11400000, guid: 2ed7147b99e789940b193086db424cb5, type: 2}
+  cargoVisualAnchor: {fileID: 8497628404592882631}
+  prototypeSphereMaterial: {fileID: 2100000, guid: 4ad1c7906b12f9440988d0691c12b81b, type: 2}
+  usePredesignedSlotPositions: 0
+  predesignedSafeSlots: []
+  predesignedOverflowTemplateSlotCount: 2
+  predesignedOverflowLayerOffset: {x: 0, y: 0.24, z: 0}
+  usePredesignedSlotRotations: 0
+  cargoEntries: []
+  localLoad: 0
+  localScoreValue: 0
+  localOverload: 0
+  visualOverflowEntryCount: 0
+  debugTestLootDefinitions:
+  - {fileID: 11400000, guid: ec9a73219c7e3984f8c0c5bc98cc2f61, type: 2}
+  - {fileID: 11400000, guid: 4026d120d1d74d54b88ed48ea320832b, type: 2}
+  - {fileID: 11400000, guid: e6726aca3396a264eb4e4bfbdc0da5a5, type: 2}
 --- !u!1 &3334329670287858708
 GameObject:
   m_ObjectHideFlags: 0
@@ -9648,6 +9709,7 @@ Transform:
   - {fileID: 3607228855711999349}
   - {fileID: 7906590384551855509}
   - {fileID: 6655718478097830233}
+  - {fileID: 8497628404592882631}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &9074307982008590843
@@ -10004,18 +10066,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63c356503b84e9042858f7ab04289a7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <isBonusCart>k__BackingField: 0
-  <CartType>k__BackingField: 0
   <isCollectedByPlayer>k__BackingField: 0
-  <isCollectedByAI>k__BackingField: 0
   isVulnerable: 0
+  collectionCommitted: 0
   collectVFX: {fileID: 1106169482944890282}
   cartRenderer: {fileID: 5131415986485558397}
   cartMaterialManager: {fileID: 2029535004146302134}
-  teamOutlineController: {fileID: 0}
+  teamOutlineController: {fileID: 814993126530778047}
+  chainCartCargo: {fileID: 41859216893981576}
+  sfxManager: {fileID: 11400000, guid: 8fd27797f1f8cee4a8ba78b38ba9e656, type: 2}
+  collectCartSfxKey: CollectCart
+  cargoSpillSfxKey: 
+  collectCartEvent:
+  - {fileID: 11400000, guid: 1c2f6ba77010d5645894c2545add5964, type: 2}
+  - {fileID: 11400000, guid: 53bc1f737b4b6ea47a1ddcaf9047cb1a, type: 2}
+  - {fileID: 11400000, guid: 0a7b976f82a6c0446b0a2982cb4d09f6, type: 2}
+  - {fileID: 11400000, guid: d569cd80caee22c4fa835a6ca9b644a8, type: 2}
+  fallbackSpillPickupPrefab: {fileID: 2435509980185787401, guid: 04789f4307709594d8edd53f62835749, type: 3}
+  spillSpawnHeight: 2
+  spillSpawnRadius: 5
+  spillImpulseMin: 2
+  spillImpulseMax: 6
+  spillUpwardImpulse: 3
+  spilledPickupCollectionDelay: 0.5
+  lastSpilledCargoCount: 0
   disappearTime: 15
   disappearWarningDuration: 3
-  countTimer: 0
+  disappearWarningStarted: 0
+  heldBySpawner: 0
   defaultColor: {r: 0.3200426, g: 0.3386831, b: 0.36477977, a: 1}
   playerTeamColors:
   - {r: 0, g: 0.7521682, b: 1, a: 1}
@@ -10023,26 +10101,21 @@ MonoBehaviour:
   - {r: 0, g: 0.74213827, b: 0.16978836, a: 1}
   - {r: 1, g: 0.80507326, b: 0, a: 1}
   teamColorMaterialIndex: 1
-  collectEmptyCartEvent:
-  - {fileID: 11400000, guid: 1c2f6ba77010d5645894c2545add5964, type: 2}
-  - {fileID: 11400000, guid: 53bc1f737b4b6ea47a1ddcaf9047cb1a, type: 2}
-  - {fileID: 11400000, guid: 0a7b976f82a6c0446b0a2982cb4d09f6, type: 2}
-  - {fileID: 11400000, guid: d569cd80caee22c4fa835a6ca9b644a8, type: 2}
-  collectNormalGroceryItemCartEvent:
-  - {fileID: 11400000, guid: d11083922a7dde644a6fbdf94ccfe0e9, type: 2}
-  - {fileID: 11400000, guid: ed91acab010b54f49a35288a9c636c04, type: 2}
-  - {fileID: 11400000, guid: b50516b6b8a021241a45cc835589d8d9, type: 2}
-  - {fileID: 11400000, guid: f4035e74315d597439b5bbf6ade4ebb0, type: 2}
-  collectExpensiveGroceryItemCartEvent:
-  - {fileID: 11400000, guid: 2aac4365b88a43c45b7f206bcdece31c, type: 2}
-  - {fileID: 11400000, guid: 3870df526ee277849912f5f979d3502b, type: 2}
-  - {fileID: 11400000, guid: d75c8bb3a2921234da5351bacc7f412e, type: 2}
-  - {fileID: 11400000, guid: 60ab87266561dcc49a1dc35a7906ab25, type: 2}
   hasGroceryItem: 0
   hasNormalGroceryItem: 0
   hasExpensiveGroceryItem: 0
   normalGroceryItemVisual: {fileID: 7418003342242864943}
   expensiveGroceryItemVisual: {fileID: 6275216452277898211}
+  legacyCollectNormalCartEvent:
+  - {fileID: 11400000, guid: d11083922a7dde644a6fbdf94ccfe0e9, type: 2}
+  - {fileID: 11400000, guid: ed91acab010b54f49a35288a9c636c04, type: 2}
+  - {fileID: 11400000, guid: b50516b6b8a021241a45cc835589d8d9, type: 2}
+  - {fileID: 11400000, guid: f4035e74315d597439b5bbf6ade4ebb0, type: 2}
+  legacyCollectExpensiveCartEvent:
+  - {fileID: 11400000, guid: 2aac4365b88a43c45b7f206bcdece31c, type: 2}
+  - {fileID: 11400000, guid: 3870df526ee277849912f5f979d3502b, type: 2}
+  - {fileID: 11400000, guid: d75c8bb3a2921234da5351bacc7f412e, type: 2}
+  - {fileID: 11400000, guid: 60ab87266561dcc49a1dc35a7906ab25, type: 2}
 --- !u!65 &4352900759099298663
 BoxCollider:
   m_ObjectHideFlags: 0

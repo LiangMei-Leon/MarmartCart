@@ -1,15 +1,26 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Runtime state and collection behavior for a loose / chained cart.
+/// Runtime ownership / loose-state behavior for one follower cart.
 ///
-/// Collection uses the existing ScriptableObject GameEvent arrays.
-/// A cart may become Vulnerable only while it is collected by a player.
+/// Current responsibilities:
+/// - player-owned vs loose state;
+/// - vulnerable state;
+/// - direct existing-instance recollection into SnakeCartManager;
+/// - team color / team outline;
+/// - collect VFX;
+/// - loose-cart disappearance warning;
+/// - central owned -> loose cargo normalization and overload spill.
 ///
-/// Vulnerable is a chain-only state:
-/// - loose carts can never be vulnerable,
-/// - detached carts immediately lose vulnerability,
-/// - visual presentation is delegated to CartMaterialManager.
+/// IMPORTANT:
+/// Cargo itself is authoritative on ChainCartCargo.
+/// A loose cart keeps all safe cargo. Only LOCAL overload is spilled.
+///
+/// The old Normal/Expensive grocery fields remain TEMPORARILY because the
+/// current SnakeCartManager checkout code still calls that API. Delete that
+/// region when checkout is migrated to the new cargo system.
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
 [DisallowMultipleComponent]
@@ -17,30 +28,32 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
 {
     private const int MaxSupportedPlayers = 4;
 
-    #region Cart Info
+    #region Ownership State
 
-    [Header("Cart Info")]
+    [Header("Ownership State")]
     [field: SerializeField]
-    public bool isBonusCart { get; private set; } = false;
-
-    [field: SerializeField]
-    public CartRarity CartType { get; private set; } = CartRarity.Common;
-
-    [field: SerializeField]
-    public bool isCollectedByPlayer { get; private set; } = false;
-
-    [field: SerializeField]
-    public bool isCollectedByAI { get; private set; } = false;
+    public bool isCollectedByPlayer { get; private set; }
 
     [Header("Runtime - Read Only")]
     [SerializeField] private bool isVulnerable;
+    [SerializeField] private bool collectionCommitted;
+    [SerializeField] private bool collectionWaitingForNextFixedUpdate;
+
+    private SnakeCartManager pendingCollectingSnake;
 
     public bool IsVulnerable => isVulnerable;
 
-    public bool isAvailable =>
-        !isCollectedByPlayer &&
-        !isCollectedByAI &&
-        !collectionCommitted;
+    /// <summary>
+    /// True while this cart is either fully player-owned OR has already been
+    /// claimed and staged into a player's chain but has not yet finalized
+    /// isCollectedByPlayer on the next physics step.
+    ///
+    /// SnakeCartManager uses this for topology ownership only.
+    /// Battle logic should continue using isCollectedByPlayer.
+    /// </summary>
+    public bool IsOwnedOrCollectionPending => isCollectedByPlayer || collectionCommitted;
+
+    public bool isAvailable => !isCollectedByPlayer && !collectionCommitted;
 
     #endregion
 
@@ -51,27 +64,65 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
     [SerializeField] private Renderer cartRenderer;
     [SerializeField] private CartMaterialManager cartMaterialManager;
     [SerializeField] private CartTeamOutlineController teamOutlineController;
+    [SerializeField] private ChainCartCargo chainCartCargo;
+
+    [Header("Optional SFX")]
+    [SerializeField] private SfxManager sfxManager;
+    [SerializeField] private string collectCartSfxKey = "";
+    [SerializeField] private string cargoSpillSfxKey = "";
 
     private Rigidbody rb;
 
     #endregion
 
+    #region Cargo Spill
+
+    [Header("Cargo Spill")]
+    [Tooltip("Generic GroceryLootPickup prefab used when the GroceryLootDefinition has no dedicated World Pickup Prefab.")]
+    [SerializeField] private GroceryLootPickup fallbackSpillPickupPrefab;
+
+    [Min(0f)]
+    [SerializeField] private float spillSpawnHeight = 0.6f;
+
+    [Min(0f)]
+    [SerializeField] private float spillSpawnRadius = 1.0f;
+
+    [Min(0f)]
+    [SerializeField] private float spillImpulseMin = 2f;
+
+    [Min(0f)]
+    [SerializeField] private float spillImpulseMax = 5f;
+
+    [Min(0f)]
+    [SerializeField] private float spillUpwardImpulse = 2f;
+
+    [Tooltip("Prevents freshly spilled groceries from being immediately recollected by overlapping player/cart colliders.")]
+    [Min(0f)]
+    [SerializeField] private float spilledPickupCollectionDelay = 0.35f;
+
+    [Header("Cargo Spill Runtime - Read Only")]
+    [SerializeField] private int lastSpilledCargoCount;
+
+    private readonly List<CargoEntry> spillBuffer = new List<CargoEntry>(16);
+
+    #endregion
+
     #region Self-Destruct
 
-    [Header("Self-Destruct")]
-    [Tooltip("Loose carts disappear after remaining uncollected for this duration.")]
+    [Header("Loose Cart Self-Destruct")]
+    [Tooltip("Loose carts disappear after this duration. 0 disables self-destruction.")]
     [Min(0f)]
     [SerializeField] private float disappearTime = 15f;
 
-    [Tooltip("How long before disappearing the cart begins its ghost/blink warning.")]
+    [Tooltip("How long before disappearing the CartMaterialManager warning begins.")]
     [Min(0f)]
     [SerializeField] private float disappearWarningDuration = 3f;
 
     [Header("Runtime - Read Only")]
-    [SerializeField] private float countTimer;
+    [SerializeField] private bool disappearWarningStarted;
+    [SerializeField] private bool heldBySpawner;
 
-    private bool disappearWarningStarted;
-    private bool heldBySpawner;
+    private Coroutine disappearRoutine;
 
     #endregion
 
@@ -95,35 +146,14 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
 
     #endregion
 
-    #region Collection Events
+    #region Legacy Grocery State
 
-    [Header("Collection Events")]
-    [Tooltip("P1, P2, P3, P4")]
-    [SerializeField] private GameEvent[] collectEmptyCartEvent = new GameEvent[MaxSupportedPlayers];
-
-    [Tooltip("P1, P2, P3, P4")]
-    [SerializeField] private GameEvent[] collectNormalGroceryItemCartEvent = new GameEvent[MaxSupportedPlayers];
-
-    [Tooltip("P1, P2, P3, P4")]
-    [SerializeField] private GameEvent[] collectExpensiveGroceryItemCartEvent = new GameEvent[MaxSupportedPlayers];
-
-    #endregion
-
-    #region Grocery Item State
-
-    [Header("Grocery Item")]
+    [Header("LEGACY - Remove During Checkout Migration")]
     [SerializeField] private bool hasGroceryItem;
     [SerializeField] private bool hasNormalGroceryItem;
     [SerializeField] private bool hasExpensiveGroceryItem;
-
     [SerializeField] private GameObject normalGroceryItemVisual;
     [SerializeField] private GameObject expensiveGroceryItemVisual;
-
-    #endregion
-
-    #region Runtime Collection State
-
-    private bool collectionCommitted;
 
     #endregion
 
@@ -133,26 +163,31 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
     {
         rb = GetComponent<Rigidbody>();
 
-        if (cartMaterialManager == null)
-        {
-            cartMaterialManager = GetComponentInChildren<CartMaterialManager>(true);
-        }
-
-        if (teamOutlineController == null)
-        {
-            teamOutlineController = GetComponentInChildren<CartTeamOutlineController>(true);
-        }
+        if (cartMaterialManager == null) cartMaterialManager = GetComponentInChildren<CartMaterialManager>(true);
+        if (teamOutlineController == null) teamOutlineController = GetComponentInChildren<CartTeamOutlineController>(true);
+        if (chainCartCargo == null) chainCartCargo = GetComponentInChildren<ChainCartCargo>(true);
 
         if (collectVFX == null) Debug.LogWarning("[ChainedCartManager] Collect VFX is not assigned.", this);
         if (cartRenderer == null) Debug.LogWarning("[ChainedCartManager] Cart Renderer is not assigned.", this);
+        if (chainCartCargo == null) Debug.LogWarning("[ChainedCartManager] ChainCartCargo is not assigned/found.", this);
 
-        RefreshGroceryItemVisuals();
+        RefreshLegacyGroceryVisuals();
         SetCartTeamColor();
     }
 
-    private void Update()
+    private void Start()
     {
-        UpdateDisappearTimer();
+        if (isAvailable) RestartDisappearCountdown();
+    }
+
+    private void FixedUpdate()
+    {
+        FinalizeStagedCollectionIfReady();
+    }
+
+    private void OnDisable()
+    {
+        StopDisappearCountdown();
     }
 
     #endregion
@@ -172,38 +207,36 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
 
     #endregion
 
-    #region Collection
+    #region Loose Collection
 
     private void OnTriggerEnter(Collider other)
     {
         if (!isAvailable || other == null) return;
 
-        if (!TryResolveCollectingPlayer(other, out int playerIndex, out LeadingCartBattleController battleController))
+        if (!TryResolveCollectingPlayer(
+                other,
+                out SnakeCartManager collectingSnake,
+                out LeadingCartBattleController battleController))
         {
             return;
         }
 
         if (battleController != null && battleController.IsInGhostMode) return;
 
-        CommitCollection(playerIndex);
+        TryCommitExistingInstanceCollection(collectingSnake);
     }
 
     private bool TryResolveCollectingPlayer(
         Collider other,
-        out int playerIndex,
+        out SnakeCartManager collectingSnake,
         out LeadingCartBattleController battleController)
     {
-        playerIndex = -1;
+        collectingSnake = other.GetComponentInParent<SnakeCartManager>();
         battleController = null;
 
-        SnakeCartManager collectingSnake = other.GetComponentInParent<SnakeCartManager>();
         if (collectingSnake == null) return false;
 
-        playerIndex = collectingSnake.GetPlayerId() - 1;
-
-        if (playerIndex < 0 || playerIndex >= MaxSupportedPlayers) return false;
-
-        var snakeBody = collectingSnake.GetSnakeBody();
+        List<GameObject> snakeBody = collectingSnake.GetSnakeBody();
 
         if (snakeBody != null && snakeBody.Count > 0 && snakeBody[0] != null)
         {
@@ -213,58 +246,68 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
         return true;
     }
 
-    private void CommitCollection(int playerIndex)
+    private bool TryCommitExistingInstanceCollection(SnakeCartManager collectingSnake)
     {
-        if (collectionCommitted) return;
+        if (collectionCommitted || collectingSnake == null) return false;
 
+        // Lock this loose cart immediately so another player cannot also collect
+        // it during the same physics step.
         collectionCommitted = true;
+        StopDisappearCountdown();
 
-        if (hasGroceryItem && hasNormalGroceryItem)
+        // Stage first: move the same physical cart behind the collector while
+        // intentionally keeping isCollectedByPlayer == false.
+        if (!collectingSnake.TryCollectExistingFollower(this))
         {
-            RaisePlayerEvent(collectNormalGroceryItemCartEvent, playerIndex);
-        }
-        else if (hasGroceryItem && hasExpensiveGroceryItem)
-        {
-            RaisePlayerEvent(collectExpensiveGroceryItemCartEvent, playerIndex);
-        }
-        else
-        {
-            RaisePlayerEvent(collectEmptyCartEvent, playerIndex);
+            collectionCommitted = false;
+            RestartDisappearCountdown();
+            return false;
         }
 
-        Destroy(gameObject);
+        pendingCollectingSnake = collectingSnake;
+        collectionWaitingForNextFixedUpdate = true;
+
+        return true;
     }
 
-    private void RaisePlayerEvent(GameEvent[] events, int playerIndex)
+    private void FinalizeStagedCollectionIfReady()
     {
-        if (events == null || playerIndex < 0 || playerIndex >= events.Length)
+        if (!collectionWaitingForNextFixedUpdate) return;
+
+        collectionWaitingForNextFixedUpdate = false;
+
+        SnakeCartManager collectingSnake = pendingCollectingSnake;
+        pendingCollectingSnake = null;
+
+        if (collectingSnake == null ||
+            !collectingSnake.FinalizeExistingFollowerCollection(this))
         {
-            Debug.LogError($"[ChainedCartManager] Missing collection event slot for player index {playerIndex}.", this);
+            RestoreLooseStateAfterFailedCollection();
             return;
         }
 
-        if (events[playerIndex] == null)
+        if (!string.IsNullOrEmpty(collectCartSfxKey) && sfxManager != null)
         {
-            Debug.LogError($"[ChainedCartManager] Collection GameEvent for Player {playerIndex + 1} is not assigned.", this);
-            return;
+            sfxManager.PlaySFX(collectCartSfxKey);
         }
-
-        events[playerIndex].Raise();
     }
 
     #endregion
 
-    #region Collection State
+    #region Player Ownership
 
     public void CollectByPlayer()
     {
         SetVulnerable(false);
 
         isCollectedByPlayer = true;
-        isCollectedByAI = false;
         collectionCommitted = false;
+        collectionWaitingForNextFixedUpdate = false;
+        pendingCollectingSnake = null;
 
-        ResetDisappearCountDown();
+        StopDisappearCountdown();
+        disappearWarningStarted = false;
+
         SetCartTeamColor();
 
         if (teamOutlineController != null)
@@ -276,29 +319,35 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
         }
     }
 
-    public void CollectByAI()
+    /// <summary>
+    /// Used only if SnakeCartManager fails to adopt this loose instance after
+    /// collection has already been committed.
+    /// </summary>
+    public void RestoreLooseStateAfterFailedCollection()
     {
         SetVulnerable(false);
 
-        isCollectedByAI = true;
         isCollectedByPlayer = false;
         collectionCommitted = false;
-
-        ResetDisappearCountDown();
-        SetCartTeamColor();
+        collectionWaitingForNextFixedUpdate = false;
+        pendingCollectingSnake = null;
+        gameObject.tag = "Item";
 
         if (teamOutlineController != null) teamOutlineController.ClearTeam();
+
+        SetCartTeamColor();
+        RestartDisappearCountdown();
     }
 
     public void ResetDisappearCountDown()
     {
-        countTimer = 0f;
-        disappearWarningStarted = false;
+        if (isAvailable) RestartDisappearCountdown();
+        else StopDisappearCountdown();
     }
 
     #endregion
 
-    #region Detach
+    #region Detach / Loose State
 
     public void OnDetach()
     {
@@ -319,6 +368,10 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
     {
         if (rb == null) return;
 
+        // CENTRAL RULE:
+        // every owned -> loose transition normalizes this physical cart first.
+        PrepareForLooseState();
+
         SetVulnerable(false);
 
         gameObject.tag = "Item";
@@ -326,11 +379,12 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
         if (teamOutlineController != null) teamOutlineController.ClearTeam();
 
         isCollectedByPlayer = false;
-        isCollectedByAI = false;
         collectionCommitted = false;
+        collectionWaitingForNextFixedUpdate = false;
+        pendingCollectingSnake = null;
 
-        ResetDisappearCountDown();
         SetCartTeamColor();
+        RestartDisappearCountdown();
 
         Vector3 forceDirection = baseDirection;
 
@@ -344,6 +398,114 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
 
         Vector3 randomTorque = Random.insideUnitSphere * Random.Range(20f, 30f);
         rb.AddTorque(randomTorque, ForceMode.Impulse);
+    }
+
+    /// <summary>
+    /// Converts an owned cart into a valid loose-cart cargo state.
+    ///
+    /// Safe cargo remains authoritative on this physical cart.
+    /// Only LOCAL overload is removed and respawned as world grocery loot.
+    ///
+    /// Returns the number of successfully spawned spilled pickups.
+    /// </summary>
+    public int PrepareForLooseState()
+    {
+        lastSpilledCargoCount = 0;
+
+        if (chainCartCargo == null || !chainCartCargo.IsOverloaded) return 0;
+
+        spillBuffer.Clear();
+        chainCartCargo.RemoveOverloadCargo(spillBuffer);
+
+        for (int i = 0; i < spillBuffer.Count; i++)
+        {
+            CargoEntry entry = spillBuffer[i];
+            if (entry == null) continue;
+
+            if (TrySpawnSpilledCargo(entry))
+            {
+                lastSpilledCargoCount++;
+                continue;
+            }
+
+            // Never silently delete cargo because a spill prefab was misconfigured.
+            // Restore the original CargoEntry to this cart instead.
+            chainCartCargo.TryAddCargoEntry(entry);
+        }
+
+        spillBuffer.Clear();
+
+        if (lastSpilledCargoCount > 0 &&
+            sfxManager != null &&
+            !string.IsNullOrEmpty(cargoSpillSfxKey))
+        {
+            sfxManager.PlaySFX(cargoSpillSfxKey);
+        }
+
+        return lastSpilledCargoCount;
+    }
+
+    private bool TrySpawnSpilledCargo(CargoEntry entry)
+    {
+        if (entry == null || entry.SourceLoot == null) return false;
+
+        GameObject sourcePrefab = entry.SourceLoot.WorldPickupPrefab;
+
+        if (sourcePrefab == null && fallbackSpillPickupPrefab != null)
+        {
+            sourcePrefab = fallbackSpillPickupPrefab.gameObject;
+        }
+
+        if (sourcePrefab == null)
+        {
+            Debug.LogError(
+                $"[ChainedCartManager] Cannot spill '{entry.SourceLoot.DisplayName}': no World Pickup Prefab and no Fallback Spill Pickup Prefab.",
+                this
+            );
+
+            return false;
+        }
+
+        Vector2 randomCircle = Random.insideUnitCircle;
+        if (randomCircle.sqrMagnitude < 0.0001f) randomCircle = Vector2.right;
+        randomCircle.Normalize();
+
+        float radius = Random.Range(0.25f * spillSpawnRadius, spillSpawnRadius);
+
+        Vector3 planarOffset = new Vector3(randomCircle.x, 0f, randomCircle.y) * radius;
+        Vector3 spawnPosition = transform.position + Vector3.up * spillSpawnHeight + planarOffset;
+        Quaternion spawnRotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
+
+        GameObject spawnedObject = Instantiate(sourcePrefab, spawnPosition, spawnRotation);
+
+        GroceryLootPickup pickup = spawnedObject.GetComponent<GroceryLootPickup>();
+
+        if (pickup == null)
+        {
+            Debug.LogError(
+                $"[ChainedCartManager] Spill prefab '{sourcePrefab.name}' must have GroceryLootPickup on its root GameObject.",
+                spawnedObject
+            );
+
+            Destroy(spawnedObject);
+            return false;
+        }
+
+        pickup.Initialize(entry.SourceLoot);
+        pickup.ArmCollectionAfterDelay(spilledPickupCollectionDelay);
+
+        Rigidbody pickupBody = spawnedObject.GetComponent<Rigidbody>();
+
+        if (pickupBody != null)
+        {
+            Vector3 outward = planarOffset.sqrMagnitude > 0.0001f ? planarOffset.normalized : GetRandomPlanarDirection();
+            float impulse = Random.Range(spillImpulseMin, spillImpulseMax);
+
+            Vector3 spillImpulse = outward * impulse + Vector3.up * spillUpwardImpulse;
+            pickupBody.AddForce(spillImpulse, ForceMode.Impulse);
+        }
+
+        return true;
     }
 
     private Vector3 GetRandomPlanarDirection()
@@ -362,48 +524,64 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
     public void OnSpawnerHoldStart()
     {
         heldBySpawner = true;
-        ResetDisappearCountDown();
+        StopDisappearCountdown();
     }
 
     public void OnSpawnerHoldEnd()
     {
         heldBySpawner = false;
-        ResetDisappearCountDown();
+
+        if (isAvailable) RestartDisappearCountdown();
     }
 
     #endregion
 
-    #region Self-Destruct
+    #region Loose Cart Lifetime
 
-    private void UpdateDisappearTimer()
+    private void RestartDisappearCountdown()
     {
-        if (heldBySpawner)
+        StopDisappearCountdown();
+
+        disappearWarningStarted = false;
+
+        if (!Application.isPlaying || !isAvailable || heldBySpawner || disappearTime <= 0f) return;
+
+        disappearRoutine = StartCoroutine(DisappearRoutine());
+    }
+
+    private void StopDisappearCountdown()
+    {
+        if (disappearRoutine == null) return;
+
+        StopCoroutine(disappearRoutine);
+        disappearRoutine = null;
+    }
+
+    private IEnumerator DisappearRoutine()
+    {
+        float warningDuration = Mathf.Clamp(disappearWarningDuration, 0f, disappearTime);
+        float normalDuration = Mathf.Max(0f, disappearTime - warningDuration);
+
+        if (normalDuration > 0f) yield return new WaitForSeconds(normalDuration);
+
+        if (!isAvailable || heldBySpawner)
         {
-            countTimer = 0f;
-            return;
+            disappearRoutine = null;
+            yield break;
         }
 
-        if (!isAvailable)
-        {
-            countTimer = 0f;
-            disappearWarningStarted = false;
-            return;
-        }
-
-        countTimer += Time.deltaTime;
-
-        float warningStartTime = Mathf.Max(0f, disappearTime - disappearWarningDuration);
-
-        if (!disappearWarningStarted &&
-            disappearWarningDuration > 0f &&
-            countTimer >= warningStartTime)
+        if (warningDuration > 0f)
         {
             disappearWarningStarted = true;
 
-            if (cartMaterialManager != null) cartMaterialManager.SetGhostMode(disappearWarningDuration);
+            if (cartMaterialManager != null) cartMaterialManager.SetGhostMode(warningDuration);
+
+            yield return new WaitForSeconds(warningDuration);
         }
 
-        if (countTimer >= disappearTime) Destroy(gameObject);
+        disappearRoutine = null;
+
+        if (isAvailable && !heldBySpawner) Destroy(gameObject);
     }
 
     #endregion
@@ -467,15 +645,14 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
 
     #endregion
 
-    #region Grocery Item State
+    #region Legacy Grocery State - Temporary
 
     public void EnableNormalGroveryItem()
     {
         hasGroceryItem = true;
         hasNormalGroceryItem = true;
         hasExpensiveGroceryItem = false;
-
-        RefreshGroceryItemVisuals();
+        RefreshLegacyGroceryVisuals();
     }
 
     public void EnableExpensiveGroveryItem()
@@ -483,11 +660,10 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
         hasGroceryItem = true;
         hasNormalGroceryItem = false;
         hasExpensiveGroceryItem = true;
-
-        RefreshGroceryItemVisuals();
+        RefreshLegacyGroceryVisuals();
     }
 
-    private void RefreshGroceryItemVisuals()
+    private void RefreshLegacyGroceryVisuals()
     {
         if (normalGroceryItemVisual != null)
         {
@@ -524,6 +700,13 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
         disappearTime = Mathf.Max(0f, disappearTime);
         disappearWarningDuration = Mathf.Clamp(disappearWarningDuration, 0f, disappearTime);
         teamColorMaterialIndex = Mathf.Max(0, teamColorMaterialIndex);
+
+        spillSpawnHeight = Mathf.Max(0f, spillSpawnHeight);
+        spillSpawnRadius = Mathf.Max(0f, spillSpawnRadius);
+        spillImpulseMin = Mathf.Max(0f, spillImpulseMin);
+        spillImpulseMax = Mathf.Max(spillImpulseMin, spillImpulseMax);
+        spillUpwardImpulse = Mathf.Max(0f, spillUpwardImpulse);
+        spilledPickupCollectionDelay = Mathf.Max(0f, spilledPickupCollectionDelay);
     }
 
     #endregion

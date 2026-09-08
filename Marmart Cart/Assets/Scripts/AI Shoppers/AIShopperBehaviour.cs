@@ -137,7 +137,7 @@ public class AIShopperBehaviour : MonoBehaviour
 
         if (itemManager != null)
         {
-            itemManager.CollectByAI();
+            //itemManager.CollectByAI();
 
             // All three collected-cart cases now consistently mean
             // carryingItem = true.

@@ -7,8 +7,8 @@ using UnityEngine;
 /// All four wheel instances should share the same CartMovementProfile and Rigidbody.
 ///
 /// Movement design:
-/// - Normal Drive uses chain-adjusted base speed.
-/// - Drift uses chain-adjusted base speed with tight-drift dip and recoverable fatigue.
+/// - Normal Drive uses cargo-overload-adjusted base speed.
+/// - Drift uses cargo-overload-adjusted base speed with tight-drift dip and recoverable fatigue.
 /// - Speedup is the current fuel-based speedup mode from CartControlScript.
 /// - Turn assist changes engine authority only; lateral grip remains independent.
 /// - Battle/crash systems may temporarily stop and resume wheel drive through
@@ -32,8 +32,8 @@ public class LeadingCartBehaviour : MonoBehaviour
     [Tooltip("Current drift state and tightness.")]
     [SerializeField] private CartDriftController driftController;
 
-    [Tooltip("Runtime owner used only for the chain-length speed penalty.")]
-    [SerializeField] private SnakeCartManager snakeCartManager;
+    [Tooltip("Player cargo controller used to read the current GLOBAL overload movement multiplier.")]
+    [SerializeField] private CargoCapacityController cargoCapacityController;
 
     #endregion
 
@@ -101,19 +101,7 @@ public class LeadingCartBehaviour : MonoBehaviour
 
     #endregion
 
-    #region Chain-Length Speed Penalty
 
-    [Header("Chain-Length Speed Penalty")]
-    [Tooltip("No speed penalty while the effective cart count is at or below this value.")]
-    [SerializeField] private int fullSpeedUntilCarts = 5;
-
-    [Tooltip("Base speed loss for each cart beyond Full Speed Until Carts.")]
-    [SerializeField] private float speedLossPerCart = 0.1f;
-
-    [Tooltip("If true, the leading cart is not counted when applying the speed penalty.")]
-    [SerializeField] private bool excludeLeadingCartFromCount = true;
-
-    #endregion
 
     #region Stop State
 
@@ -142,11 +130,11 @@ public class LeadingCartBehaviour : MonoBehaviour
 
     private void Start()
     {
-        if (snakeCartManager == null) snakeCartManager = GetComponentInParent<SnakeCartManager>();
+        if (cargoCapacityController == null) cargoCapacityController = GetComponentInParent<CargoCapacityController>();
 
-        if (snakeCartManager == null)
+        if (cargoCapacityController == null)
         {
-            Debug.LogWarning("[LeadingCartBehaviour] Runtime SnakeCartManager owner was not found. Chain-length speed penalty will remain inactive.", this);
+            Debug.LogWarning("[LeadingCartBehaviour] CargoCapacityController was not found. Overload movement penalty will remain inactive.", this);
         }
     }
 
@@ -195,8 +183,8 @@ public class LeadingCartBehaviour : MonoBehaviour
 
         currentDriveMode = ResolveDriveMode(isDrifting);
 
-        float chainAdjustedBaseSpeed = ComputeChainAdjustedBaseSpeed();
-        targetSpeed = ComputeTargetSpeed(currentDriveMode, chainAdjustedBaseSpeed);
+        float cargoAdjustedBaseSpeed = ComputeCargoAdjustedBaseSpeed();
+        targetSpeed = ComputeTargetSpeed(currentDriveMode, cargoAdjustedBaseSpeed);
     }
 
     private CartDriveMode ResolveDriveMode(bool isDrifting)
@@ -210,19 +198,27 @@ public class LeadingCartBehaviour : MonoBehaviour
         return CartDriveMode.NormalDrive;
     }
 
-    private float ComputeTargetSpeed(CartDriveMode mode, float chainAdjustedBaseSpeed)
+    private float ComputeTargetSpeed(CartDriveMode mode, float cargoAdjustedBaseSpeed)
     {
         switch (mode)
         {
             case CartDriveMode.Speedup:
-                return Mathf.Max(0f, chainAdjustedBaseSpeed + GetSpeedupAdditiveBonus());
+                return Mathf.Max(0f, cargoAdjustedBaseSpeed + GetSpeedupAdditiveBonus());
 
             case CartDriveMode.Drift:
-                return Mathf.Max(0f, ComputeDriftTargetSpeed(chainAdjustedBaseSpeed));
+                return Mathf.Max(0f, ComputeDriftTargetSpeed(cargoAdjustedBaseSpeed));
 
             default:
-                return Mathf.Max(0f, chainAdjustedBaseSpeed);
+                return Mathf.Max(0f, cargoAdjustedBaseSpeed);
         }
+    }
+
+    private float ComputeCargoAdjustedBaseSpeed()
+    {
+        float baseSpeed = GetProfileBaseSpeed();
+        float overloadMultiplier = cargoCapacityController != null ? cargoCapacityController.MovementSpeedMultiplier : 1f;
+
+        return Mathf.Max(0f, baseSpeed * overloadMultiplier);
     }
 
     #endregion
@@ -465,34 +461,7 @@ public class LeadingCartBehaviour : MonoBehaviour
 
     #endregion
 
-    #region Chain-Length Speed Penalty
 
-    private float ComputeChainAdjustedBaseSpeed()
-    {
-        int cartCount = GetEffectiveCartCount();
-
-        float baseSpeed = GetProfileBaseSpeed();
-        float minimumBaseSpeed = GetProfileMinimumBaseSpeed();
-
-        if (cartCount <= fullSpeedUntilCarts) return baseSpeed;
-
-        float penalizedSpeed = baseSpeed - speedLossPerCart * (cartCount - fullSpeedUntilCarts);
-
-        return Mathf.Max(minimumBaseSpeed, penalizedSpeed);
-    }
-
-    private int GetEffectiveCartCount()
-    {
-        if (snakeCartManager == null) return 0;
-
-        int count = snakeCartManager.GetSnakeBodyLength();
-
-        if (excludeLeadingCartFromCount) count = Mathf.Max(0, count - 1);
-
-        return count;
-    }
-
-    #endregion
 
     #region Movement Profile
 
@@ -523,11 +492,6 @@ public class LeadingCartBehaviour : MonoBehaviour
     private float GetProfileBaseSpeed()
     {
         return movementProfile != null ? movementProfile.baseSpeed : 20f;
-    }
-
-    private float GetProfileMinimumBaseSpeed()
-    {
-        return movementProfile != null ? movementProfile.minimumBaseSpeed : 10f;
     }
 
     private float GetSpeedupAdditiveBonus()

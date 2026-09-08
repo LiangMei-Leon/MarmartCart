@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 3341631081010412033}
   - component: {fileID: 7301706362411791999}
   - component: {fileID: 8147838864649264086}
+  - component: {fileID: 8337426284634087441}
   m_Layer: 0
   m_Name: Chain of Carts Base
   m_TagString: Untagged
@@ -257,3 +258,34 @@ MonoBehaviour:
   isRecentering: 0
   currentHitchSpeed: 0
   currentHitchYawRate: 0
+--- !u!114 &8337426284634087441
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6172510833367344487}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7df0a53e3563d1745a9cbbc07204168c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  snakeCartManager: {fileID: 6429415885519634099}
+  settings: {fileID: 11400000, guid: 2ed7147b99e789940b193086db424cb5, type: 2}
+  debugTestLootDefinitions:
+  - {fileID: 11400000, guid: 4026d120d1d74d54b88ed48ea320832b, type: 2}
+  - {fileID: 11400000, guid: ec9a73219c7e3984f8c0c5bc98cc2f61, type: 2}
+  - {fileID: 11400000, guid: e6726aca3396a264eb4e4bfbdc0da5a5, type: 2}
+  ownedFollowerCount: 0
+  registeredCargoCartCount: 0
+  missingCargoComponentCount: 0
+  totalCapacity: 0
+  totalLoad: 0
+  totalScoreValue: 0
+  overloadAmount: 0
+  isOverloaded: 0
+  capacityNormalized: 0
+  lastAssignedCartName: 
+  lastAssignedOwnedIndex: -1
+  lastAssignmentWasOverflow: 0
+  lastSelectedOverflowRound: 0

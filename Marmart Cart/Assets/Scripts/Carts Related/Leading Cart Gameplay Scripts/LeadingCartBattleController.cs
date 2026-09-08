@@ -31,6 +31,7 @@ public class LeadingCartBattleController : MonoBehaviour
     [SerializeField] private CartMaterialManager cartMaterialManager;
 
     private SnakeCartManager snakeCartManager;
+    private SnakeMoveBackwardController moveBackwardController;
 
     #endregion
 
@@ -69,6 +70,7 @@ public class LeadingCartBattleController : MonoBehaviour
     private Coroutine stopRoutine;
 
     public bool IsInGhostMode => Time.time < ghostUntilTime;
+    public bool IsBattleDetectionSuppressed => moveBackwardController != null && moveBackwardController.IsMovingBackward;
 
     #endregion
 
@@ -101,10 +103,16 @@ public class LeadingCartBattleController : MonoBehaviour
     private void Start()
     {
         snakeCartManager = GetComponentInParent<SnakeCartManager>();
+        moveBackwardController = GetComponentInParent<SnakeMoveBackwardController>();
 
         if (snakeCartManager == null)
         {
             Debug.LogError("[LeadingCartBattleController] Could not find runtime SnakeCartManager owner.", this);
+        }
+
+        if (moveBackwardController == null)
+        {
+            Debug.LogWarning("[LeadingCartBattleController] SnakeMoveBackwardController was not found. MoveBackward battle suppression will be unavailable.", this);
         }
     }
 
@@ -125,7 +133,7 @@ public class LeadingCartBattleController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other == null || IsInGhostMode) return;
+        if (other == null || IsInGhostMode || IsBattleDetectionSuppressed) return;
 
         // Ignore colliders belonging to this same leading-cart Rigidbody.
         if (other.attachedRigidbody == cartBody) return;
