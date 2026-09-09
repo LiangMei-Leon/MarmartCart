@@ -5,7 +5,7 @@ using UnityEngine.Serialization;
 
 /// <summary>
 /// Owns the player's cart chain, distance-path following, cart creation/removal,
-/// grocery bookkeeping, stall vulnerability, and MoveBackward handoff.
+/// stall vulnerability, owned-follower topology, and MoveBackward handoff.
 /// </summary>
 public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 {
@@ -88,8 +88,6 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
     [SerializeField] private List<GameObject> bodyParts = new List<GameObject>();
     [SerializeField] private List<GameObject> snakeBody = new List<GameObject>();
 
-    [FormerlySerializedAs("cartsWithOutItem")]
-    [SerializeField] private List<GameObject> cartsWithoutItem = new List<GameObject>();
 
     [Header("Follower Scale")]
     [SerializeField] private Vector3 normalScale = new Vector3(6f, 6f, 6f);
@@ -156,8 +154,6 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
     private bool followerScaleDirty = true;
     private bool lastNeedScaleup;
 
-    [FormerlySerializedAs("numOfCartsWithGroceryItem")]
-    [SerializeField] private int groceryItemCartCount;
 
     #endregion
 
@@ -590,8 +586,6 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 
     private void FinishFollowerSpawn(GameObject newCart, ChainedCartManager newCartManager)
     {
-        if (newCartManager != null && !newCartManager.HasGroceryItem()) cartsWithoutItem.Add(newCart);
-
         bodyParts.RemoveAt(0);
         followerSpawnTimer = 0f;
         followerScaleDirty = true;
@@ -1144,17 +1138,12 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 
             ChainedCartManager cartManager = GetCartManager(cart);
 
-            if (cartManager != null && cartManager.HasGroceryItem())
-            {
-                groceryItemCartCount = Mathf.Max(0, groceryItemCartCount - 1);
-            }
 
             cart.transform.localScale = normalScale;
             cart.transform.SetParent(null);
 
             if (cartManager != null && cartManager.isCollectedByPlayer) cartManager.OnDetach();
 
-            cartsWithoutItem.Remove(cart);
             UncacheCartManager(cart);
         }
 
@@ -1189,17 +1178,12 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 
             ChainedCartManager cartManager = pending.manager != null ? pending.manager : GetCartManager(pending.cart);
 
-            if (cartManager != null && cartManager.HasGroceryItem())
-            {
-                groceryItemCartCount = Mathf.Max(0, groceryItemCartCount - 1);
-            }
 
             pending.cart.transform.localScale = normalScale;
             pending.cart.transform.SetParent(null);
 
             if (cartManager != null && cartManager.isCollectedByPlayer) cartManager.OnDetach();
 
-            cartsWithoutItem.Remove(pending.cart);
             UncacheCartManager(pending.cart);
         }
 
@@ -1664,134 +1648,63 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 
     #endregion
 
-    #region Checkout / Grocery Items
+    #region Checkout V2
 
-    public int CheckOutNextCartWithItem()
+    /// <summary>
+    /// Permanently removes ONE exact owned follower cart for checkout.
+    ///
+    /// This is NOT a detach:
+    /// - no loose cart is created;
+    /// - no cargo spills;
+    /// - carts behind it remain owned;
+    /// - the removed physical cart is destroyed.
+    ///
+    /// CheckOutManager is responsible for reading/scoring the cart's
+    /// ChainCartCargo BEFORE calling this method.
+    /// </summary>
+    public bool TryRemoveFollowerForCheckout(ChainedCartManager cartManager)
     {
-        if (snakeBody.Count <= 1 && pendingFollowers.Count == 0) return groceryItemCartCount;
+        if (cartManager == null) return false;
 
+        GameObject targetCart = cartManager.gameObject;
+        if (targetCart == null) return false;
+
+        // Active path followers: C1 -> active tail.
         for (int i = 1; i < snakeBody.Count; i++)
         {
-            GameObject cart = snakeBody[i];
-            if (cart == null) continue;
+            if (snakeBody[i] != targetCart) continue;
 
-            ChainedCartManager cartManager = GetCartManager(cart);
-            if (cartManager == null || !cartManager.HasGroceryItem()) continue;
-
-            RegisterCheckoutForCart(cartManager);
             RemoveAndDestroySnakeCartAt(i);
-            return groceryItemCartCount;
+            return true;
         }
 
-        // Pending carts are already visibly owned and can receive grocery items,
-        // so checkout must also be able to consume them.
+        // Pending followers are also already player-owned and may contain cargo.
         for (int i = 0; i < pendingFollowers.Count; i++)
         {
             PendingFollower pending = pendingFollowers[i];
-            if (pending == null || pending.cart == null) continue;
+            if (pending == null || pending.cart != targetCart) continue;
 
-            ChainedCartManager cartManager = pending.manager != null ? pending.manager : GetCartManager(pending.cart);
-            if (cartManager == null || !cartManager.HasGroceryItem()) continue;
-
-            RegisterCheckoutForCart(cartManager);
             RemoveAndDestroyPendingCartAt(i);
-            return groceryItemCartCount;
+            return true;
         }
 
-        return groceryItemCartCount;
-    }
-
-    private void RegisterCheckoutForCart(ChainedCartManager cartManager)
-    {
-        if (cartManager == null) return;
-
-        bool isExpensiveItem = cartManager.isCarryingExpensiveGroceryItem();
-        groceryItemCartCount = Mathf.Max(0, groceryItemCartCount - 1);
-
-        if (cashScoreManager != null) cashScoreManager.RegisterItemCheckout(playerIndex, isExpensiveItem);
-        if (sfxManager != null) sfxManager.PlaySFX("CheckoutSingle");
-    }
-
-    public void CollectNormalGroceryItem()
-    {
-        if (!TryTakeRandomEmptyCart(out ChainedCartManager cartManager)) return;
-
-        groceryItemCartCount++;
-        cartManager.EnableNormalGroveryItem();
-    }
-
-    public void CollectExpensiveGroceryItem()
-    {
-        if (!TryTakeRandomEmptyCart(out ChainedCartManager cartManager)) return;
-
-        groceryItemCartCount++;
-        cartManager.EnableExpensiveGroveryItem();
-    }
-
-    private bool TryTakeRandomEmptyCart(out ChainedCartManager cartManager)
-    {
-        cartManager = null;
-
-        while (cartsWithoutItem.Count > 0)
-        {
-            int cartIndex = Random.Range(0, cartsWithoutItem.Count);
-            GameObject cart = cartsWithoutItem[cartIndex];
-
-            cartsWithoutItem.RemoveAt(cartIndex);
-
-            if (cart == null) continue;
-
-            cartManager = GetCartManager(cart);
-            if (cartManager != null) return true;
-        }
+        Debug.LogWarning(
+            $"[SnakeCartManager] Checkout could not remove '{targetCart.name}' because it is not currently owned by this snake.",
+            targetCart
+        );
 
         return false;
     }
 
-    public void IncreaseNumOfCartsWithItem()
-    {
-        groceryItemCartCount++;
-    }
+    #endregion
 
-    public int GetCurrentNumOfCartsWithItem()
-    {
-        return groceryItemCartCount;
-    }
+    #region Owned Follower Destruction
 
-    public bool HasEmptyCartForGroceryItem()
-    {
-        return cartsWithoutItem.Count > 0;
-    }
-
-    public void RemoveAllCartsWithItem()
-    {
-        if (sfxManager != null) sfxManager.PlaySFX("CheckoutCarts");
-
-        for (int i = snakeBody.Count - 1; i >= 1; i--)
-        {
-            GameObject cart = snakeBody[i];
-            if (cart == null) continue;
-
-            ChainedCartManager cartManager = GetCartManager(cart);
-            if (cartManager == null || !cartManager.HasGroceryItem()) continue;
-
-            groceryItemCartCount = Mathf.Max(0, groceryItemCartCount - 1);
-            RemoveAndDestroySnakeCartAt(i);
-        }
-
-        for (int i = pendingFollowers.Count - 1; i >= 0; i--)
-        {
-            PendingFollower pending = pendingFollowers[i];
-            if (pending == null || pending.cart == null) continue;
-
-            ChainedCartManager cartManager = pending.manager != null ? pending.manager : GetCartManager(pending.cart);
-            if (cartManager == null || !cartManager.HasGroceryItem()) continue;
-
-            groceryItemCartCount = Mathf.Max(0, groceryItemCartCount - 1);
-            RemoveAndDestroyPendingCartAt(i);
-        }
-    }
-
+    /// <summary>
+    /// Permanently destroys one ACTIVE follower while keeping every cart behind
+    /// it owned. Used by checkout after the cart's CargoEntries have already
+    /// been snapshotted by CheckOutManager.
+    /// </summary>
     private void RemoveAndDestroySnakeCartAt(int index)
     {
         if (index < 1 || index >= snakeBody.Count) return;
@@ -1799,7 +1712,6 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
         GameObject cart = snakeBody[index];
 
         snakeBody.RemoveAt(index);
-        cartsWithoutItem.Remove(cart);
         UncacheCartManager(cart);
 
         followerScaleDirty = true;
@@ -1816,6 +1728,9 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
         }
     }
 
+    /// <summary>
+    /// Permanently destroys one PENDING owned follower.
+    /// </summary>
     private void RemoveAndDestroyPendingCartAt(int index)
     {
         if (index < 0 || index >= pendingFollowers.Count) return;
@@ -1828,7 +1743,6 @@ public class SnakeCartManager : MonoBehaviour, IAssistPlayerDataSource
 
         if (cart != null)
         {
-            cartsWithoutItem.Remove(cart);
             UncacheCartManager(cart);
             Destroy(cart);
         }

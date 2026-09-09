@@ -1232,10 +1232,16 @@ MonoBehaviour:
   driftController: {fileID: 5516393899602412129}
   enableDriftSpeedupOverride: 1
   canAim: 0
-  speedUpMeter: 100
-  speedUpConsumeRate: 1
+  maxHype: 100
+  startingHype: 100
+  baseHypeBurnPerSecond: 10
+  safeOwnedFollowerCount: 4
+  hypeBurnMultiplierIncreasePerOwnedCart: 0.1
+  maxHypeBurnMultiplier: 2.5
+  snakeCartManager: {fileID: 0}
   canSpeedup: 1
-  speedupEvent: {fileID: 11400000, guid: 3aeaccc6664a25346b77bae38223b5d0, type: 2}
+  currentHype: 100
+  hypeBurnOwnedFollowerCount: 0
   canMoveBackward: 0
   canActivatePowerUp: 0
   powerupsManager: {fileID: 3813164078017089217}
@@ -1342,10 +1348,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   driftController: {fileID: 5516393899602412129}
   cartController: {fileID: 5901886544005484465}
-  enableDriftFuelReward: 1
+  enableDriftHypeReward: 1
   minimumSuccessDuration: 0.6
-  baseFuelGainPerSecond: 5
-  maxFuelRewardPerDrift: 100
+  baseHypeGainPerSecond: 5
+  maxHypeRewardPerDrift: 100
   minimumRewardTightness: 0
   minTightnessRewardMultiplier: 0.5
   maxTightnessRewardMultiplier: 1.5
@@ -3059,6 +3065,7 @@ MonoBehaviour:
   vulnerableHitCooldown: 0.12
   ghostUntilTime: 0
   nextVulnerableHitTime: 0
+  checkoutBattleSuppressed: 0
 --- !u!1 &3739934952405941076
 GameObject:
   m_ObjectHideFlags: 0
@@ -3182,7 +3189,7 @@ MonoBehaviour:
   cartBody: {fileID: 7702077170865368901}
   movementProfile: {fileID: 11400000, guid: cfdd6c4e731faab4ca37cf80a6258ba3, type: 2}
   driftController: {fileID: 5516393899602412129}
-  snakeCartManager: {fileID: 0}
+  cargoCapacityController: {fileID: 0}
   layerMask:
     serializedVersion: 2
     m_Bits: 64
@@ -3254,9 +3261,6 @@ MonoBehaviour:
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  fullSpeedUntilCarts: 5
-  speedLossPerCart: 0.05
-  excludeLeadingCartFromCount: 1
 --- !u!1 &3988090723409313001
 GameObject:
   m_ObjectHideFlags: 0
@@ -3489,7 +3493,7 @@ MonoBehaviour:
   cartBody: {fileID: 7702077170865368901}
   movementProfile: {fileID: 11400000, guid: cfdd6c4e731faab4ca37cf80a6258ba3, type: 2}
   driftController: {fileID: 5516393899602412129}
-  snakeCartManager: {fileID: 0}
+  cargoCapacityController: {fileID: 0}
   layerMask:
     serializedVersion: 2
     m_Bits: 64
@@ -3561,9 +3565,6 @@ MonoBehaviour:
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  fullSpeedUntilCarts: 5
-  speedLossPerCart: 0.05
-  excludeLeadingCartFromCount: 1
 --- !u!1 &4329385579672087611
 GameObject:
   m_ObjectHideFlags: 0
@@ -4470,7 +4471,7 @@ MonoBehaviour:
   speedUpFillImage: {fileID: 2916218813035655126}
   speedUpPendingFillImage: {fileID: 0}
   desiredMaxFill: 0.5
-  driftFuelReward: {fileID: 0}
+  driftHypeReward: {fileID: 0}
   animateRealFuelFill: 1
   realFuelFillLerpSpeed: 12
   animatePendingFuelFill: 1
@@ -5683,7 +5684,7 @@ MonoBehaviour:
   cartBody: {fileID: 7702077170865368901}
   movementProfile: {fileID: 11400000, guid: cfdd6c4e731faab4ca37cf80a6258ba3, type: 2}
   driftController: {fileID: 5516393899602412129}
-  snakeCartManager: {fileID: 0}
+  cargoCapacityController: {fileID: 0}
   layerMask:
     serializedVersion: 2
     m_Bits: 64
@@ -5755,9 +5756,6 @@ MonoBehaviour:
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  fullSpeedUntilCarts: 5
-  speedLossPerCart: 0.05
-  excludeLeadingCartFromCount: 1
 --- !u!1 &6515940038003015164
 GameObject:
   m_ObjectHideFlags: 0
@@ -16143,7 +16141,7 @@ MonoBehaviour:
   speedUpFillImage: {fileID: 2261444398123183965}
   speedUpPendingFillImage: {fileID: 5811002905432394017}
   desiredMaxFill: 0.5
-  driftFuelReward: {fileID: 8264941289741221997}
+  driftHypeReward: {fileID: 8264941289741221997}
   animateRealFuelFill: 1
   realFuelFillLerpSpeed: 12
   animatePendingFuelFill: 1
@@ -17408,7 +17406,7 @@ MonoBehaviour:
   cartBody: {fileID: 7702077170865368901}
   movementProfile: {fileID: 11400000, guid: cfdd6c4e731faab4ca37cf80a6258ba3, type: 2}
   driftController: {fileID: 5516393899602412129}
-  snakeCartManager: {fileID: 0}
+  cargoCapacityController: {fileID: 0}
   layerMask:
     serializedVersion: 2
     m_Bits: 64
@@ -17480,9 +17478,6 @@ MonoBehaviour:
   minSpeed: 0
   brakeFactor: 1
   maxBrakeForce: 50
-  fullSpeedUntilCarts: 5
-  speedLossPerCart: 0.05
-  excludeLeadingCartFromCount: 1
 --- !u!1 &8861251655955522181
 GameObject:
   m_ObjectHideFlags: 0

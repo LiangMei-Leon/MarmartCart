@@ -66,11 +66,15 @@ public class LeadingCartBattleController : MonoBehaviour
     [Header("Runtime - Read Only")]
     [SerializeField] private float ghostUntilTime;
     [SerializeField] private float nextVulnerableHitTime;
+    [SerializeField] private bool checkoutBattleSuppressed;
 
     private Coroutine stopRoutine;
 
     public bool IsInGhostMode => Time.time < ghostUntilTime;
-    public bool IsBattleDetectionSuppressed => moveBackwardController != null && moveBackwardController.IsMovingBackward;
+    public bool IsCheckoutBattleSuppressed => checkoutBattleSuppressed;
+    public bool IsBattleDetectionSuppressed =>
+        checkoutBattleSuppressed ||
+        (moveBackwardController != null && moveBackwardController.IsMovingBackward);
 
     #endregion
 
@@ -270,6 +274,19 @@ public class LeadingCartBattleController : MonoBehaviour
         if (backward.sqrMagnitude > 0.001f) return backward.normalized;
 
         return -Vector3.forward;
+    }
+
+    #endregion
+
+    #region Silent Checkout Suppression
+
+    /// <summary>
+    /// Silently disables battle resolution while checkout owns this leader's
+    /// movement. Unlike Ghost Mode, this does not trigger any material effect.
+    /// </summary>
+    public void SetCheckoutBattleSuppressed(bool suppressed)
+    {
+        checkoutBattleSuppressed = suppressed;
     }
 
     #endregion

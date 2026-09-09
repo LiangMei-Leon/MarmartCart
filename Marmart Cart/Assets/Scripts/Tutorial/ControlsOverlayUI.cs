@@ -39,7 +39,6 @@ public class ControlsOverlayUI : MonoBehaviour
         // These events need to exist in CartControlScript
         _cart.OnMoveBackwardPressed += HandleMoveBackward;
         _cart.OnCheckoutReleased += HandleCheckout;
-        _cart.OnExitReleased += HandleExit;
         _cart.OnShootPressed += HandleShoot;
         _cart.OnMoveHeld += HandleMoveHeld;
         _cart.OnAimHeld += HandleAimHeld;
@@ -51,7 +50,6 @@ public class ControlsOverlayUI : MonoBehaviour
         if (_cart == null) return;
         _cart.OnMoveBackwardPressed -= HandleMoveBackward;
         _cart.OnCheckoutReleased = HandleCheckout;
-        _cart.OnExitReleased -= HandleExit;
         _cart.OnShootPressed -= HandleShoot;
         _cart.OnMoveHeld -= HandleMoveHeld;
         _cart.OnAimHeld -= HandleAimHeld;

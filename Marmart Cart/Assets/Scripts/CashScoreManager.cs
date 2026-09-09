@@ -1,25 +1,36 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
-using Unity.Hierarchy;
 using UnityEngine;
 
+/// <summary>
+/// Owns persistent player/team score and checkout-session reward calculation.
+///
+/// NEW checkout scoring:
+/// - base score comes from CargoEntry.ScoreValue;
+/// - streak / milestone bonuses are based on total CargoEntry count submitted
+///   during the current checkout session;
+/// - physical cart count is tracked for presentation only, not streak value.
+///
+/// </summary>
 public class CashScoreManager : MonoBehaviour
 {
     public const int MaxPlayers = 4;
     public const int MaxLanes = 2;
 
-    [Header("Item Values")]
-    [SerializeField] private int normalItemValue = 10;
-    [SerializeField] private int expensiveItemValue = 50;
 
-    [Header("Checkout Milestone Bonuses")]
+    #region Cargo Streak Bonuses
+
+    [Header("Cargo Checkout Milestone Bonuses")]
+    [Tooltip("Thresholds are now TOTAL CARGO ENTRIES submitted during one checkout session.")]
     [SerializeField] private int streakThresholdLvl1 = 10;
     [SerializeField] private int streakThresholdLvl2 = 20;
     [SerializeField] private int streakThresholdLvl3 = 30;
     [SerializeField] private int streakThresholdLvl4 = 30;
     [SerializeField] private int streakThresholdLvl5 = 30;
     [SerializeField] private int streakThresholdLvl6 = 30;
+
     [SerializeField] private int streakThresholdBonusPts1 = 50;
     [SerializeField] private int streakThresholdBonusPts2 = 70;
     [SerializeField] private int streakThresholdBonusPts3 = 100;
@@ -27,16 +38,51 @@ public class CashScoreManager : MonoBehaviour
     [SerializeField] private int streakThresholdBonusPts5 = 190;
     [SerializeField] private int streakThresholdBonusPts6 = 250;
 
+    #endregion
+
+    #region Team Mapping
+
     [Header("Team Mapping (used only in TeamBattle mode)")]
     [Tooltip("Example: Team 1 = players 1 & 3")]
     [SerializeField] private int[] team1Players = new[] { 1, 3 };
+
     [Tooltip("Example: Team 2 = players 2 & 4")]
     [SerializeField] private int[] team2Players = new[] { 2, 4 };
+
+    #endregion
+
+    #region Totals
 
     [Header("Totals (debug)")]
     [SerializeField] private float[] playerTotalScore = new float[MaxPlayers];
 
-    private Coroutine[] popupAnims = new Coroutine[MaxPlayers];
+    [Header("Checkout Reward Debug")]
+    [Min(0)]
+    [SerializeField] private int debugProjectedCargoCount = 10;
+
+    #endregion
+
+    #region Context Menu Tests
+
+    [ContextMenu("TEST - Log Projected Cargo Reward")]
+    private void DebugLogProjectedCargoReward()
+    {
+        int cargoCount = Mathf.Max(0, debugProjectedCargoCount);
+        int tier = GetProjectedStreakTier(cargoCount);
+        int bonus = GetProjectedBonusPoints(cargoCount);
+        int nextThreshold = GetNextStreakThreshold(cargoCount);
+
+        Debug.Log(
+            $"[CashScoreManager] Projected Cargo Reward | Cargo:{cargoCount} | " +
+            $"StreakAchievable:{IsCheckoutStreakAchievable(cargoCount)} | Tier:{tier} | " +
+            $"Bonus:{bonus} | NextThreshold:{nextThreshold}",
+            this
+        );
+    }
+
+    #endregion
+
+    #region Checkout UI
 
     [Header("Checkout Session UI Roots (optional)")]
     [Tooltip("Per player, per lane root. [playerIndex-1, laneIndex]")]
@@ -57,44 +103,77 @@ public class CashScoreManager : MonoBehaviour
 
     private Coroutine[,] subtotalPulseAnims = new Coroutine[MaxPlayers, MaxLanes];
 
-    // --------- SESSION DATA ---------
+    #endregion
+
+    #region Session Data
+
     [Serializable]
     public class CheckoutSessionData
     {
         public bool isActive;
         public int laneIndex;
 
-        public int itemsCount;
-        public int normalCount;
-        public int expensiveCount;
+        [Header("Cargo Checkout")]
+        public int cargoCount;
+        public int checkedOutCartCount;
 
         public float basePoints;
-        public float multiplier;
-        public float bonusPoints;   // NEW: milestone bonuses
+        public float bonusPoints;
         public float subtotal;
+
 
         public void Reset()
         {
             isActive = false;
-            itemsCount = 0;
-            normalCount = 0;
-            expensiveCount = 0;
+            laneIndex = -1;
+
+            cargoCount = 0;
+            checkedOutCartCount = 0;
+
             basePoints = 0f;
-            multiplier = 1f;
             bonusPoints = 0f;
             subtotal = 0f;
-            laneIndex = -1;
+
+        }
+
+        public void CopyFrom(CheckoutSessionData other)
+        {
+            if (other == null)
+            {
+                Reset();
+                return;
+            }
+
+            isActive = other.isActive;
+            laneIndex = other.laneIndex;
+            cargoCount = other.cargoCount;
+            checkedOutCartCount = other.checkedOutCartCount;
+            basePoints = other.basePoints;
+            bonusPoints = other.bonusPoints;
+            subtotal = other.subtotal;
         }
     }
 
-    private CheckoutSessionData[] currentSession = new CheckoutSessionData[MaxPlayers];
-    private CheckoutSessionData[] lastSession = new CheckoutSessionData[MaxPlayers];
+    private readonly CheckoutSessionData[] currentSession = new CheckoutSessionData[MaxPlayers];
+    private readonly CheckoutSessionData[] lastSession = new CheckoutSessionData[MaxPlayers];
+
+    #endregion
+
+    #region Events
+
+    public event Action<int, int, int> OnPlayerScoreGained;
+    public event Action<int, int, int> OnTeamScoreGained;
+
+    /// <summary>
+    /// playerIndex, current cargo count, current subtotal
+    /// </summary>
+    public event Action<int, int, int> OnCheckoutSessionUpdated;
+
+    #endregion
+
+    #region Unity Lifecycle
 
     private int ActivePlayerCount => Mathf.Clamp(GMode.Instance ? GMode.Instance.PlayerCount() : 2, 1, MaxPlayers);
-
-    // ---------- EVENTS ----------
-    public event Action<int, int, int> OnPlayerScoreGained; // (playerIndex, gain, newTotal)
-    public event Action<int, int, int> OnTeamScoreGained;   // (teamIndex, gain, teamTotal)
 
     private void Awake()
     {
@@ -109,87 +188,104 @@ public class CashScoreManager : MonoBehaviour
     {
         ResetAllScores();
 
-        // Hide lane UIs by default if wired
         for (int p = 1; p <= ActivePlayerCount; p++)
         {
             for (int lane = 1; lane <= MaxLanes; lane++)
+            {
                 ShowCheckoutUI(p, lane, false);
+            }
 
-            for (int laneIdx = 0; laneIdx < MaxLanes; laneIdx++)
-                ResetCheckoutSessionUI(p, laneIdx);
+            for (int laneIndex = 0; laneIndex < MaxLanes; laneIndex++)
+            {
+                ResetCheckoutSessionUI(p, laneIndex);
+            }
         }
     }
 
-    // ---------------- PUBLIC API ----------------
+    #endregion
+
+    #region Checkout Session
 
     public void StartCheckoutSession(int playerIndex, int laneIndex)
     {
         if (!IsValidPlayer(playerIndex)) return;
 
-        var session = currentSession[playerIndex - 1];
+        CheckoutSessionData session = currentSession[playerIndex - 1];
         session.Reset();
         session.isActive = true;
         session.laneIndex = laneIndex;
-    }
-
-    public void RegisterItemCheckout(int playerIndex, bool isExpensive)
-    {
-        if (!IsValidPlayer(playerIndex)) return;
-
-        var session = currentSession[playerIndex - 1];
-
-        if (!session.isActive)
-        {
-            session.Reset();
-            session.isActive = true;
-        }
-
-        session.itemsCount++;
-
-        if (isExpensive)
-        {
-            session.expensiveCount++;
-            session.basePoints += expensiveItemValue;
-        }
-        else
-        {
-            session.normalCount++;
-            session.basePoints += normalItemValue;
-        }
-
-        session.bonusPoints = GetMilestoneBonus(session.itemsCount);
-        session.subtotal = session.basePoints + session.bonusPoints;
 
         UpdateCheckoutSessionUI(playerIndex, session);
+    }
+
+    /// <summary>
+    /// Registers one physical follower cart being checked out.
+    ///
+    /// Every CargoEntry on that cart contributes:
+    /// - +1 cargo toward streak thresholds;
+    /// - CargoEntry.ScoreValue toward base score.
+    ///
+    /// Returns the base score added by this physical cart.
+    /// Empty carts register nothing and do not increment checkedOutCartCount.
+    /// </summary>
+    public int RegisterCargoCheckout(int playerIndex, IReadOnlyList<CargoEntry> cargoEntries)
+    {
+        if (!IsValidPlayer(playerIndex) || cargoEntries == null || cargoEntries.Count == 0) return 0;
+
+        CheckoutSessionData session = EnsureActiveSession(playerIndex);
+
+        int cargoAdded = 0;
+        int scoreAdded = 0;
+
+        for (int i = 0; i < cargoEntries.Count; i++)
+        {
+            CargoEntry entry = cargoEntries[i];
+            if (entry == null) continue;
+
+            cargoAdded++;
+            scoreAdded += Mathf.Max(0, entry.ScoreValue);
+        }
+
+        if (cargoAdded <= 0) return 0;
+
+        session.checkedOutCartCount++;
+        session.cargoCount += cargoAdded;
+        session.basePoints += scoreAdded;
+        RefreshSessionReward(session);
+
+        UpdateCheckoutSessionUI(playerIndex, session);
+        OnCheckoutSessionUpdated?.Invoke(playerIndex, session.cargoCount, Mathf.RoundToInt(session.subtotal));
+
+        return scoreAdded;
     }
 
     public void EndCheckoutSession(int playerIndex)
     {
         if (!IsValidPlayer(playerIndex)) return;
 
-        var session = currentSession[playerIndex - 1];
-        var last = lastSession[playerIndex - 1];
+        CheckoutSessionData session = currentSession[playerIndex - 1];
+        CheckoutSessionData last = lastSession[playerIndex - 1];
 
-        if (!session.isActive || session.itemsCount <= 0)
+        if (!session.isActive || session.cargoCount <= 0)
         {
+            int laneIndex = session.laneIndex;
             session.Reset();
+
+            if (laneIndex >= 0) ResetCheckoutSessionUI(playerIndex, laneIndex);
             return;
         }
 
         int gain = Mathf.RoundToInt(session.subtotal);
 
-        // Apply to player total
         playerTotalScore[playerIndex - 1] += gain;
         int newTotal = GetPlayerScore(playerIndex);
 
-
-        // event for per-screen leaderboard popup
         OnPlayerScoreGained?.Invoke(playerIndex, gain, newTotal);
 
-        // If team mode, also fire team gain event (same gain)
         if (GMode.Instance && GMode.Instance.IsTeamBattle)
         {
             int team = GetTeamIndexForPlayer(playerIndex);
+
             if (team != 0)
             {
                 int teamTotal = GetTeamScore(team == 1 ? team1Players : team2Players);
@@ -197,19 +293,19 @@ public class CashScoreManager : MonoBehaviour
             }
         }
 
-        // snapshot last session
+        last.CopyFrom(session);
         last.isActive = false;
-        last.itemsCount = session.itemsCount;
-        last.normalCount = session.normalCount;
-        last.expensiveCount = session.expensiveCount;
-        last.basePoints = session.basePoints;
-        last.multiplier = session.multiplier;
-        last.bonusPoints = session.bonusPoints;
-        last.subtotal = session.subtotal;
-        last.laneIndex = session.laneIndex;
 
-        ResetCheckoutSessionUI(playerIndex, session.laneIndex);
+        int completedLaneIndex = session.laneIndex;
         session.Reset();
+
+        if (completedLaneIndex >= 0) ResetCheckoutSessionUI(playerIndex, completedLaneIndex);
+    }
+
+    public CheckoutSessionData GetCurrentSessionData(int playerIndex)
+    {
+        if (!IsValidPlayer(playerIndex)) return null;
+        return currentSession[playerIndex - 1];
     }
 
     public CheckoutSessionData GetLastSessionData(int playerIndex)
@@ -218,20 +314,89 @@ public class CashScoreManager : MonoBehaviour
         return lastSession[playerIndex - 1];
     }
 
-    public void ShowCheckoutUI(int playerIndex, int laneIndex, bool show)
+    #endregion
+
+    #region Projected Cargo Streak API
+
+    /// <summary>
+    /// True when this cargo count reaches at least the first configured milestone.
+    /// Intended for future "streak achievable" HUD messaging.
+    /// </summary>
+    public bool IsCheckoutStreakAchievable(int cargoCount)
     {
-        if (!IsValidPlayer(playerIndex)) return;
-        if (laneIndex < 1 || laneIndex > MaxLanes) return;
-
-        int idx = RootIndex(playerIndex, laneIndex - 1);
-        var root = checkoutLaneUIRoots != null && idx >= 0 && idx < checkoutLaneUIRoots.Length
-            ? checkoutLaneUIRoots[idx]
-            : null;
-
-        if (root != null) root.SetActive(show);
+        return GetProjectedStreakTier(cargoCount) > 0;
     }
 
-    // ---------------- GETTERS ----------------
+    /// <summary>
+    /// Number of configured milestone thresholds reached by this cargo count.
+    /// Duplicate thresholds intentionally count as separate configured milestones,
+    /// matching the existing milestone-bonus behavior.
+    /// </summary>
+    public int GetProjectedStreakTier(int cargoCount)
+    {
+        int tier = 0;
+
+        if (cargoCount >= streakThresholdLvl1) tier++;
+        if (cargoCount >= streakThresholdLvl2) tier++;
+        if (cargoCount >= streakThresholdLvl3) tier++;
+        if (cargoCount >= streakThresholdLvl4) tier++;
+        if (cargoCount >= streakThresholdLvl5) tier++;
+        if (cargoCount >= streakThresholdLvl6) tier++;
+
+        return tier;
+    }
+
+    public int GetProjectedBonusPoints(int cargoCount)
+    {
+        return GetMilestoneBonus(Mathf.Max(0, cargoCount));
+    }
+
+    /// <summary>
+    /// Returns the smallest configured threshold greater than cargoCount.
+    /// Returns -1 when every configured milestone has already been reached.
+    /// </summary>
+    public int GetNextStreakThreshold(int cargoCount)
+    {
+        int next = int.MaxValue;
+
+        TrySelectNextThreshold(streakThresholdLvl1, cargoCount, ref next);
+        TrySelectNextThreshold(streakThresholdLvl2, cargoCount, ref next);
+        TrySelectNextThreshold(streakThresholdLvl3, cargoCount, ref next);
+        TrySelectNextThreshold(streakThresholdLvl4, cargoCount, ref next);
+        TrySelectNextThreshold(streakThresholdLvl5, cargoCount, ref next);
+        TrySelectNextThreshold(streakThresholdLvl6, cargoCount, ref next);
+
+        return next == int.MaxValue ? -1 : next;
+    }
+
+    public int GetFirstStreakThreshold()
+    {
+        int first = int.MaxValue;
+
+        SelectPositiveMinimum(streakThresholdLvl1, ref first);
+        SelectPositiveMinimum(streakThresholdLvl2, ref first);
+        SelectPositiveMinimum(streakThresholdLvl3, ref first);
+        SelectPositiveMinimum(streakThresholdLvl4, ref first);
+        SelectPositiveMinimum(streakThresholdLvl5, ref first);
+        SelectPositiveMinimum(streakThresholdLvl6, ref first);
+
+        return first == int.MaxValue ? -1 : first;
+    }
+
+    private void TrySelectNextThreshold(int threshold, int cargoCount, ref int currentNext)
+    {
+        if (threshold > cargoCount && threshold < currentNext) currentNext = threshold;
+    }
+
+    private void SelectPositiveMinimum(int threshold, ref int currentMinimum)
+    {
+        if (threshold > 0 && threshold < currentMinimum) currentMinimum = threshold;
+    }
+
+    #endregion
+
+
+    #region Score / Team API
 
     public int GetPlayerScore(int playerIndex)
     {
@@ -244,8 +409,10 @@ public class CashScoreManager : MonoBehaviour
         int sum = 0;
         if (teamPlayers == null) return 0;
 
-        foreach (int p in teamPlayers)
-            sum += GetPlayerScore(p);
+        for (int i = 0; i < teamPlayers.Length; i++)
+        {
+            sum += GetPlayerScore(teamPlayers[i]);
+        }
 
         return sum;
     }
@@ -253,17 +420,77 @@ public class CashScoreManager : MonoBehaviour
     public int GetTeamIndexForPlayer(int playerIndex)
     {
         if (team1Players != null)
+        {
             for (int i = 0; i < team1Players.Length; i++)
+            {
                 if (team1Players[i] == playerIndex) return 1;
+            }
+        }
 
         if (team2Players != null)
+        {
             for (int i = 0; i < team2Players.Length; i++)
+            {
                 if (team2Players[i] == playerIndex) return 2;
+            }
+        }
 
         return 0;
     }
 
-    // ---------------- INTERNAL ----------------
+    public void ShowCheckoutUI(int playerIndex, int laneIndex, bool show)
+    {
+        if (!IsValidPlayer(playerIndex)) return;
+        if (laneIndex < 1 || laneIndex > MaxLanes) return;
+
+        int index = RootIndex(playerIndex, laneIndex - 1);
+
+        GameObject root =
+            checkoutLaneUIRoots != null &&
+            index >= 0 &&
+            index < checkoutLaneUIRoots.Length
+                ? checkoutLaneUIRoots[index]
+                : null;
+
+        if (root != null) root.SetActive(show);
+    }
+
+    #endregion
+
+    #region Internal Reward Calculation
+
+    private CheckoutSessionData EnsureActiveSession(int playerIndex)
+    {
+        CheckoutSessionData session = currentSession[playerIndex - 1];
+
+        if (!session.isActive)
+        {
+            session.Reset();
+            session.isActive = true;
+        }
+
+        return session;
+    }
+
+    private void RefreshSessionReward(CheckoutSessionData session)
+    {
+        session.bonusPoints = GetMilestoneBonus(session.cargoCount);
+        session.subtotal = session.basePoints + session.bonusPoints;
+    }
+
+    private int GetMilestoneBonus(int cargoCount)
+    {
+        int bonus = 0;
+
+        if (cargoCount >= streakThresholdLvl1) bonus += streakThresholdBonusPts1;
+        if (cargoCount >= streakThresholdLvl2) bonus += streakThresholdBonusPts2;
+        if (cargoCount >= streakThresholdLvl3) bonus += streakThresholdBonusPts3;
+        if (cargoCount >= streakThresholdLvl4) bonus += streakThresholdBonusPts4;
+        if (cargoCount >= streakThresholdLvl5) bonus += streakThresholdBonusPts5;
+        if (cargoCount >= streakThresholdLvl6) bonus += streakThresholdBonusPts6;
+
+        return bonus;
+    }
 
     private bool IsValidPlayer(int playerIndex)
     {
@@ -280,58 +507,46 @@ public class CashScoreManager : MonoBehaviour
         }
     }
 
-    private float GetComboMultiplier(int itemsCount)
-    {
-        if (itemsCount <= 10) return 1f;
-        if (itemsCount <= 20) return 1f + 0.1f * (itemsCount - 10);
-        if (itemsCount <= 30) return 2f + 0.15f * (itemsCount - 20);
-        return 4f;
-    }
-    private int GetMilestoneBonus(int itemsCount)
-    {
-        int bonus = 0;
+    #endregion
 
-        if (itemsCount >= streakThresholdLvl1) bonus += streakThresholdBonusPts1;
-        if (itemsCount >= streakThresholdLvl2) bonus += streakThresholdBonusPts2;
-        if (itemsCount >= streakThresholdLvl3) bonus += streakThresholdBonusPts3;
-        if (itemsCount >= streakThresholdLvl4) bonus += streakThresholdBonusPts4;
-        if (itemsCount >= streakThresholdLvl5) bonus += streakThresholdBonusPts5;
-        if (itemsCount >= streakThresholdLvl6) bonus += streakThresholdBonusPts6;
+    #region Checkout UI
 
-        return bonus;
-    }
     private void UpdateCheckoutSessionUI(int playerIndex, CheckoutSessionData session)
     {
-        if (session.laneIndex < 0) return;
-        int laneIdx = session.laneIndex;
+        if (session == null || session.laneIndex < 0) return;
 
-        var ui = GetLaneUI(playerIndex, laneIdx);
+        int laneIndex = session.laneIndex;
+        CheckoutLaneUI ui = GetLaneUI(playerIndex, laneIndex);
+
         if (ui == null) return;
 
         if (ui.itemsCountText != null)
         {
-            if (session.itemsCount >= 10)
-            {
-                if (ui.streakTextUI) ui.streakTextUI.SetActive(true);
-                ui.itemsCountText.text = session.itemsCount.ToString();
-                if (ui.bonusPointUI) ui.bonusPointUI.SetActive(true);
-                ui.bonusPointText.text = "+" + session.bonusPoints.ToString();
-            }
-            else
-            {
-                if (ui.streakTextUI) ui.streakTextUI.SetActive(false);
-            }
+            ui.itemsCountText.text = session.cargoCount.ToString();
+        }
+
+        bool hasStreak = IsCheckoutStreakAchievable(session.cargoCount);
+
+        if (ui.streakTextUI != null) ui.streakTextUI.SetActive(hasStreak);
+        if (ui.bonusPointUI != null) ui.bonusPointUI.SetActive(hasStreak);
+
+        if (ui.bonusPointText != null)
+        {
+            ui.bonusPointText.text = "+" + session.bonusPoints.ToString("F0");
         }
 
         if (ui.basePointText != null)
         {
             ui.basePointText.text = "+" + session.basePoints.ToString("F0");
 
-            int pIdx = playerIndex - 1;
-            if (subtotalPulseAnims[pIdx, laneIdx] != null)
-                StopCoroutine(subtotalPulseAnims[pIdx, laneIdx]);
+            int playerArrayIndex = playerIndex - 1;
 
-            subtotalPulseAnims[pIdx, laneIdx] = StartCoroutine(
+            if (subtotalPulseAnims[playerArrayIndex, laneIndex] != null)
+            {
+                StopCoroutine(subtotalPulseAnims[playerArrayIndex, laneIndex]);
+            }
+
+            subtotalPulseAnims[playerArrayIndex, laneIndex] = StartCoroutine(
                 AnimateTextPulse(ui.basePointText.transform, 1.4f)
             );
         }
@@ -339,14 +554,16 @@ public class CashScoreManager : MonoBehaviour
 
     private CheckoutLaneUI GetLaneUI(int playerIndex, int laneIndex)
     {
-        int idx = LaneIndex(playerIndex, laneIndex);
-        if (laneUIs == null || idx < 0 || idx >= laneUIs.Length) return null;
-        return laneUIs[idx];
+        int index = LaneIndex(playerIndex, laneIndex);
+
+        if (laneUIs == null || index < 0 || index >= laneUIs.Length) return null;
+
+        return laneUIs[index];
     }
 
     private void ResetCheckoutSessionUI(int playerIndex, int laneIndex)
     {
-        var ui = GetLaneUI(playerIndex, laneIndex);
+        CheckoutLaneUI ui = GetLaneUI(playerIndex, laneIndex);
         if (ui == null) return;
 
         if (ui.itemsCountText != null) ui.itemsCountText.text = "0";
@@ -358,71 +575,44 @@ public class CashScoreManager : MonoBehaviour
 
     private IEnumerator AnimateTextPulse(Transform target, float scaleMultiplier = 1.5f, float duration = 0.3f)
     {
+        if (target == null) yield break;
+
         Vector3 originalScale = Vector3.one;
         target.localScale = originalScale;
 
-        float half = duration * 0.5f;
-        float t = 0f;
-
-        while (t < half)
-        {
-            float a = t / half;
-            target.localScale = Vector3.Lerp(originalScale, originalScale * scaleMultiplier, a);
-            t += Time.deltaTime;
-            yield return null;
-        }
-
-        t = 0f;
-        while (t < half)
-        {
-            float a = t / half;
-            target.localScale = Vector3.Lerp(originalScale * scaleMultiplier, originalScale, a);
-            t += Time.deltaTime;
-            yield return null;
-        }
-
-        target.localScale = originalScale;
-    }
-
-    private IEnumerator AnimateScorePopup(TextMeshProUGUI tmp, TextMeshProUGUI finalTotal, int gain, int total)
-    {
-        tmp.gameObject.SetActive(true);
-        tmp.text = "+" + gain;
-
-        tmp.alpha = 1f;
-        Vector3 originalPosition = tmp.rectTransform.anchoredPosition;
-        Vector3 startPos = originalPosition;
-        Vector3 endPos = startPos + new Vector3(0, 25f, 0);
-
-        float duration = 1.0f;
+        float half = Mathf.Max(0.01f, duration * 0.5f);
         float time = 0f;
 
-        while (time < duration)
+        while (time < half)
         {
-            float a = time / duration;
-            tmp.rectTransform.anchoredPosition = Vector3.Lerp(startPos, endPos, a);
-
-            if (time > duration * 0.8f)
-                tmp.alpha = Mathf.Lerp(1f, 0f, a);
-
+            float t = time / half;
+            target.localScale = Vector3.Lerp(originalScale, originalScale * scaleMultiplier, t);
             time += Time.deltaTime;
             yield return null;
         }
 
-        finalTotal.text = total.ToString();
-        tmp.rectTransform.anchoredPosition = originalPosition;
-        tmp.gameObject.SetActive(false);
+        time = 0f;
+
+        while (time < half)
+        {
+            float t = time / half;
+            target.localScale = Vector3.Lerp(originalScale * scaleMultiplier, originalScale, t);
+            time += Time.deltaTime;
+            yield return null;
+        }
+
+        target.localScale = originalScale;
     }
 
-    private static T GetArray<T>(T[] arr, int idx) where T : class
+    private static int LaneIndex(int playerIndex, int laneIndex)
     {
-        if (arr == null) return null;
-        if (idx < 0 || idx >= arr.Length) return null;
-        return arr[idx];
+        return (playerIndex - 1) * MaxLanes + laneIndex;
     }
 
-    // Flattened indices for inspector-friendly arrays:
-    // laneUIs[(player-1)*2 + laneIdx]
-    private static int LaneIndex(int playerIndex, int laneIndex) => (playerIndex - 1) * MaxLanes + laneIndex;
-    private static int RootIndex(int playerIndex, int laneIndex) => (playerIndex - 1) * MaxLanes + laneIndex;
+    private static int RootIndex(int playerIndex, int laneIndex)
+    {
+        return (playerIndex - 1) * MaxLanes + laneIndex;
+    }
+
+    #endregion
 }

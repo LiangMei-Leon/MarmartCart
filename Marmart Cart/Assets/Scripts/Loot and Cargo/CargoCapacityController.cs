@@ -13,13 +13,14 @@ using UnityEngine;
 /// - follows the front-to-tail safe-slot rule for NEW loot;
 /// - distributes overload in configurable rounds;
 /// - when owned capacity increases, transfers existing LOCAL overload into
-///   newly available safe capacity, checking overloaded donors tail-to-front.
+///   newly available safe capacity, checking overloaded donors tail-to-front;
+/// - exposes checkout-facing cargo totals;
+/// - can compact all owned cargo into a canonical front-to-tail checkout layout.
 ///
 /// It does NOT:
-/// - continuously rebalance safe cargo;
+/// - continuously rebalance safe cargo during normal play;
 /// - apply Hype burn yet;
-/// - spawn world pickups yet;
-/// - perform checkout yet.
+/// - own score/reward rules.
 /// </summary>
 [DisallowMultipleComponent]
 public class CargoCapacityController : MonoBehaviour
@@ -51,6 +52,8 @@ public class CargoCapacityController : MonoBehaviour
     [SerializeField] private int totalCapacity;
     [SerializeField] private int totalLoad;
     [SerializeField] private int totalScoreValue;
+    [SerializeField] private int totalCargoEntryCount;
+    [SerializeField] private int loadedCargoCartCount;
     [SerializeField] private int overloadAmount;
     [SerializeField] private bool isOverloaded;
     [SerializeField] private float capacityNormalized;
@@ -66,6 +69,10 @@ public class CargoCapacityController : MonoBehaviour
     [SerializeField] private int lastNormalizationTransferCount;
     [SerializeField] private bool lastNormalizationWasCapacityIncrease;
 
+    [Header("Checkout Compaction Debug - Read Only")]
+    [SerializeField] private bool lastCheckoutCompactionNeeded;
+    [SerializeField] private int lastCheckoutCompactionMovedEntries;
+
     #endregion
 
     #region Runtime Collections
@@ -73,7 +80,15 @@ public class CargoCapacityController : MonoBehaviour
     private readonly List<GameObject> ownedFollowerObjects = new List<GameObject>(16);
     private readonly List<ChainCartCargo> orderedCargoCarts = new List<ChainCartCargo>(16);
 
+    private readonly List<CargoEntry> checkoutCargoBuffer = new List<CargoEntry>(64);
+    private readonly List<CargoEntry> checkoutOverflowBuffer = new List<CargoEntry>(32);
+    private readonly List<List<CargoEntry>> checkoutDistributionBuffers = new List<List<CargoEntry>>(16);
+    private readonly List<int> checkoutDistributionLoads = new List<int>(16);
+    private readonly List<int> checkoutOverflowEntryCounts = new List<int>(16);
+    private readonly Dictionary<CargoEntry, int> checkoutOriginalOwnerIndex = new Dictionary<CargoEntry, int>(64);
+
     private bool isNormalizingCargoTransfers;
+    private bool isRebuildingCargoLayout;
 
     #endregion
 
@@ -86,6 +101,9 @@ public class CargoCapacityController : MonoBehaviour
     public int TotalCapacity => totalCapacity;
     public int TotalLoad => totalLoad;
     public int TotalScoreValue => totalScoreValue;
+    public int TotalCargoEntryCount => totalCargoEntryCount;
+    public int LoadedCargoCartCount => loadedCargoCartCount;
+    public bool HasCheckoutCargo => totalCargoEntryCount > 0;
     public int OverloadAmount => overloadAmount;
     public bool IsOverloaded => isOverloaded;
     public float CapacityNormalized => capacityNormalized;
@@ -106,6 +124,8 @@ public class CargoCapacityController : MonoBehaviour
     public event Action<int> OnCapacityChanged;
     public event Action<int> OnLoadChanged;
     public event Action<int> OnScoreValueChanged;
+    public event Action<int> OnCargoEntryCountChanged;
+    public event Action<int> OnLoadedCargoCartCountChanged;
     public event Action<int> OnOverloadChanged;
     public event Action<float> OnMovementSpeedMultiplierChanged;
 
@@ -117,6 +137,12 @@ public class CargoCapacityController : MonoBehaviour
     /// This is NOT a new loot pickup and does not change score/load totals.
     /// </summary>
     public event Action<CargoEntry, ChainCartCargo, ChainCartCargo> OnCargoTransferred;
+
+    /// <summary>
+    /// Fired after a successful checkout layout rebuild.
+    /// Argument = number of CargoEntry instances whose owning cart changed.
+    /// </summary>
+    public event Action<int> OnCheckoutCargoCompacted;
 
     #endregion
 
@@ -269,6 +295,8 @@ public class CargoCapacityController : MonoBehaviour
         int previousCapacity = totalCapacity;
         int previousLoad = totalLoad;
         int previousScore = totalScoreValue;
+        int previousEntryCount = totalCargoEntryCount;
+        int previousLoadedCartCount = loadedCargoCartCount;
         int previousOverload = overloadAmount;
         float previousMovementSpeedMultiplier = movementSpeedMultiplier;
 
@@ -276,6 +304,8 @@ public class CargoCapacityController : MonoBehaviour
         totalCapacity = 0;
         totalLoad = 0;
         totalScoreValue = 0;
+        totalCargoEntryCount = 0;
+        loadedCargoCartCount = 0;
 
         for (int i = 0; i < orderedCargoCarts.Count; i++)
         {
@@ -286,6 +316,9 @@ public class CargoCapacityController : MonoBehaviour
             totalCapacity += Mathf.Max(0, cargo.SafeCapacity);
             totalLoad += Mathf.Max(0, cargo.LocalLoad);
             totalScoreValue += Mathf.Max(0, cargo.LocalScoreValue);
+            totalCargoEntryCount += Mathf.Max(0, cargo.CargoEntryCount);
+
+            if (cargo.CargoEntryCount > 0) loadedCargoCartCount++;
         }
 
         overloadAmount = Mathf.Max(0, totalLoad - totalCapacity);
@@ -300,25 +333,27 @@ public class CargoCapacityController : MonoBehaviour
         if (totalCapacity != previousCapacity) OnCapacityChanged?.Invoke(totalCapacity);
         if (totalLoad != previousLoad) OnLoadChanged?.Invoke(totalLoad);
         if (totalScoreValue != previousScore) OnScoreValueChanged?.Invoke(totalScoreValue);
+        if (totalCargoEntryCount != previousEntryCount) OnCargoEntryCountChanged?.Invoke(totalCargoEntryCount);
+        if (loadedCargoCartCount != previousLoadedCartCount) OnLoadedCargoCartCountChanged?.Invoke(loadedCargoCartCount);
         if (overloadAmount != previousOverload) OnOverloadChanged?.Invoke(overloadAmount);
         if (!Mathf.Approximately(movementSpeedMultiplier, previousMovementSpeedMultiplier)) OnMovementSpeedMultiplierChanged?.Invoke(movementSpeedMultiplier);
     }
 
     private void HandleCartCargoAdded(ChainCartCargo cart, CargoEntry entry)
     {
-        if (isNormalizingCargoTransfers) return;
+        if (isNormalizingCargoTransfers || isRebuildingCargoLayout) return;
         OnCargoAdded?.Invoke(entry, cart);
     }
 
     private void HandleCartCargoRemoved(ChainCartCargo cart, CargoEntry entry)
     {
-        if (isNormalizingCargoTransfers) return;
+        if (isNormalizingCargoTransfers || isRebuildingCargoLayout) return;
         OnCargoRemoved?.Invoke(entry, cart);
     }
 
     private void HandleCartCargoChanged(ChainCartCargo cart)
     {
-        if (isNormalizingCargoTransfers) return;
+        if (isNormalizingCargoTransfers || isRebuildingCargoLayout) return;
         RecalculateGlobalState();
     }
 
@@ -425,6 +460,300 @@ public class CargoCapacityController : MonoBehaviour
         }
 
         return false;
+    }
+
+    #endregion
+
+    #region Checkout Cargo Compaction
+
+    /// <summary>
+    /// Returns the first owned follower cart containing at least one CargoEntry,
+    /// using the normal active-front-to-tail then pending order.
+    /// </summary>
+    public ChainCartCargo GetFirstLoadedCargoCart()
+    {
+        for (int i = 0; i < orderedCargoCarts.Count; i++)
+        {
+            ChainCartCargo cargo = orderedCargoCarts[i];
+            if (cargo != null && cargo.CargoEntryCount > 0) return cargo;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Returns true when the current cargo assignment differs from the canonical
+    /// checkout layout.
+    ///
+    /// Canonical checkout layout:
+    /// 1) Gather existing CargoEntry instances in current front-to-tail order.
+    /// 2) Fill gameplay-safe capacity front-to-tail.
+    /// 3) If globally overloaded, distribute remaining entries using the normal
+    ///    front-to-tail OverflowRoundSize rule.
+    ///
+    /// This guarantees loaded carts are packed toward the front and empty carts
+    /// are pushed toward the tail whenever the current LoadCost configuration
+    /// allows it.
+    /// </summary>
+    public bool NeedsCheckoutCompaction()
+    {
+        if (orderedCargoCarts.Count <= 1 || totalCargoEntryCount <= 0) return false;
+        if (!TryBuildCheckoutDistribution(out _)) return false;
+
+        return !DoesCurrentLayoutMatchCheckoutDistribution();
+    }
+
+    /// <summary>
+    /// Rebuilds cargo ownership across the CURRENTLY OWNED follower carts into
+    /// canonical checkout order while preserving every CargoEntry instance.
+    ///
+    /// Returns true when a valid checkout distribution was built/applied.
+    /// movedEntryCount reports how many entries changed owning carts.
+    /// </summary>
+    public bool CompactCargoForCheckout(out int movedEntryCount)
+    {
+        movedEntryCount = 0;
+        lastCheckoutCompactionMovedEntries = 0;
+
+        if (orderedCargoCarts.Count == 0)
+        {
+            lastCheckoutCompactionNeeded = false;
+            return true;
+        }
+
+        if (!TryBuildCheckoutDistribution(out movedEntryCount))
+        {
+            lastCheckoutCompactionNeeded = false;
+            return false;
+        }
+
+        bool layoutChanged = !DoesCurrentLayoutMatchCheckoutDistribution();
+
+        lastCheckoutCompactionNeeded = layoutChanged;
+        lastCheckoutCompactionMovedEntries = movedEntryCount;
+
+        if (!layoutChanged)
+        {
+            movedEntryCount = 0;
+            lastCheckoutCompactionMovedEntries = 0;
+            return true;
+        }
+
+        isRebuildingCargoLayout = true;
+
+        bool success = true;
+
+        try
+        {
+            for (int i = 0; i < orderedCargoCarts.Count; i++)
+            {
+                ChainCartCargo cargo = orderedCargoCarts[i];
+                if (cargo == null) continue;
+
+                if (!cargo.ReplaceCargoEntries(checkoutDistributionBuffers[i]))
+                {
+                    success = false;
+                    Debug.LogError(
+                        $"[CargoCapacityController] Checkout compaction failed while rebuilding '{cargo.name}'.",
+                        cargo
+                    );
+
+                    break;
+                }
+            }
+        }
+        finally
+        {
+            isRebuildingCargoLayout = false;
+        }
+
+        RecalculateGlobalState();
+
+        if (!success) return false;
+
+        OnCheckoutCargoCompacted?.Invoke(movedEntryCount);
+        return true;
+    }
+
+    private bool TryBuildCheckoutDistribution(out int movedEntryCount)
+    {
+        movedEntryCount = 0;
+
+        PrepareCheckoutDistributionBuffers();
+        checkoutCargoBuffer.Clear();
+        checkoutOverflowBuffer.Clear();
+        checkoutOriginalOwnerIndex.Clear();
+
+        // Preserve global CargoEntry ordering as much as possible:
+        // current front cart first, then toward the tail.
+        for (int cartIndex = 0; cartIndex < orderedCargoCarts.Count; cartIndex++)
+        {
+            ChainCartCargo cargo = orderedCargoCarts[cartIndex];
+            if (cargo == null) continue;
+
+            IReadOnlyList<CargoEntry> entries = cargo.CargoEntries;
+
+            for (int entryIndex = 0; entryIndex < entries.Count; entryIndex++)
+            {
+                CargoEntry entry = entries[entryIndex];
+                if (entry == null) continue;
+
+                checkoutCargoBuffer.Add(entry);
+                checkoutOriginalOwnerIndex[entry] = cartIndex;
+            }
+        }
+
+        // PASS 1: safe gameplay capacity, front -> tail.
+        for (int entryIndex = 0; entryIndex < checkoutCargoBuffer.Count; entryIndex++)
+        {
+            CargoEntry entry = checkoutCargoBuffer[entryIndex];
+            if (entry == null) continue;
+
+            bool placedSafely = false;
+
+            for (int cartIndex = 0; cartIndex < orderedCargoCarts.Count; cartIndex++)
+            {
+                ChainCartCargo cart = orderedCargoCarts[cartIndex];
+                if (!CanCheckoutDistributionAcceptAnotherEntry(cartIndex, cart)) continue;
+
+                int safeCapacity = Mathf.Max(0, cart.SafeCapacity);
+                int newLoad = checkoutDistributionLoads[cartIndex] + Mathf.Max(0, entry.LoadCost);
+
+                if (newLoad > safeCapacity) continue;
+
+                checkoutDistributionBuffers[cartIndex].Add(entry);
+                checkoutDistributionLoads[cartIndex] = newLoad;
+                placedSafely = true;
+                break;
+            }
+
+            if (!placedSafely) checkoutOverflowBuffer.Add(entry);
+        }
+
+        // PASS 2: true global overflow. Same entry-round policy as normal pickup,
+        // but based on checkout's rebuilt layout instead of existing visuals.
+        int overflowRoundSize = settings != null ? Mathf.Max(1, settings.OverflowRoundSize) : 1;
+
+        for (int entryIndex = 0; entryIndex < checkoutOverflowBuffer.Count; entryIndex++)
+        {
+            CargoEntry entry = checkoutOverflowBuffer[entryIndex];
+            if (entry == null) continue;
+
+            int lowestRound = int.MaxValue;
+
+            for (int cartIndex = 0; cartIndex < orderedCargoCarts.Count; cartIndex++)
+            {
+                ChainCartCargo cart = orderedCargoCarts[cartIndex];
+                if (!CanCheckoutDistributionAcceptAnotherEntry(cartIndex, cart)) continue;
+
+                int cartRound = checkoutOverflowEntryCounts[cartIndex] / overflowRoundSize;
+                if (cartRound < lowestRound) lowestRound = cartRound;
+            }
+
+            if (lowestRound == int.MaxValue)
+            {
+                Debug.LogError(
+                    "[CargoCapacityController] Checkout compaction could not place every CargoEntry before hitting technical safety limits. No layout changes were applied.",
+                    this
+                );
+
+                return false;
+            }
+
+            bool placed = false;
+
+            for (int cartIndex = 0; cartIndex < orderedCargoCarts.Count; cartIndex++)
+            {
+                ChainCartCargo cart = orderedCargoCarts[cartIndex];
+                if (!CanCheckoutDistributionAcceptAnotherEntry(cartIndex, cart)) continue;
+
+                int cartRound = checkoutOverflowEntryCounts[cartIndex] / overflowRoundSize;
+                if (cartRound != lowestRound) continue;
+
+                checkoutDistributionBuffers[cartIndex].Add(entry);
+                checkoutDistributionLoads[cartIndex] += Mathf.Max(0, entry.LoadCost);
+                checkoutOverflowEntryCounts[cartIndex]++;
+                placed = true;
+                break;
+            }
+
+            if (!placed)
+            {
+                Debug.LogError(
+                    "[CargoCapacityController] Checkout compaction failed to choose an overflow destination. No layout changes were applied.",
+                    this
+                );
+
+                return false;
+            }
+        }
+
+        for (int cartIndex = 0; cartIndex < checkoutDistributionBuffers.Count; cartIndex++)
+        {
+            List<CargoEntry> targetEntries = checkoutDistributionBuffers[cartIndex];
+
+            for (int entryIndex = 0; entryIndex < targetEntries.Count; entryIndex++)
+            {
+                CargoEntry entry = targetEntries[entryIndex];
+
+                if (entry != null &&
+                    checkoutOriginalOwnerIndex.TryGetValue(entry, out int oldCartIndex) &&
+                    oldCartIndex != cartIndex)
+                {
+                    movedEntryCount++;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private void PrepareCheckoutDistributionBuffers()
+    {
+        while (checkoutDistributionBuffers.Count < orderedCargoCarts.Count)
+        {
+            checkoutDistributionBuffers.Add(new List<CargoEntry>(16));
+            checkoutDistributionLoads.Add(0);
+            checkoutOverflowEntryCounts.Add(0);
+        }
+
+        for (int i = 0; i < checkoutDistributionBuffers.Count; i++)
+        {
+            checkoutDistributionBuffers[i].Clear();
+            checkoutDistributionLoads[i] = 0;
+            checkoutOverflowEntryCounts[i] = 0;
+        }
+    }
+
+    private bool CanCheckoutDistributionAcceptAnotherEntry(int cartIndex, ChainCartCargo cart)
+    {
+        if (cart == null || cart.Settings == null) return false;
+        if (cartIndex < 0 || cartIndex >= checkoutDistributionBuffers.Count) return false;
+
+        return checkoutDistributionBuffers[cartIndex].Count < cart.Settings.TechnicalMaxCargoPerCart;
+    }
+
+    private bool DoesCurrentLayoutMatchCheckoutDistribution()
+    {
+        if (checkoutDistributionBuffers.Count < orderedCargoCarts.Count) return false;
+
+        for (int cartIndex = 0; cartIndex < orderedCargoCarts.Count; cartIndex++)
+        {
+            ChainCartCargo cargo = orderedCargoCarts[cartIndex];
+            if (cargo == null) continue;
+
+            IReadOnlyList<CargoEntry> current = cargo.CargoEntries;
+            List<CargoEntry> target = checkoutDistributionBuffers[cartIndex];
+
+            if (current.Count != target.Count) return false;
+
+            for (int entryIndex = 0; entryIndex < current.Count; entryIndex++)
+            {
+                if (!ReferenceEquals(current[entryIndex], target[entryIndex])) return false;
+            }
+        }
+
+        return true;
     }
 
     #endregion
@@ -621,6 +950,36 @@ public class CargoCapacityController : MonoBehaviour
         );
     }
 
+    [ContextMenu("TEST - Needs Checkout Compaction")]
+    private void DebugNeedsCheckoutCompaction()
+    {
+        if (!RequirePlayModeForTest()) return;
+
+        bool needsCompaction = NeedsCheckoutCompaction();
+
+        Debug.Log(
+            $"[CargoCapacityController] Checkout compaction needed:{needsCompaction} | Entries:{TotalCargoEntryCount} | LoadedCarts:{LoadedCargoCartCount}",
+            this
+        );
+    }
+
+    [ContextMenu("TEST - Compact Cargo For Checkout")]
+    private void DebugCompactCargoForCheckout()
+    {
+        if (!RequirePlayModeForTest()) return;
+
+        if (!CompactCargoForCheckout(out int movedEntries))
+        {
+            Debug.LogError("[CargoCapacityController] Checkout compaction TEST failed.", this);
+            return;
+        }
+
+        Debug.Log(
+            $"[CargoCapacityController] Checkout compaction complete | MovedEntries:{movedEntries} | Entries:{TotalCargoEntryCount} | LoadedCarts:{LoadedCargoCartCount}",
+            this
+        );
+    }
+
     [ContextMenu("TEST - Log Cargo Distribution")]
     private void DebugLogDistribution()
     {
@@ -628,6 +987,7 @@ public class CargoCapacityController : MonoBehaviour
 
         string message =
             $"[CargoCapacityController] Distribution | Owned:{ownedFollowerCount} | Registered:{registeredCargoCartCount} | " +
+            $"Entries:{totalCargoEntryCount} | LoadedCarts:{loadedCargoCartCount} | " +
             $"Load:{totalLoad}/{totalCapacity} | Overload:{overloadAmount}\n";
 
         for (int i = 0; i < orderedCargoCarts.Count; i++)

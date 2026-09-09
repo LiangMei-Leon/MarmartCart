@@ -20,7 +20,7 @@ public class CartControlPromptManager : MonoBehaviour
     [SerializeField] private float desiredMaxFill = 0.35f;
 
     [Header("Drift Fuel Preview")]
-    [SerializeField] private CartDriftFuelReward driftFuelReward;
+    [SerializeField] private CartDriftHypeReward driftHypeReward;
 
     [Tooltip("If true, the actual fuel UI smoothly moves toward the real fuel value.")]
     [SerializeField] private bool animateRealFuelFill = true;
@@ -43,8 +43,8 @@ public class CartControlPromptManager : MonoBehaviour
         if (!cartController)
             cartController = GetComponentInParent<CartControlScript>();
 
-        if (!driftFuelReward)
-            driftFuelReward = GetComponentInParent<CartDriftFuelReward>();
+        if (!driftHypeReward)
+            driftHypeReward = GetComponentInParent<CartDriftHypeReward>();
     }
 
     void Update()
@@ -66,7 +66,7 @@ public class CartControlPromptManager : MonoBehaviour
         if (cartController == null)
             return;
 
-        float realMeter01 = Mathf.Clamp01(cartController.GetSpeedUpMeter() / 100f);
+        float realMeter01 = Mathf.Clamp01(cartController.CurrentHype / 100f);
         float targetRealFill = realMeter01 * desiredMaxFill;
 
         if (animateRealFuelFill)
@@ -96,12 +96,12 @@ public class CartControlPromptManager : MonoBehaviour
         float previewMeter01 = realMeter01;
 
         bool hasPendingReward =
-            driftFuelReward != null &&
-            driftFuelReward.IsTrackingDrift &&
-            driftFuelReward.HasPendingReward;
+            driftHypeReward != null &&
+            driftHypeReward.IsTrackingDrift &&
+            driftHypeReward.HasPendingReward;
 
         if (hasPendingReward)
-            previewMeter01 = driftFuelReward.PreviewFuelAmount;
+            previewMeter01 = driftHypeReward.PreviewHypeAmount;
 
         float targetPendingFill = previewMeter01 * desiredMaxFill;
 

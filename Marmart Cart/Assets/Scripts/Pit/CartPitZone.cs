@@ -1,27 +1,71 @@
 ﻿using UnityEngine;
 
 /// <summary>
-/// Checkout lane entry/exit zone for the refactored cart architecture.
+/// Checkout V2 lane capture and automatic lane driving.
 ///
-/// Player ownership is resolved through SnakeCartManager.
-/// Only the player's LEADING cart may enter the checkout lane; collected
-/// followers cannot trigger checkout even though they share the same
-/// SnakeCartManager parent.
+/// Flow:
+/// 1) a player's LEADING cart enters this generous capture trigger;
+/// 2) validate that it has real CargoEntries and is travelling generally in
+///    the lane's intended direction;
+/// 3) remove player driving control and silently suppress battle resolution;
+/// 4) auto-drive the leading Rigidbody through Entry Waypoints;
+/// 5) stop at the final entry waypoint and run hybrid manual/automatic checkout;
+/// 6) auto-drive through Exit Waypoints;
+/// 7) restore control and apply the normal visible post-checkout Ghost Mode.
 ///
-/// LeadingCartRaycaster is no longer used.
+/// The actual cargo checkout loop is owned by CheckOutManager.
 /// </summary>
 [DisallowMultipleComponent]
 public class CartPitZone : MonoBehaviour
 {
     private const int MaxSupportedPlayers = 4;
 
-    #region Entry Direction
+    private enum CheckoutLaneState
+    {
+        Idle,
+        AutoEntering,
+        CheckingOut,
+        AutoExiting
+    }
 
-    [Header("Entry Direction")]
+    #region Entry Capture
+
+    [Header("Entry Capture")]
+    [Tooltip("Required horizontal travel direction. Leave zero to use this trigger's forward direction.")]
     [SerializeField] private Vector3 requiredEntryDirection;
 
-    [SerializeField, Range(0f, 1f)]
-    private float directionThreshold = 0.7f;
+    [Tooltip("Dot-product threshold against actual planar travel direction. 0.2 accepts roughly within 78 degrees of lane forward.")]
+    [Range(-1f, 1f)]
+    [SerializeField] private float directionThreshold = 0.2f;
+
+    [Tooltip("Below this planar speed, cart facing direction is used as the fallback intent direction.")]
+    [Min(0f)]
+    [SerializeField] private float minimumVelocityForDirectionCheck = 0.5f;
+
+    #endregion
+
+    #region Auto Drive Path
+
+    [Header("Auto Drive - Entry")]
+    [Tooltip("Ordered points used after capture. The FINAL point is the checkout stop position.")]
+    [SerializeField] private Transform[] entryWaypoints;
+
+    [Header("Auto Drive - Exit")]
+    [Tooltip("Ordered points used after checkout. The FINAL point is where normal player control returns.")]
+    [SerializeField] private Transform[] exitWaypoints;
+
+    [Header("Auto Drive Tuning")]
+    [Min(0.1f)]
+    [SerializeField] private float autoDriveSpeed = 8f;
+
+    [Min(1f)]
+    [SerializeField] private float autoDriveRotationSpeed = 240f;
+
+    [Min(0.01f)]
+    [SerializeField] private float waypointReachDistance = 0.15f;
+
+    [Tooltip("When reaching the final waypoint, snap to its authored rotation before starting the next phase.")]
+    [SerializeField] private bool snapToFinalWaypointRotation = true;
 
     #endregion
 
@@ -29,44 +73,51 @@ public class CartPitZone : MonoBehaviour
 
     [Header("Checkout")]
     [Min(0f)]
-    [SerializeField] private float ghostDurationAfterQuit = 3f;
+    [SerializeField] private float ghostDurationAfterCheckout = 3f;
 
     [Tooltip("1 or 2. Used by checkout UI/camera lane logic.")]
     [SerializeField] private int myLaneNumber = 1;
 
     #endregion
 
-    #region Player UI / Cameras
-
-    [Header("Per-Player UI (index 0..3 = P1..P4)")]
-    [SerializeField] private GameObject[] playerPrompts = new GameObject[MaxSupportedPlayers];
+    #region Camera
 
     [Header("Per-Player Camera Managers (index 0..3 = P1..P4)")]
     [SerializeField] private PlayerCameraManager[] playerCameraManagers = new PlayerCameraManager[MaxSupportedPlayers];
+
+    [Header("Checkout Prompt (optional)")]
+    [Tooltip("Single shared world-space UI shown only while the leader is stopped and manual Checkout input is valid.")]
+    [SerializeField] private GameObject checkoutPrompt;
 
     #endregion
 
     #region References
 
-    [Header("Refs")]
+    [Header("References")]
     [SerializeField] private CashScoreManager cashScoreManager;
-
-    private CheckOutManager checkOutManager;
+    [SerializeField] private CheckOutManager checkOutManager;
 
     #endregion
 
     #region Runtime
 
     [Header("Runtime - Read Only")]
+    [SerializeField] private CheckoutLaneState laneState = CheckoutLaneState.Idle;
     [SerializeField] private bool stationOccupied;
     [SerializeField] private int occupyingPlayerIndex;
+    [SerializeField] private int currentWaypointIndex;
 
     private SnakeCartManager enteredSnakeCartManager;
+    private CargoCapacityController enteredCargoController;
+
     private GameObject enteredLeader;
     private Rigidbody enteredLeaderBody;
     private CartControlScript enteredCartController;
     private LeadingCartBehaviour[] enteredWheelBehaviours;
     private LeadingCartBattleController enteredBattleController;
+    private SnakeMoveBackwardController enteredMoveBackwardController;
+
+    private bool leaderWasKinematic;
 
     #endregion
 
@@ -74,7 +125,7 @@ public class CartPitZone : MonoBehaviour
 
     private void Awake()
     {
-        checkOutManager = GetComponent<CheckOutManager>();
+        if (checkOutManager == null) checkOutManager = GetComponent<CheckOutManager>();
 
         if (checkOutManager == null)
         {
@@ -84,25 +135,47 @@ public class CartPitZone : MonoBehaviour
 
     private void Start()
     {
-        if (checkOutManager != null) checkOutManager.SetMyPitZone(this);
+        if (checkOutManager == null) return;
+
+        checkOutManager.SetMyPitZone(this);
+        checkOutManager.SetCashScoreManager(cashScoreManager);
+    }
+
+    private void FixedUpdate()
+    {
+        switch (laneState)
+        {
+            case CheckoutLaneState.AutoEntering:
+                TickAutoDrive(entryWaypoints, BeginCheckoutAtStop);
+                break;
+
+            case CheckoutLaneState.AutoExiting:
+                TickAutoDrive(exitWaypoints, FinishCheckoutExit);
+                break;
+        }
     }
 
     private void OnDisable()
     {
-        CancelInvoke(nameof(FreezeAllWheelBehaviorDelayed));
+        if (!stationOccupied) return;
+
+        SetCheckoutPrompt(false);
+        RestorePlayerControl(false);
+        ClearRuntimeCheckoutState();
     }
 
     #endregion
 
-    #region Pit Entry
+    #region Entry Capture
 
     private void OnTriggerEnter(Collider other)
     {
-        if (stationOccupied || checkOutManager == null || !checkOutManager.IsStationAvailable()) return;
+        if (stationOccupied || laneState != CheckoutLaneState.Idle) return;
+        if (checkOutManager == null || !checkOutManager.IsStationAvailable()) return;
         if (!TryResolveLeadingCart(other, out SnakeCartManager snakeManager, out GameObject leader)) return;
 
-        // Player must actually have grocery carts to checkout.
-        if (snakeManager.GetCurrentNumOfCartsWithItem() < 1) return;
+        CargoCapacityController cargoController = snakeManager.GetComponent<CargoCapacityController>();
+        if (cargoController == null || !cargoController.HasCheckoutCargo) return;
 
         int playerIndex = snakeManager.GetPlayerId();
         if (playerIndex < 1 || playerIndex > MaxSupportedPlayers) return;
@@ -110,12 +183,15 @@ public class CartPitZone : MonoBehaviour
         int activePlayers = GMode.Instance != null ? GMode.Instance.PlayerCount() : 2;
         if (playerIndex > activePlayers) return;
 
-        if (!PassesEntryDirection(leader.transform)) return;
+        Rigidbody leaderBody = leader.GetComponent<Rigidbody>();
+        if (leaderBody == null) return;
+
+        if (!PassesEntryDirection(leader.transform, leaderBody)) return;
 
         CartControlScript cartControl = leader.GetComponentInChildren<CartControlScript>(true);
         LeadingCartBehaviour[] wheelBehaviours = leader.GetComponentsInChildren<LeadingCartBehaviour>(true);
         LeadingCartBattleController battleController = leader.GetComponentInChildren<LeadingCartBattleController>(true);
-        Rigidbody leaderBody = leader.GetComponent<Rigidbody>();
+        SnakeMoveBackwardController moveBackwardController = snakeManager.GetComponent<SnakeMoveBackwardController>();
 
         if (cartControl == null)
         {
@@ -129,18 +205,26 @@ public class CartPitZone : MonoBehaviour
             return;
         }
 
-        // Commit checkout state only after every required reference is valid.
+        // Do not fight over locomotion ownership with MoveBackward.
+        if (moveBackwardController != null && moveBackwardController.IsMovingBackward) return;
+
+        if (!HasValidWaypointPath(entryWaypoints, "Entry")) return;
+        if (!HasValidWaypointPath(exitWaypoints, "Exit")) return;
+
         stationOccupied = true;
         occupyingPlayerIndex = playerIndex;
 
         enteredSnakeCartManager = snakeManager;
+        enteredCargoController = cargoController;
+
         enteredLeader = leader;
         enteredLeaderBody = leaderBody;
         enteredCartController = cartControl;
         enteredWheelBehaviours = wheelBehaviours;
         enteredBattleController = battleController;
+        enteredMoveBackwardController = moveBackwardController;
 
-        EnterCheckout();
+        BeginCheckoutCapture();
     }
 
     private bool TryResolveLeadingCart(Collider other, out SnakeCartManager snakeManager, out GameObject leader)
@@ -158,44 +242,51 @@ public class CartPitZone : MonoBehaviour
 
         leader = snakeBody[0];
 
-        // New leading cart prefab has the Rigidbody on its root.
         Rigidbody leaderBody = leader.GetComponent<Rigidbody>();
 
-        // Primary check: physical collider belongs to the leader Rigidbody.
         if (leaderBody != null && other.attachedRigidbody == leaderBody) return true;
 
-        // Fallback for a trigger/child collider with no attached Rigidbody.
         return other.transform == leader.transform || other.transform.IsChildOf(leader.transform);
     }
 
-    private bool PassesEntryDirection(Transform leaderTransform)
+    private bool PassesEntryDirection(Transform leaderTransform, Rigidbody leaderBody)
     {
-        if (leaderTransform == null) return false;
+        if (leaderTransform == null || leaderBody == null) return false;
 
         Vector3 requiredDirection = Vector3.ProjectOnPlane(requiredEntryDirection, Vector3.up);
 
-        // If not configured, use this checkout zone's forward direction.
         if (requiredDirection.sqrMagnitude < 0.0001f)
         {
             requiredDirection = Vector3.ProjectOnPlane(transform.forward, Vector3.up);
         }
 
-        Vector3 incomingDirection = Vector3.ProjectOnPlane(leaderTransform.forward, Vector3.up);
-
-        if (requiredDirection.sqrMagnitude < 0.0001f || incomingDirection.sqrMagnitude < 0.0001f) return false;
-
+        if (requiredDirection.sqrMagnitude < 0.0001f) return false;
         requiredDirection.Normalize();
-        incomingDirection.Normalize();
 
-        return Vector3.Dot(incomingDirection, requiredDirection) >= directionThreshold;
+        Vector3 intentDirection = Vector3.ProjectOnPlane(leaderBody.linearVelocity, Vector3.up);
+
+        if (intentDirection.magnitude < minimumVelocityForDirectionCheck)
+        {
+            intentDirection = Vector3.ProjectOnPlane(leaderTransform.forward, Vector3.up);
+        }
+
+        if (intentDirection.sqrMagnitude < 0.0001f) return false;
+        intentDirection.Normalize();
+
+        return Vector3.Dot(intentDirection, requiredDirection) >= directionThreshold;
     }
 
-    private void EnterCheckout()
+    #endregion
+
+    #region Capture / Control Ownership
+
+    private void BeginCheckoutCapture()
     {
+        laneState = CheckoutLaneState.AutoEntering;
+        currentWaypointIndex = 0;
+
         PlayerCameraManager cameraManager = GetPlayerCameraManager(occupyingPlayerIndex);
         cameraManager?.EnterCheckoutLane(myLaneNumber);
-
-        SetPrompt(occupyingPlayerIndex, true);
 
         if (cashScoreManager != null)
         {
@@ -204,31 +295,178 @@ public class CartPitZone : MonoBehaviour
         }
 
         enteredCartController.SetInPit();
+        enteredCartController.DisableControl();
         enteredCartController.DisallowSpeedingUp();
         enteredCartController.DisallowActivatePowerUp();
-        enteredCartController.SetActiveCheckoutHandler(checkOutManager);
+        enteredCartController.SetActiveCheckoutHandler(null);
+
+        if (enteredBattleController != null)
+        {
+            enteredBattleController.SetCheckoutBattleSuppressed(true);
+        }
+
+        StopWheelDrive();
+
+        leaderWasKinematic = enteredLeaderBody.isKinematic;
+
+        enteredLeaderBody.linearVelocity = Vector3.zero;
+        enteredLeaderBody.angularVelocity = Vector3.zero;
+        enteredLeaderBody.isKinematic = true;
+    }
+
+    private void BeginCheckoutAtStop()
+    {
+        laneState = CheckoutLaneState.CheckingOut;
+
+        if (enteredLeaderBody != null)
+        {
+            enteredLeaderBody.linearVelocity = Vector3.zero;
+            enteredLeaderBody.angularVelocity = Vector3.zero;
+        }
+
+        // Driving remains disabled, but CartControlScript's checkout action is
+        // independent from controllable/isInPit. Installing the handler here
+        // makes only the Checkout button meaningful during the stopped session.
+        if (enteredCartController != null)
+        {
+            enteredCartController.SetActiveCheckoutHandler(checkOutManager);
+        }
 
         checkOutManager.SetSnakeCartManager(enteredSnakeCartManager);
         checkOutManager.SetIsCheckingOut();
-        checkOutManager.EnableStation();
 
-        FreezeAllWheelBehavior();
+        // Same exact gameplay moment as manual checkout activation.
+        SetCheckoutPrompt(checkOutManager.IsManualCheckoutEnabled);
+    }
 
-        CancelInvoke(nameof(FreezeAllWheelBehaviorDelayed));
-        Invoke(nameof(FreezeAllWheelBehaviorDelayed), 0.5f);
+    /// <summary>
+    /// Called by CheckOutManager after automatic cart processing is complete.
+    /// Checkout protection remains active while the station auto-drives the
+    /// player out of the lane.
+    /// </summary>
+    public void BeginAutoExitFromCheckout()
+    {
+        if (!stationOccupied) return;
+        if (laneState == CheckoutLaneState.AutoExiting) return;
+
+        if (enteredCartController != null)
+        {
+            enteredCartController.SetActiveCheckoutHandler(null);
+        }
+
+        SetCheckoutPrompt(false);
+
+        laneState = CheckoutLaneState.AutoExiting;
+        currentWaypointIndex = 0;
     }
 
     #endregion
 
-    #region Pit Exit
+    #region Auto Drive
 
-    public void ExitPitZone()
+    private void TickAutoDrive(Transform[] waypoints, System.Action onPathFinished)
     {
-        if (!stationOccupied || occupyingPlayerIndex <= 0) return;
+        if (enteredLeaderBody == null)
+        {
+            AbortCheckoutSession();
+            return;
+        }
 
-        CancelInvoke(nameof(FreezeAllWheelBehaviorDelayed));
+        if (waypoints == null || waypoints.Length == 0)
+        {
+            AbortCheckoutSession();
+            return;
+        }
+
+        while (currentWaypointIndex < waypoints.Length && waypoints[currentWaypointIndex] == null)
+        {
+            currentWaypointIndex++;
+        }
+
+        if (currentWaypointIndex >= waypoints.Length)
+        {
+            onPathFinished?.Invoke();
+            return;
+        }
+
+        Transform target = waypoints[currentWaypointIndex];
+
+        Vector3 currentPosition = enteredLeaderBody.position;
+        Vector3 targetPosition = target.position;
+
+        // Checkout waypoints author X/Z path and yaw. Keep the leader's current
+        // physics floor height so tiny waypoint Y errors cannot pop the cart.
+        targetPosition.y = currentPosition.y;
+
+        Vector3 planarToTarget = Vector3.ProjectOnPlane(targetPosition - currentPosition, Vector3.up);
+        float planarDistance = planarToTarget.magnitude;
+
+        if (planarDistance <= waypointReachDistance)
+        {
+            enteredLeaderBody.MovePosition(targetPosition);
+
+            bool isFinalPoint = currentWaypointIndex == waypoints.Length - 1;
+
+            if (isFinalPoint && snapToFinalWaypointRotation)
+            {
+                Quaternion flatTargetRotation = GetFlatWaypointRotation(target, enteredLeaderBody.rotation);
+                enteredLeaderBody.MoveRotation(flatTargetRotation);
+            }
+
+            currentWaypointIndex++;
+
+            if (currentWaypointIndex >= waypoints.Length)
+            {
+                onPathFinished?.Invoke();
+            }
+
+            return;
+        }
+
+        Vector3 nextPosition = Vector3.MoveTowards(
+            currentPosition,
+            targetPosition,
+            autoDriveSpeed * Time.fixedDeltaTime
+        );
+
+        enteredLeaderBody.MovePosition(nextPosition);
+
+        Vector3 desiredForward = planarToTarget.normalized;
+
+        if (desiredForward.sqrMagnitude > 0.0001f)
+        {
+            Quaternion desiredRotation = Quaternion.LookRotation(desiredForward, Vector3.up);
+            Quaternion nextRotation = Quaternion.RotateTowards(
+                enteredLeaderBody.rotation,
+                desiredRotation,
+                autoDriveRotationSpeed * Time.fixedDeltaTime
+            );
+
+            enteredLeaderBody.MoveRotation(nextRotation);
+        }
+    }
+
+    private Quaternion GetFlatWaypointRotation(Transform waypoint, Quaternion fallback)
+    {
+        if (waypoint == null) return fallback;
+
+        Vector3 forward = Vector3.ProjectOnPlane(waypoint.forward, Vector3.up);
+
+        if (forward.sqrMagnitude < 0.0001f) return fallback;
+
+        return Quaternion.LookRotation(forward.normalized, Vector3.up);
+    }
+
+    #endregion
+
+    #region Exit / Release
+
+    private void FinishCheckoutExit()
+    {
+        if (!stationOccupied) return;
 
         int exitingPlayerIndex = occupyingPlayerIndex;
+        SetCheckoutPrompt(false);
 
         PlayerCameraManager cameraManager = GetPlayerCameraManager(exitingPlayerIndex);
         cameraManager?.ExitCheckout();
@@ -239,45 +477,99 @@ public class CartPitZone : MonoBehaviour
             cashScoreManager.ShowCheckoutUI(exitingPlayerIndex, myLaneNumber, false);
         }
 
+        if (checkOutManager != null)
+        {
+            checkOutManager.NotifyPlayerExitedCheckoutLane();
+        }
+
+        RestorePlayerControl(true);
+        ClearRuntimeCheckoutState();
+    }
+
+    private void RestorePlayerControl(bool applyExitGhost)
+    {
+        if (enteredLeaderBody != null)
+        {
+            enteredLeaderBody.isKinematic = leaderWasKinematic;
+
+            if (!enteredLeaderBody.isKinematic)
+            {
+                enteredLeaderBody.linearVelocity = Vector3.zero;
+                enteredLeaderBody.angularVelocity = Vector3.zero;
+            }
+        }
+
         if (enteredCartController != null)
         {
             enteredCartController.SetOutPit();
+            enteredCartController.EnableControl();
             enteredCartController.AllowSpeedingUp();
             enteredCartController.AllowActivatePowerUp();
             enteredCartController.SetActiveCheckoutHandler(null);
         }
 
-        UnfreezeAllWheelBehavior();
+        ResetWheelDrive();
 
-        // New battle/ghost architecture replaces LeadingCartRaycaster ghost mode.
-        if (enteredBattleController != null && ghostDurationAfterQuit > 0f)
+        if (enteredBattleController != null)
         {
-            enteredBattleController.SetGhostMode(ghostDurationAfterQuit);
+            enteredBattleController.SetCheckoutBattleSuppressed(false);
+
+            if (applyExitGhost && ghostDurationAfterCheckout > 0f)
+            {
+                enteredBattleController.SetGhostMode(ghostDurationAfterCheckout);
+            }
+        }
+    }
+
+    private void AbortCheckoutSession()
+    {
+        if (!stationOccupied) return;
+
+        Debug.LogError("[CartPitZone] Checkout auto-drive aborted because its runtime path/state became invalid.", this);
+
+        int playerIndex = occupyingPlayerIndex;
+        SetCheckoutPrompt(false);
+
+        if (cashScoreManager != null)
+        {
+            cashScoreManager.EndCheckoutSession(playerIndex);
+            cashScoreManager.ShowCheckoutUI(playerIndex, myLaneNumber, false);
         }
 
-        SetPrompt(exitingPlayerIndex, false);
+        if (checkOutManager != null)
+        {
+            checkOutManager.NotifyPlayerExitedCheckoutLane();
+        }
 
+        RestorePlayerControl(false);
         ClearRuntimeCheckoutState();
     }
 
     private void ClearRuntimeCheckoutState()
     {
+        laneState = CheckoutLaneState.Idle;
         stationOccupied = false;
         occupyingPlayerIndex = 0;
+        currentWaypointIndex = 0;
 
         enteredSnakeCartManager = null;
+        enteredCargoController = null;
+
         enteredLeader = null;
         enteredLeaderBody = null;
         enteredCartController = null;
         enteredWheelBehaviours = null;
         enteredBattleController = null;
+        enteredMoveBackwardController = null;
+
+        leaderWasKinematic = false;
     }
 
     #endregion
 
-    #region Wheel Control
+    #region Wheel Drive
 
-    private void FreezeAllWheelBehavior()
+    private void StopWheelDrive()
     {
         if (enteredWheelBehaviours == null) return;
 
@@ -285,23 +577,9 @@ public class CartPitZone : MonoBehaviour
         {
             if (enteredWheelBehaviours[i] != null) enteredWheelBehaviours[i].SetSpeedToZero();
         }
-
-        // Remove remaining planar momentum so the new Rigidbody-root leader
-        // does not coast through the checkout lane after wheel drive is stopped.
-        if (enteredLeaderBody != null)
-        {
-            Vector3 velocity = enteredLeaderBody.linearVelocity;
-            enteredLeaderBody.linearVelocity = Vector3.up * velocity.y;
-        }
     }
 
-    private void FreezeAllWheelBehaviorDelayed()
-    {
-        if (!stationOccupied) return;
-        FreezeAllWheelBehavior();
-    }
-
-    private void UnfreezeAllWheelBehavior()
+    private void ResetWheelDrive()
     {
         if (enteredWheelBehaviours == null) return;
 
@@ -313,23 +591,28 @@ public class CartPitZone : MonoBehaviour
 
     #endregion
 
-    #region UI / Camera Helpers
+    #region Helpers
 
-    private void SetPrompt(int playerIndex, bool visible)
+    private bool HasValidWaypointPath(Transform[] waypoints, string pathName)
     {
-        int index = playerIndex - 1;
-
-        if (playerPrompts == null || index < 0 || index >= playerPrompts.Length) return;
-
-        if (playerPrompts[index] != null) playerPrompts[index].SetActive(visible);
-
-        if (!visible) return;
-
-        for (int i = 0; i < playerPrompts.Length; i++)
+        if (waypoints == null || waypoints.Length == 0)
         {
-            if (i == index) continue;
-            if (playerPrompts[i] != null) playerPrompts[i].SetActive(false);
+            Debug.LogError($"[CartPitZone] {pathName} Waypoints must contain at least one Transform.", this);
+            return false;
         }
+
+        for (int i = 0; i < waypoints.Length; i++)
+        {
+            if (waypoints[i] != null) return true;
+        }
+
+        Debug.LogError($"[CartPitZone] {pathName} Waypoints contains no valid Transform.", this);
+        return false;
+    }
+
+    private void SetCheckoutPrompt(bool visible)
+    {
+        if (checkoutPrompt != null) checkoutPrompt.SetActive(visible);
     }
 
     private PlayerCameraManager GetPlayerCameraManager(int playerIndex)
@@ -347,11 +630,25 @@ public class CartPitZone : MonoBehaviour
 
     private void OnValidate()
     {
+        directionThreshold = Mathf.Clamp(directionThreshold, -1f, 1f);
+        minimumVelocityForDirectionCheck = Mathf.Max(0f, minimumVelocityForDirectionCheck);
+
+        autoDriveSpeed = Mathf.Max(0.1f, autoDriveSpeed);
+        autoDriveRotationSpeed = Mathf.Max(1f, autoDriveRotationSpeed);
+        waypointReachDistance = Mathf.Max(0.01f, waypointReachDistance);
+
         myLaneNumber = Mathf.Max(1, myLaneNumber);
-        ghostDurationAfterQuit = Mathf.Max(0f, ghostDurationAfterQuit);
+        ghostDurationAfterCheckout = Mathf.Max(0f, ghostDurationAfterCheckout);
     }
 
     private void OnDrawGizmos()
+    {
+        DrawDirectionGizmo();
+        DrawWaypointPath(entryWaypoints);
+        DrawWaypointPath(exitWaypoints);
+    }
+
+    private void DrawDirectionGizmo()
     {
         Vector3 direction = Vector3.ProjectOnPlane(requiredEntryDirection, Vector3.up);
 
@@ -364,9 +661,29 @@ public class CartPitZone : MonoBehaviour
 
         direction.Normalize();
 
-        Gizmos.color = Color.green;
-        Gizmos.DrawLine(transform.position, transform.position + direction * 20f);
-        Gizmos.DrawSphere(transform.position, 0.1f);
+        Gizmos.DrawLine(transform.position, transform.position + direction * 4f);
+        Gizmos.DrawSphere(transform.position + direction * 4f, 0.1f);
+    }
+
+    private void DrawWaypointPath(Transform[] waypoints)
+    {
+        if (waypoints == null || waypoints.Length == 0) return;
+
+        Vector3 previous = transform.position;
+        bool hasPrevious = false;
+
+        for (int i = 0; i < waypoints.Length; i++)
+        {
+            Transform waypoint = waypoints[i];
+            if (waypoint == null) continue;
+
+            if (hasPrevious) Gizmos.DrawLine(previous, waypoint.position);
+
+            Gizmos.DrawSphere(waypoint.position, 0.08f);
+
+            previous = waypoint.position;
+            hasPrevious = true;
+        }
     }
 
     #endregion

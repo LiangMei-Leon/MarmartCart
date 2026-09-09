@@ -113,7 +113,7 @@ public class AIShopperPhysics : MonoBehaviour
         if (snakeBody == null || snakeBody.Count == 0 || snakeBody[0] == null) return;
 
         CartControlScript cartControl = snakeBody[0].GetComponentInChildren<CartControlScript>(true);
-        if (cartControl != null) cartControl.RefillSpeedUpMeter(rewardMeterAmount);
+        if (cartControl != null) cartControl.AddHype(rewardMeterAmount);
     }
 
     private void PlayHitSfx()

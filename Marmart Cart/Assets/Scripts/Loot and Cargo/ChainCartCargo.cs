@@ -189,6 +189,63 @@ public class ChainCartCargo : MonoBehaviour
         return removedCount;
     }
 
+    /// <summary>
+    /// Replaces this cart's cargo layout with an existing set of CargoEntry
+    /// instances without treating the operation as pickup/removal gameplay.
+    ///
+    /// Intended for authoritative layout rebuilds such as checkout compaction.
+    /// CargoEntry identity, SourceLoot, SelectedCargoVisual, LoadCost and
+    /// ScoreValue are all preserved.
+    ///
+    /// This fires OnCargoChanged once after the replacement. It deliberately
+    /// does NOT fire OnCargoAdded / OnCargoRemoved for every moved entry.
+    /// </summary>
+    public bool ReplaceCargoEntries(IReadOnlyList<CargoEntry> entries)
+    {
+        if (settings == null)
+        {
+            Debug.LogError("[ChainCartCargo] Cannot replace cargo because CargoSystemSettings is missing.", this);
+            return false;
+        }
+
+        int newCount = entries != null ? entries.Count : 0;
+
+        if (newCount > settings.TechnicalMaxCargoPerCart)
+        {
+            Debug.LogError(
+                $"[ChainCartCargo] Cannot replace cargo: requested {newCount} entries exceeds technical safety limit {settings.TechnicalMaxCargoPerCart}.",
+                this
+            );
+
+            return false;
+        }
+
+        // Clear runtime visuals for the OLD layout first.
+        for (int i = 0; i < cargoEntries.Count; i++)
+        {
+            cargoEntries[i]?.ClearVisualRuntime();
+        }
+
+        ClearSpawnedVisuals();
+        cargoEntries.Clear();
+
+        if (entries != null)
+        {
+            for (int i = 0; i < entries.Count; i++)
+            {
+                CargoEntry entry = entries[i];
+                if (entry != null) cargoEntries.Add(entry);
+            }
+        }
+
+        RecalculateLocalState();
+
+        if (Application.isPlaying) RebuildCargoVisuals();
+
+        OnCargoChanged?.Invoke(this);
+        return true;
+    }
+
     public void ClearCargo()
     {
         if (cargoEntries.Count == 0)

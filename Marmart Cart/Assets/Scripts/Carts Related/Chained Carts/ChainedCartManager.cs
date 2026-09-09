@@ -17,10 +17,7 @@ using UnityEngine;
 /// IMPORTANT:
 /// Cargo itself is authoritative on ChainCartCargo.
 /// A loose cart keeps all safe cargo. Only LOCAL overload is spilled.
-///
-/// The old Normal/Expensive grocery fields remain TEMPORARILY because the
-/// current SnakeCartManager checkout code still calls that API. Delete that
-/// region when checkout is migrated to the new cargo system.
+/// Cargo contents are authoritative exclusively on ChainCartCargo.
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
 [DisallowMultipleComponent]
@@ -146,16 +143,6 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
 
     #endregion
 
-    #region Legacy Grocery State
-
-    [Header("LEGACY - Remove During Checkout Migration")]
-    [SerializeField] private bool hasGroceryItem;
-    [SerializeField] private bool hasNormalGroceryItem;
-    [SerializeField] private bool hasExpensiveGroceryItem;
-    [SerializeField] private GameObject normalGroceryItemVisual;
-    [SerializeField] private GameObject expensiveGroceryItemVisual;
-
-    #endregion
 
     #region Unity Lifecycle
 
@@ -171,7 +158,6 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
         if (cartRenderer == null) Debug.LogWarning("[ChainedCartManager] Cart Renderer is not assigned.", this);
         if (chainCartCargo == null) Debug.LogWarning("[ChainedCartManager] ChainCartCargo is not assigned/found.", this);
 
-        RefreshLegacyGroceryVisuals();
         SetCartTeamColor();
     }
 
@@ -645,53 +631,6 @@ public class ChainedCartManager : MonoBehaviour, ISpawnerHoldable
 
     #endregion
 
-    #region Legacy Grocery State - Temporary
-
-    public void EnableNormalGroveryItem()
-    {
-        hasGroceryItem = true;
-        hasNormalGroceryItem = true;
-        hasExpensiveGroceryItem = false;
-        RefreshLegacyGroceryVisuals();
-    }
-
-    public void EnableExpensiveGroveryItem()
-    {
-        hasGroceryItem = true;
-        hasNormalGroceryItem = false;
-        hasExpensiveGroceryItem = true;
-        RefreshLegacyGroceryVisuals();
-    }
-
-    private void RefreshLegacyGroceryVisuals()
-    {
-        if (normalGroceryItemVisual != null)
-        {
-            normalGroceryItemVisual.SetActive(hasGroceryItem && hasNormalGroceryItem);
-        }
-
-        if (expensiveGroceryItemVisual != null)
-        {
-            expensiveGroceryItemVisual.SetActive(hasGroceryItem && hasExpensiveGroceryItem);
-        }
-    }
-
-    public bool HasGroceryItem()
-    {
-        return hasGroceryItem;
-    }
-
-    public bool isCarryingNormalGroceryItem()
-    {
-        return hasNormalGroceryItem;
-    }
-
-    public bool isCarryingExpensiveGroceryItem()
-    {
-        return hasExpensiveGroceryItem;
-    }
-
-    #endregion
 
     #region Validation
 

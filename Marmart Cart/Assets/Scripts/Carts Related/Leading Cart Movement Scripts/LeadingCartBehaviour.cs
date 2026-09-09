@@ -9,7 +9,7 @@ using UnityEngine;
 /// Movement design:
 /// - Normal Drive uses cargo-overload-adjusted base speed.
 /// - Drift uses cargo-overload-adjusted base speed with tight-drift dip and recoverable fatigue.
-/// - Speedup is the current fuel-based speedup mode from CartControlScript.
+/// - Speedup is the Hype-funded speedup mode from CartControlScript.
 /// - Turn assist changes engine authority only; lateral grip remains independent.
 /// - Battle/crash systems may temporarily stop and resume wheel drive through
 ///   SetSpeedToZero() and ResetSpeed().
@@ -19,7 +19,7 @@ public class LeadingCartBehaviour : MonoBehaviour
     #region References
 
     [Header("References")]
-    [Tooltip("Reads movement, fuel speedup, pit, and control state.")]
+    [Tooltip("Reads movement, Hype-funded Speedup, pit, and control state.")]
     [SerializeField] private CartControlScript cartControlInput;
 
     [Tooltip("Main Rigidbody of the leading cart.")]
@@ -191,9 +191,9 @@ public class LeadingCartBehaviour : MonoBehaviour
     {
         if (isDrifting) return CartDriveMode.Drift;
 
-        bool isUsingFuelSpeedup = cartControlInput.IsSpeedingUp() && cartControlInput.CanSpeedingUp();
+        bool isUsingHypeSpeedup = cartControlInput.IsSpeedingUp() && cartControlInput.CanSpeedingUp();
 
-        if (isUsingFuelSpeedup) return CartDriveMode.Speedup;
+        if (isUsingHypeSpeedup) return CartDriveMode.Speedup;
 
         return CartDriveMode.NormalDrive;
     }

@@ -67,7 +67,6 @@ MonoBehaviour:
   bodyParts:
   - {fileID: 7280288703978135140, guid: 4f3f3c272c30336459d42d34a85faa6c, type: 3}
   snakeBody: []
-  cartsWithoutItem: []
   normalScale: {x: 5, y: 5, z: 5}
   upScale: {x: 10, y: 10, z: 10}
   downScale: {x: 3, y: 3, z: 3}
@@ -83,7 +82,6 @@ MonoBehaviour:
   pendingForwardTravelSinceBaseline: 0
   pendingFollowersDockedToTail: 0
   pendingPromotionPausedByStall: 0
-  groceryItemCartCount: 0
   drawFirstFollowerTarget: 1
 --- !u!114 &3341631081010412033
 MonoBehaviour:
@@ -130,7 +128,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fef1c9cd843ec344b9c13fa69e2d522, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveBackwardDistance: 10
+  moveBackwardDistance: 8
   moveBackwardDuration: 1.25
   moveBackwardMotionCurve:
     serializedVersion: 2
@@ -138,20 +136,29 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: -0.022740098
-      outSlope: -0.022740098
+      inSlope: 0
+      outSlope: 0
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.20101951
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.65
+      value: 1
+      inSlope: 0.03941509
+      outSlope: 0.0009284016
+      tangentMode: 1
+      weightedMode: 0
+      inWeight: 0.120629355
+      outWeight: 0.25974032
     - serializedVersion: 3
       time: 1
-      value: 1
-      inSlope: 2.595016
-      outSlope: 2.595016
+      value: 0.82380956
+      inSlope: -1.2010518
+      outSlope: -1.2010518
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.079889
+      inWeight: 0.23051941
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
@@ -164,8 +171,8 @@ MonoBehaviour:
   towActivationTolerance: 0.01
   leaderTowRotationFollowSpeed: 10
   rotateLeaderFromReverseTow: 1
-  singleCartReverseSpeed: 6
-  singleCartReverseDuration: 1.2
+  singleCartReverseSpeed: 8
+  singleCartReverseDuration: 1.25
   singleCartReverseSpeedCurve:
     serializedVersion: 2
     m_Curve:
@@ -282,10 +289,17 @@ MonoBehaviour:
   totalCapacity: 0
   totalLoad: 0
   totalScoreValue: 0
+  totalCargoEntryCount: 0
+  loadedCargoCartCount: 0
   overloadAmount: 0
   isOverloaded: 0
   capacityNormalized: 0
+  movementSpeedMultiplier: 1
   lastAssignedCartName: 
   lastAssignedOwnedIndex: -1
   lastAssignmentWasOverflow: 0
   lastSelectedOverflowRound: 0
+  lastNormalizationTransferCount: 0
+  lastNormalizationWasCapacityIncrease: 0
+  lastCheckoutCompactionNeeded: 0
+  lastCheckoutCompactionMovedEntries: 0

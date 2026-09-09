@@ -173,12 +173,12 @@ public class GameTimeManager : MonoBehaviour
 
         //Update Player1 Cart Count display and adjust camera
         int newTotalP1 = snakeCartManagerP1.GetSnakeBodyLength() - 1;
-        int newItemCartsP1 = snakeCartManagerP1.GetCurrentNumOfCartsWithItem();
+        //int newItemCartsP1 = snakeCartManagerP1.GetCurrentNumOfCartsWithItem();
 
-        if (newTotalP1 != cartCountP1 || itemCartsP1 != newItemCartsP1)
+        if (newTotalP1 != cartCountP1)
         {
             cartCountP1 = newTotalP1;
-            itemCartsP1 = newItemCartsP1;
+            //itemCartsP1 = newItemCartsP1;
 
             finalRefToCurrentTotalCartCountP1Text.text = cartCountP1.ToString();
             finalRefToCurrentItemCartCountP1Text.text = itemCartsP1.ToString();
@@ -189,12 +189,12 @@ public class GameTimeManager : MonoBehaviour
 
         //Update Player2 Cart Count display and adjust camera
         int newTotalP2 = snakeCartManagerP2.GetSnakeBodyLength() - 1;
-        int newItemCartsP2 = snakeCartManagerP2.GetCurrentNumOfCartsWithItem();
+        //int newItemCartsP2 = snakeCartManagerP2.GetCurrentNumOfCartsWithItem();
 
-        if (newTotalP2 != cartCountP2 || itemCartsP2 != newItemCartsP2)
+        if (newTotalP2 != cartCountP2)
         {
             cartCountP2 = newTotalP2;
-            itemCartsP2 = newItemCartsP2;
+            //itemCartsP2 = newItemCartsP2;
 
             finalRefToCurrentTotalCartCountP2Text.text = cartCountP2.ToString();
             finalRefToCurrentItemCartCountP2Text.text = itemCartsP2.ToString();
@@ -205,12 +205,12 @@ public class GameTimeManager : MonoBehaviour
 
         //Update Player1 Cart Count display and adjust camera
         int newTotalP3 = snakeCartManagerP3.GetSnakeBodyLength() - 1;
-        int newItemCartsP3 = snakeCartManagerP3.GetCurrentNumOfCartsWithItem();
+        //int newItemCartsP3 = snakeCartManagerP3.GetCurrentNumOfCartsWithItem();
 
-        if (newTotalP3 != cartCountP3 || itemCartsP3 != newItemCartsP3)
+        if (newTotalP3 != cartCountP3)
         {
             cartCountP3 = newTotalP3;
-            itemCartsP3 = newItemCartsP3;
+            //itemCartsP3 = newItemCartsP3;
 
             currentTotalCartCountP3Text.text = cartCountP3.ToString();
             currentItemCartCountP3Text.text = itemCartsP3.ToString();
@@ -221,12 +221,12 @@ public class GameTimeManager : MonoBehaviour
 
         //Update Player4 Cart Count display and adjust camera
         int newTotalP4 = snakeCartManagerP4.GetSnakeBodyLength() - 1;
-        int newItemCartsP4 = snakeCartManagerP4.GetCurrentNumOfCartsWithItem();
+        //int newItemCartsP4 = snakeCartManagerP4.GetCurrentNumOfCartsWithItem();
 
-        if (newTotalP4 != cartCountP4 || itemCartsP4 != newItemCartsP4)
+        if (newTotalP4 != cartCountP4)
         {
             cartCountP4 = newTotalP4;
-            itemCartsP4 = newItemCartsP4;
+            //itemCartsP4 = newItemCartsP4;
 
             currentTotalCartCountP4Text.text = cartCountP4.ToString();
             currentItemCartCountP4Text.text = itemCartsP4.ToString();

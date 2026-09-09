@@ -143,22 +143,22 @@ public class AIShopperBehaviour : MonoBehaviour
             // carryingItem = true.
             carryingItem = true;
 
-            if (itemManager.HasGroceryItem() && itemManager.isCarryingNormalGroceryItem())
-            {
-                carryingNormalItem = true;
-                carryingExpensiveItem = false;
-            }
-            else if (itemManager.HasGroceryItem() && itemManager.isCarryingExpensiveGroceryItem())
-            {
-                carryingNormalItem = false;
-                carryingExpensiveItem = true;
-            }
-            else
-            {
-                // Empty cart.
-                carryingNormalItem = false;
-                carryingExpensiveItem = false;
-            }
+            //if (itemManager.HasGroceryItem() && itemManager.isCarryingNormalGroceryItem())
+            //{
+            //    carryingNormalItem = true;
+            //    carryingExpensiveItem = false;
+            //}
+            //else if (itemManager.HasGroceryItem() && itemManager.isCarryingExpensiveGroceryItem())
+            //{
+            //    carryingNormalItem = false;
+            //    carryingExpensiveItem = true;
+            //}
+            //else
+            //{
+            //    // Empty cart.
+            //    carryingNormalItem = false;
+            //    carryingExpensiveItem = false;
+            //}
 
             ApplyCarryVisuals();
         }

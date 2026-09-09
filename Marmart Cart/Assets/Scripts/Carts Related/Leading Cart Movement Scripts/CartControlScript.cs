@@ -52,12 +52,6 @@ public class CartControlScript : MonoBehaviour
         return Mathf.Clamp(_inputVector.x, -1f, 1f);
     }
 
-    // Temporary compatibility wrapper while other movement scripts are migrated.
-    public float GetPrototypeSteerInput()
-    {
-        return GetSteerInput();
-    }
-
     #endregion
 
     #region Aiming
@@ -71,17 +65,55 @@ public class CartControlScript : MonoBehaviour
 
     #endregion
 
-    #region Speedup
+    #region Hype / Speedup
+
+    [Header("Hype Resource")]
+    [Min(0.01f)]
+    [SerializeField] private float maxHype = 100f;
+
+    [Min(0f)]
+    [SerializeField] private float startingHype = 50f;
+
+    [Tooltip("Literal Hype consumed per second while Speedup is active before the cart-count multiplier.")]
+    [Min(0f)]
+    [SerializeField] private float baseHypeBurnPerSecond = 100f;
+
+    [Header("Hype Burn / Owned Cart Penalty")]
+    [Tooltip("Owned follower carts at or below this amount do not increase Hype burn. The leading cart is not counted.")]
+    [Min(0)]
+    [SerializeField] private int safeOwnedFollowerCount = 2;
+
+    [Tooltip("Each owned follower cart ABOVE the safe amount adds this amount to the Hype burn multiplier. Example: 0.15 = +15% per extra cart.")]
+    [Min(0f)]
+    [SerializeField] private float hypeBurnMultiplierIncreasePerOwnedCart = 0.15f;
+
+    [Tooltip("Maximum multiplier that owned follower carts may apply to Hype burn.")]
+    [Min(1f)]
+    [SerializeField] private float maxHypeBurnMultiplier = 2.5f;
+
+    [Tooltip("Owned follower source. Includes both active and compact pending carts.")]
+    [SerializeField] private SnakeCartManager snakeCartManager;
 
     [Header("Speedup")]
-    [SerializeField] private float speedUpMeter = 100f;
-    [SerializeField] private float speedUpConsumeRate = 10f;
     [SerializeField] private bool canSpeedup = true;
 
-    [FormerlySerializedAs("boostEvent")]
-    [SerializeField] private GameEvent speedupEvent;
+    [Header("Hype Runtime - Read Only")]
+    [SerializeField] private float currentHype;
+    [SerializeField] private int hypeBurnOwnedFollowerCount;
 
     private bool isSpeedingUp;
+
+    public float CurrentHype => currentHype;
+    public float MaxHype => maxHype;
+    public float HypeNormalized => maxHype > 0.01f ? Mathf.Clamp01(currentHype / maxHype) : 0f;
+    public int HypeBurnOwnedFollowerCount => hypeBurnOwnedFollowerCount;
+    public int SafeOwnedFollowerCount => safeOwnedFollowerCount;
+    public int PenalizedOwnedFollowerCount => Mathf.Max(0, hypeBurnOwnedFollowerCount - safeOwnedFollowerCount);
+    public float CurrentHypeBurnMultiplier => Mathf.Min(maxHypeBurnMultiplier, 1f + PenalizedOwnedFollowerCount * hypeBurnMultiplierIncreasePerOwnedCart);
+    public float CurrentHypeBurnPerSecond => baseHypeBurnPerSecond * CurrentHypeBurnMultiplier;
+
+    public event System.Action<float, float> OnHypeChanged;
+    public event System.Action<float> OnHypeBurnRateChanged;
 
     #endregion
 
@@ -109,7 +141,6 @@ public class CartControlScript : MonoBehaviour
 
     public System.Action OnMoveBackwardPressed;
     public System.Action OnCheckoutReleased;
-    public System.Action OnExitReleased;
     public System.Action OnShootPressed;
 
     public System.Action<bool> OnMoveHeld;
@@ -186,7 +217,7 @@ public class CartControlScript : MonoBehaviour
 
         _inputActions.Player.Speedup.performed += ctx =>
         {
-            if (ctx.control.device == device && speedUpMeter > speedUpConsumeRate && canSpeedup) HandleSpeedupPressed();
+            if (ctx.control.device == device) HandleSpeedupPressed();
         };
 
         _inputActions.Player.Speedup.canceled += ctx =>
@@ -221,14 +252,6 @@ public class CartControlScript : MonoBehaviour
             }
         };
 
-        _inputActions.Player.QuitCheckOut.performed += ctx =>
-        {
-            if (ctx.control.device == device && activeCheckoutManager != null)
-            {
-                activeCheckoutManager.QuitCheckout();
-                OnExitReleased?.Invoke();
-            }
-        };
 
         _inputActions.Player.TutorialPrev.performed += ctx =>
         {
@@ -287,7 +310,7 @@ public class CartControlScript : MonoBehaviour
 
         _inputActions.Player.Speedup.performed += ctx =>
         {
-            if (ctx.control.device == Keyboard.current && speedUpMeter > speedUpConsumeRate && canSpeedup) HandleSpeedupPressed();
+            if (ctx.control.device == Keyboard.current) HandleSpeedupPressed();
         };
 
         _inputActions.Player.Speedup.canceled += ctx =>
@@ -322,14 +345,6 @@ public class CartControlScript : MonoBehaviour
             }
         };
 
-        _inputActions.Player.QuitCheckOut.performed += ctx =>
-        {
-            if (ctx.control.device == Keyboard.current && activeCheckoutManager != null)
-            {
-                activeCheckoutManager.QuitCheckout();
-                OnExitReleased?.Invoke();
-            }
-        };
 
         _inputActions.Player.TutorialPrev.performed += ctx =>
         {
@@ -348,7 +363,26 @@ public class CartControlScript : MonoBehaviour
 
     private void Start()
     {
-        speedUpMeter = 50f;
+        currentHype = Mathf.Clamp(startingHype, 0f, maxHype);
+        BindSnakeCartManager();
+        NotifyHypeChanged();
+    }
+
+    private void OnDestroy()
+    {
+        UnbindSnakeCartManager();
+    }
+
+    private void OnValidate()
+    {
+        maxHype = Mathf.Max(0.01f, maxHype);
+        startingHype = Mathf.Clamp(startingHype, 0f, maxHype);
+        baseHypeBurnPerSecond = Mathf.Max(0f, baseHypeBurnPerSecond);
+        safeOwnedFollowerCount = Mathf.Max(0, safeOwnedFollowerCount);
+        hypeBurnMultiplierIncreasePerOwnedCart = Mathf.Max(0f, hypeBurnMultiplierIncreasePerOwnedCart);
+        maxHypeBurnMultiplier = Mathf.Max(1f, maxHypeBurnMultiplier);
+
+        if (!Application.isPlaying) currentHype = Mathf.Clamp(startingHype, 0f, maxHype);
     }
 
     private void Update()
@@ -397,10 +431,15 @@ public class CartControlScript : MonoBehaviour
 
     private void HandleSpeedupPressed()
     {
-        if (speedUpMeter <= speedUpConsumeRate || !canSpeedup) return;
+        if (!CanBeginSpeedup()) return;
 
         if (enableDriftSpeedupOverride) StopDriftInputForSpeedup("Speedup pressed");
         isSpeedingUp = true;
+    }
+
+    private bool CanBeginSpeedup()
+    {
+        return canSpeedup && currentHype > 0.01f;
     }
 
     private void HandleSpeedupReleased()
@@ -431,22 +470,22 @@ public class CartControlScript : MonoBehaviour
 
     private void UpdateSpeedup()
     {
-        if (isSpeedingUp && speedUpMeter > 0f)
+        if (!isSpeedingUp)
         {
-            speedUpMeter -= speedUpConsumeRate * Time.deltaTime * 10f;
-            OnSpeedupHeld?.Invoke(true);
-
-            if (speedUpMeter <= 0f)
-            {
-                speedUpMeter = 0f;
-                isSpeedingUp = false;
-                OnSpeedupHeld?.Invoke(false);
-            }
-
+            OnSpeedupHeld?.Invoke(false);
             return;
         }
 
-        OnSpeedupHeld?.Invoke(false);
+        if (!CanBeginSpeedup())
+        {
+            StopSpeedupInput();
+            return;
+        }
+
+        ConsumeHype(CurrentHypeBurnPerSecond * Time.deltaTime);
+        OnSpeedupHeld?.Invoke(true);
+
+        if (currentHype <= 0.01f) StopSpeedupInput();
     }
 
     private void UpdateHeldEvents()
@@ -615,14 +654,71 @@ public class CartControlScript : MonoBehaviour
         StopSpeedupInput();
     }
 
-    public float GetSpeedUpMeter()
+    #endregion
+
+    #region Hype Resource
+
+    public void AddHype(float amount)
     {
-        return speedUpMeter;
+        if (amount <= 0f) return;
+
+        float previousHype = currentHype;
+        currentHype = Mathf.Clamp(currentHype + amount, 0f, maxHype);
+
+        if (!Mathf.Approximately(previousHype, currentHype)) NotifyHypeChanged();
     }
 
-    public void RefillSpeedUpMeter(float amount)
+    private void ConsumeHype(float amount)
     {
-        speedUpMeter = Mathf.Clamp(speedUpMeter + amount, 0f, 100f);
+        if (amount <= 0f || currentHype <= 0f) return;
+
+        float previousHype = currentHype;
+        currentHype = Mathf.Max(0f, currentHype - amount);
+
+        if (!Mathf.Approximately(previousHype, currentHype)) NotifyHypeChanged();
+    }
+
+    private void NotifyHypeChanged()
+    {
+        OnHypeChanged?.Invoke(currentHype, maxHype);
+    }
+
+    #endregion
+
+    #region Hype Burn Cart Count
+
+    private void BindSnakeCartManager()
+    {
+        if (snakeCartManager == null) snakeCartManager = GetComponentInParent<SnakeCartManager>();
+
+        if (snakeCartManager == null)
+        {
+            hypeBurnOwnedFollowerCount = 0;
+            Debug.LogWarning("[CartControlScript] SnakeCartManager was not found. Hype burn will remain at its base rate.", this);
+            return;
+        }
+
+        snakeCartManager.OnOwnedFollowersChanged -= HandleOwnedFollowersChanged;
+        snakeCartManager.OnOwnedFollowersChanged += HandleOwnedFollowersChanged;
+
+        RefreshHypeBurnCartCount();
+    }
+
+    private void UnbindSnakeCartManager()
+    {
+        if (snakeCartManager == null) return;
+        snakeCartManager.OnOwnedFollowersChanged -= HandleOwnedFollowersChanged;
+    }
+
+    private void HandleOwnedFollowersChanged()
+    {
+        RefreshHypeBurnCartCount();
+    }
+
+    private void RefreshHypeBurnCartCount()
+    {
+        hypeBurnOwnedFollowerCount = snakeCartManager != null ? snakeCartManager.GetOwnedFollowerCount() : 0;
+        OnHypeBurnRateChanged?.Invoke(CurrentHypeBurnPerSecond);
     }
 
     #endregion
