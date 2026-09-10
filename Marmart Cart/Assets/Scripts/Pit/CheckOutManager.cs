@@ -92,7 +92,8 @@ public class CheckOutManager : MonoBehaviour
 
     private void Start()
     {
-        EnableStation();
+        // isStationAvailable now keeps its serialized/externally assigned state.
+        // MatchFlowDirector may intentionally start this station closed.
 
         if (checkoutCargoDisplay == null)
         {
@@ -417,6 +418,15 @@ public class CheckOutManager : MonoBehaviour
     public void EnableStation()
     {
         isStationAvailable = true;
+    }
+
+    /// <summary>
+    /// Prevents NEW players from entering this checkout station.
+    /// An already-committed checkout session is allowed to finish normally.
+    /// </summary>
+    public void DisableStation()
+    {
+        isStationAvailable = false;
     }
 
     public bool IsStationAvailable()
