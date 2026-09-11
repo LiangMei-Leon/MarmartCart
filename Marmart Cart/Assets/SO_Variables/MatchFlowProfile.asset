@@ -26,7 +26,7 @@ MonoBehaviour:
     duration: 10
     telegraphDuration: 2
     resourceBudget: 10
-    batchSize: 10
+    batchSize: 2
     zone: 0
     checkoutStations: 0
   - label: Loot Cycle1
@@ -35,7 +35,7 @@ MonoBehaviour:
     telegraphDuration: 5
     resourceBudget: 20
     batchSize: 4
-    zone: 1
+    zone: 0
     checkoutStations: 0
   - label: Checkout Cycle1
     type: 3

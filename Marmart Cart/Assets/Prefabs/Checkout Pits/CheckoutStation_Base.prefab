@@ -1592,7 +1592,7 @@ MonoBehaviour:
   - {fileID: 1054767776608994523}
   - {fileID: 1090939670514675450}
   overflowTemplateSlotCount: 2
-  overflowLayerHeight: 0.75
+  overflowLayerHeight: 1
   stackDirectionReference: {fileID: 0}
   runtimeVisualRoot: {fileID: 1419428809297506945}
   animateCargoWaves: 1
@@ -1625,6 +1625,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  finalVisualScaleMultiplier: 0.5
   waveStartScaleMultiplier: 0.75
   arrivalPopScaleMultiplier: 1.12
   arrivalPopDuration: 0.1

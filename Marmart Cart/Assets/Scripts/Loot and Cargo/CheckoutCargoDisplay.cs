@@ -75,7 +75,15 @@ public class CheckoutCargoDisplay : MonoBehaviour
     [Tooltip("Shared travel curve for every item in the wave.")]
     [SerializeField] private AnimationCurve waveTravelCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
-    [Tooltip("Visuals begin at this fraction of their final scale.")]
+    [Tooltip(
+        "Global presentation-only scale applied to every spawned checkout cargo visual. " +
+        "1 = prefab's original scale, 0.5 = half size, 2 = double size. " +
+        "This does not modify the source prefab or gameplay cargo."
+    )]
+    [Min(0.01f)]
+    [SerializeField] private float finalVisualScaleMultiplier = 1f;
+
+    [Tooltip("Visuals begin at this fraction of their FINAL checkout-display scale.")]
     [Range(0.05f, 1f)]
     [SerializeField] private float waveStartScaleMultiplier = 0.75f;
 
@@ -157,6 +165,7 @@ public class CheckoutCargoDisplay : MonoBehaviour
 
         waveTravelDuration = Mathf.Max(0.01f, waveTravelDuration);
         waveArcHeight = Mathf.Max(0f, waveArcHeight);
+        finalVisualScaleMultiplier = Mathf.Max(0.01f, finalVisualScaleMultiplier);
         waveStartScaleMultiplier = Mathf.Clamp(waveStartScaleMultiplier, 0.05f, 1f);
         arrivalPopScaleMultiplier = Mathf.Max(1f, arrivalPopScaleMultiplier);
         arrivalPopDuration = Mathf.Max(0f, arrivalPopDuration);
@@ -262,11 +271,18 @@ public class CheckoutCargoDisplay : MonoBehaviour
 
         PrepareAsVisualOnly(visualInstance);
 
-        Vector3 targetScale = visualInstance.transform.localScale;
+        // Preserve the source prefab's authored proportions, then apply one
+        // checkout-display-only global scale. Wave/start/pop multipliers remain
+        // relative to this final presentation scale.
+        Vector3 targetScale = visualInstance.transform.localScale * finalVisualScaleMultiplier;
 
         if (animateCargoWaves)
         {
             visualInstance.transform.localScale = targetScale * waveStartScaleMultiplier;
+        }
+        else
+        {
+            visualInstance.transform.localScale = targetScale;
         }
 
         spawnedVisuals.Add(visualInstance);
