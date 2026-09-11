@@ -15,5 +15,5 @@ MonoBehaviour:
   displayName: CV_Produce_Fruits
   category: 0
   cargoVisualPrefab: {fileID: 7758098174807810501, guid: a9d8e0f459e0dd44d9fdadfd4562740e, type: 3}
-  debugColor: {r: 0, g: 1, b: 0, a: 1}
+  debugColor: {r: 1, g: 1, b: 1, a: 1}
   debugScaleMultiplier: 1
