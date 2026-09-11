@@ -51,7 +51,11 @@ public class CartPitZone : MonoBehaviour
     [SerializeField] private Transform[] entryWaypoints;
 
     [Header("Auto Drive - Exit")]
-    [Tooltip("Ordered points used after checkout. The FINAL point is where normal player control returns.")]
+    [Tooltip(
+        "Ordered guide points used after checkout. Intermediate points are normal auto-drive waypoints. " +
+        "The FINAL point is a CONTROL HANDOFF point: the cart does not stop or snap there. " +
+        "Control returns while preserving forward exit momentum."
+    )]
     [SerializeField] private Transform[] exitWaypoints;
 
     [Header("Auto Drive Tuning")]
@@ -119,6 +123,11 @@ public class CartPitZone : MonoBehaviour
 
     private bool leaderWasKinematic;
 
+    // Last meaningful planar direction used by auto-drive.
+    // During AutoExiting this becomes the momentum direction handed back to
+    // the player at the final exit waypoint.
+    private Vector3 lastAutoDriveDirection;
+
     #endregion
 
     #region Unity Lifecycle
@@ -146,11 +155,11 @@ public class CartPitZone : MonoBehaviour
         switch (laneState)
         {
             case CheckoutLaneState.AutoEntering:
-                TickAutoDrive(entryWaypoints, BeginCheckoutAtStop);
+                TickAutoDrive(entryWaypoints, BeginCheckoutAtStop, true);
                 break;
 
             case CheckoutLaneState.AutoExiting:
-                TickAutoDrive(exitWaypoints, FinishCheckoutExit);
+                TickAutoDrive(exitWaypoints, FinishCheckoutExit, false);
                 break;
         }
     }
@@ -284,6 +293,7 @@ public class CartPitZone : MonoBehaviour
     {
         laneState = CheckoutLaneState.AutoEntering;
         currentWaypointIndex = 0;
+        lastAutoDriveDirection = Vector3.zero;
 
         PlayerCameraManager cameraManager = GetPlayerCameraManager(occupyingPlayerIndex);
         cameraManager?.EnterCheckoutLane(myLaneNumber);
@@ -358,13 +368,27 @@ public class CartPitZone : MonoBehaviour
 
         laneState = CheckoutLaneState.AutoExiting;
         currentWaypointIndex = 0;
+        lastAutoDriveDirection = Vector3.zero;
     }
 
     #endregion
 
     #region Auto Drive
 
-    private void TickAutoDrive(Transform[] waypoints, System.Action onPathFinished)
+    /// <summary>
+    /// Drives the kinematic leader through an authored path.
+    ///
+    /// Entry path:
+    /// stopAtFinalWaypoint = true
+    /// -> final point is a real stop used to begin checkout.
+    ///
+    /// Exit path:
+    /// stopAtFinalWaypoint = false
+    /// -> final point is only the control-handoff threshold.
+    /// -> the cart is NOT snapped/stopped there.
+    /// -> FinishCheckoutExit() restores control with preserved exit momentum.
+    /// </summary>
+    private void TickAutoDrive(Transform[] waypoints, System.Action onPathFinished, bool stopAtFinalWaypoint)
     {
         if (enteredLeaderBody == null)
         {
@@ -401,13 +425,24 @@ public class CartPitZone : MonoBehaviour
         Vector3 planarToTarget = Vector3.ProjectOnPlane(targetPosition - currentPosition, Vector3.up);
         float planarDistance = planarToTarget.magnitude;
 
+        bool isFinalPoint = currentWaypointIndex == waypoints.Length - 1;
+
+        // EXIT FINAL POINT:
+        // This is not a stop. As soon as the auto-driven cart reaches the
+        // handoff radius, restore normal player control without MovePosition()
+        // snapping to the waypoint and without zeroing the exit velocity.
+        if (isFinalPoint && !stopAtFinalWaypoint && planarDistance <= waypointReachDistance)
+        {
+            onPathFinished?.Invoke();
+            return;
+        }
+
+        // Normal intermediate waypoint, or the checkout-stop point on ENTRY.
         if (planarDistance <= waypointReachDistance)
         {
             enteredLeaderBody.MovePosition(targetPosition);
 
-            bool isFinalPoint = currentWaypointIndex == waypoints.Length - 1;
-
-            if (isFinalPoint && snapToFinalWaypointRotation)
+            if (isFinalPoint && stopAtFinalWaypoint && snapToFinalWaypointRotation)
             {
                 Quaternion flatTargetRotation = GetFlatWaypointRotation(target, enteredLeaderBody.rotation);
                 enteredLeaderBody.MoveRotation(flatTargetRotation);
@@ -423,6 +458,9 @@ public class CartPitZone : MonoBehaviour
             return;
         }
 
+        Vector3 desiredForward = planarToTarget.normalized;
+        lastAutoDriveDirection = desiredForward;
+
         Vector3 nextPosition = Vector3.MoveTowards(
             currentPosition,
             targetPosition,
@@ -430,8 +468,6 @@ public class CartPitZone : MonoBehaviour
         );
 
         enteredLeaderBody.MovePosition(nextPosition);
-
-        Vector3 desiredForward = planarToTarget.normalized;
 
         if (desiredForward.sqrMagnitude > 0.0001f)
         {
@@ -482,19 +518,34 @@ public class CartPitZone : MonoBehaviour
             checkOutManager.NotifyPlayerExitedCheckoutLane();
         }
 
-        RestorePlayerControl(true);
+        RestorePlayerControl(true, true);
         ClearRuntimeCheckoutState();
     }
 
-    private void RestorePlayerControl(bool applyExitGhost)
+    private void RestorePlayerControl(bool applyExitGhost, bool preserveExitMomentum = false)
     {
+        Vector3 exitVelocity = Vector3.zero;
+
+        if (preserveExitMomentum)
+        {
+            Vector3 handoffDirection = GetExitHandoffDirection();
+
+            if (handoffDirection.sqrMagnitude > 0.0001f)
+            {
+                exitVelocity = handoffDirection.normalized * autoDriveSpeed;
+            }
+        }
+
         if (enteredLeaderBody != null)
         {
             enteredLeaderBody.isKinematic = leaderWasKinematic;
 
             if (!enteredLeaderBody.isKinematic)
             {
-                enteredLeaderBody.linearVelocity = Vector3.zero;
+                // Normal abort/disable restores to a safe stop.
+                // Successful checkout EXIT instead receives the auto-drive
+                // velocity so the cart flows directly back into player control.
+                enteredLeaderBody.linearVelocity = preserveExitMomentum ? exitVelocity : Vector3.zero;
                 enteredLeaderBody.angularVelocity = Vector3.zero;
             }
         }
@@ -519,6 +570,49 @@ public class CartPitZone : MonoBehaviour
                 enteredBattleController.SetGhostMode(ghostDurationAfterCheckout);
             }
         }
+    }
+
+    /// <summary>
+    /// Prefer the actual direction the exit auto-drive was travelling.
+    /// If the path was extremely short and never established one, fall back to
+    /// the final exit waypoint's authored forward, then the leader's forward.
+    /// </summary>
+    private Vector3 GetExitHandoffDirection()
+    {
+        Vector3 direction = Vector3.ProjectOnPlane(lastAutoDriveDirection, Vector3.up);
+
+        if (direction.sqrMagnitude > 0.0001f)
+        {
+            return direction.normalized;
+        }
+
+        if (exitWaypoints != null)
+        {
+            for (int i = exitWaypoints.Length - 1; i >= 0; i--)
+            {
+                Transform waypoint = exitWaypoints[i];
+                if (waypoint == null) continue;
+
+                direction = Vector3.ProjectOnPlane(waypoint.forward, Vector3.up);
+
+                if (direction.sqrMagnitude > 0.0001f)
+                {
+                    return direction.normalized;
+                }
+            }
+        }
+
+        if (enteredLeader != null)
+        {
+            direction = Vector3.ProjectOnPlane(enteredLeader.transform.forward, Vector3.up);
+
+            if (direction.sqrMagnitude > 0.0001f)
+            {
+                return direction.normalized;
+            }
+        }
+
+        return Vector3.zero;
     }
 
     private void AbortCheckoutSession()
@@ -563,6 +657,7 @@ public class CartPitZone : MonoBehaviour
         enteredMoveBackwardController = null;
 
         leaderWasKinematic = false;
+        lastAutoDriveDirection = Vector3.zero;
     }
 
     #endregion

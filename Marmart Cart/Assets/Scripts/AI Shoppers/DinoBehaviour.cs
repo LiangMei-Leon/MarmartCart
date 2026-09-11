@@ -51,7 +51,7 @@ public class DinoBehaviour : MonoBehaviour
     }
     void Start()
     {
-        currentLevel = gameTimeManager.GetCurrentGameStage() + 1;
+        currentLevel = 1;
 
         currentHealth = maxHealth;
         gameTimeManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameTimeManager>();

@@ -515,7 +515,7 @@ GameObject:
   - component: {fileID: 4210841659484693627}
   - component: {fileID: 1233864769382706616}
   m_Layer: 13
-  m_Name: TopCollider(spawn preventing)
+  m_Name: InvisibleTop Trigger
   m_TagString: Obstacles
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
