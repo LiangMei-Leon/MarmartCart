@@ -2,7 +2,7 @@ using Shapes;
 using UnityEngine;
 
 /// <summary>
-/// Step 5D.2.3 renderer - Near-Camera Render Plane architecture test.
+/// Step 5D.2.4 renderer - Near-Camera Render Plane + native rounded arc caps.
 ///
 ///
 /// LOAD normal mode:
@@ -779,6 +779,17 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
         float endRadians =
             endDegrees * Mathf.Deg2Rad;
 
+        // Use Shapes' NATIVE rounded arc end caps.
+        //
+        // Previously we drew:
+        //     Arc + separate half-disc at each endpoint
+        //
+        // Even though the half-disc only covered the outward half, its
+        // anti-aliased edge still touched the arc's anti-aliased edge.
+        // With transparent blending that could produce a faint seam.
+        //
+        // Native ArcEndCap.Round keeps the body + rounded cap inside ONE
+        // Shapes arc primitive, so there is no transparent primitive overlap.
         Draw.Arc(
             centerWorld,
             rotation,
@@ -786,91 +797,8 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
             thicknessPixels,
             startRadians,
             endRadians,
+            ArcEndCap.Round,
             color
-        );
-
-        Vector3 centerScreen =
-            cam.WorldToScreenPoint(centerWorld);
-
-        Vector3 startWorld =
-            ScreenPointOnArcToWorld(
-                cam,
-                centerScreen,
-                radiusPixels,
-                startRadians
-            );
-
-        Vector3 endWorld =
-            ScreenPointOnArcToWorld(
-                cam,
-                centerScreen,
-                radiusPixels,
-                endRadians
-            );
-
-        float capRadiusPixels =
-            thicknessPixels * 0.5f;
-
-        DrawHalfCircleCap(
-            startWorld,
-            rotation,
-            capRadiusPixels,
-            startRadians - Mathf.PI,
-            startRadians,
-            color
-        );
-
-        DrawHalfCircleCap(
-            endWorld,
-            rotation,
-            capRadiusPixels,
-            endRadians,
-            endRadians + Mathf.PI,
-            color
-        );
-    }
-
-    private void DrawHalfCircleCap(
-        Vector3 centerWorld,
-        Quaternion rotation,
-        float capRadiusPixels,
-        float startRadians,
-        float endRadians,
-        Color color)
-    {
-        if (capRadiusPixels <= 0f) return;
-
-        Draw.Arc(
-            centerWorld,
-            rotation,
-            capRadiusPixels * 0.5f,
-            capRadiusPixels,
-            startRadians,
-            endRadians,
-            color
-        );
-    }
-
-    private Vector3 ScreenPointOnArcToWorld(
-        Camera cam,
-        Vector3 centerScreen,
-        float radiusPixels,
-        float angleRadians)
-    {
-        Vector2 direction =
-            ShapesMath.AngToDir(angleRadians);
-
-        Vector3 screenPoint =
-            centerScreen;
-
-        screenPoint.x +=
-            direction.x * radiusPixels;
-
-        screenPoint.y +=
-            direction.y * radiusPixels;
-
-        return cam.ScreenToWorldPoint(
-            screenPoint
         );
     }
 
