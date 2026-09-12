@@ -482,7 +482,7 @@ public class CartControlScript : MonoBehaviour
             return;
         }
 
-        ConsumeHype(CurrentHypeBurnPerSecond * Time.deltaTime);
+        RemoveHype(CurrentHypeBurnPerSecond * Time.deltaTime);
         OnSpeedupHeld?.Invoke(true);
 
         if (currentHype <= 0.01f) StopSpeedupInput();
@@ -668,7 +668,7 @@ public class CartControlScript : MonoBehaviour
         if (!Mathf.Approximately(previousHype, currentHype)) NotifyHypeChanged();
     }
 
-    private void ConsumeHype(float amount)
+    public void RemoveHype(float amount)
     {
         if (amount <= 0f || currentHype <= 0f) return;
 

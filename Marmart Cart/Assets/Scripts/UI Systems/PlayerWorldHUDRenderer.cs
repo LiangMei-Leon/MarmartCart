@@ -2,7 +2,7 @@ using Shapes;
 using UnityEngine;
 
 /// <summary>
-/// Step 5D.2.4 renderer - Near-Camera Render Plane + native rounded arc caps.
+/// Step 5E.1 renderer - Drift Hype risk/reward preview.
 ///
 ///
 /// LOAD normal mode:
@@ -31,6 +31,11 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
     [SerializeField] private PlayerWorldHUDSystem hudSystem;
     [SerializeField] private PlayerWorldHUDStateSystem stateSystem;
     [SerializeField] private PlayerWorldHUDLayoutProfile layoutProfile;
+
+    [Tooltip(
+        "Optional semantic feature toggles. If left unassigned, drift reward and penalty previews default to visible."
+    )]
+    [SerializeField] private PlayerWorldHUDFeatureProfile featureProfile;
 
     #endregion
 
@@ -78,23 +83,25 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
             renderAnchorWorld = cam.ScreenToWorldPoint(anchorScreen);
         }
 
+        PlayerWorldHUDState hudState = null;
+
         float hypeNormalized = 0f;
         int safeCapacityCount = 0;
         int currentLoadCount = 0;
         int overloadCount = 0;
 
         if (stateSystem != null &&
-            stateSystem.TryGetState(playerIndex, out PlayerWorldHUDState state) &&
-            state != null)
+            stateSystem.TryGetState(playerIndex, out hudState) &&
+            hudState != null)
         {
-            hypeNormalized = state.HypeNormalized;
-            safeCapacityCount = Mathf.Max(0, Mathf.RoundToInt(state.SafeCapacity));
-            currentLoadCount = Mathf.Max(0, Mathf.RoundToInt(state.CurrentLoad));
+            hypeNormalized = hudState.HypeNormalized;
+            safeCapacityCount = Mathf.Max(0, Mathf.RoundToInt(hudState.SafeCapacity));
+            currentLoadCount = Mathf.Max(0, Mathf.RoundToInt(hudState.CurrentLoad));
 
             overloadCount = Mathf.Max(
                 0,
                 Mathf.Max(
-                    Mathf.RoundToInt(state.OverloadAmount),
+                    Mathf.RoundToInt(hudState.OverloadAmount),
                     currentLoadCount - safeCapacityCount
                 )
             );
@@ -144,7 +151,8 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
                 cam,
                 hypeCenterWorld,
                 screenPlaneRotation,
-                hypeNormalized
+                hypeNormalized,
+                hudState
             );
 
             DrawLoadMeter(
@@ -685,8 +693,10 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
         Camera cam,
         Vector3 centerWorld,
         Quaternion rotation,
-        float normalizedValue)
+        float normalizedValue,
+        PlayerWorldHUDState state)
     {
+        // 1. Background track.
         DrawFullRoundedArc(
             cam,
             centerWorld,
@@ -698,37 +708,124 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
             layoutProfile.HypeTrackColor
         );
 
-        float value =
-            Mathf.Clamp01(normalizedValue);
-
-        if (value <= 0f) return;
+        float currentValue =
+            Mathf.Clamp01(
+                normalizedValue
+            );
 
         float halfSpan =
             layoutProfile.HypeSpanDegrees * 0.5f;
 
         float bottomDegrees =
-            layoutProfile.HypeCenterAngleDegrees - halfSpan;
+            layoutProfile.HypeCenterAngleDegrees -
+            halfSpan;
 
         float topDegrees =
-            layoutProfile.HypeCenterAngleDegrees + halfSpan;
+            layoutProfile.HypeCenterAngleDegrees +
+            halfSpan;
 
-        float fillEndDegrees =
+        float currentDegrees =
             Mathf.Lerp(
                 bottomDegrees,
                 topDegrees,
-                value
+                currentValue
             );
 
-        DrawRoundedArcSection(
-            cam,
-            centerWorld,
-            rotation,
-            layoutProfile.HypeRadiusPixels,
-            layoutProfile.HypeFillThicknessPixels,
-            bottomDegrees,
-            fillEndDegrees,
-            layoutProfile.HypeFillColor
-        );
+        bool showReward =
+            state != null &&
+            (featureProfile == null ||
+             featureProfile.ShowDriftRewardPreview);
+
+        bool showPenalty =
+            state != null &&
+            (featureProfile == null ||
+             featureProfile.ShowDriftPenaltyPreview);
+
+        // 2. SUCCESS REWARD PREVIEW FIRST.
+        //
+        // It intentionally sits UNDER the active Hype meter and penalty.
+        // This hides the reward segment's inner rounded start cap under
+        // the current Hype fill, giving us a cleaner continuous junction.
+        if (showReward &&
+            state.DriftRewardPreviewActive)
+        {
+            float projectedSuccess =
+                Mathf.Clamp01(
+                    state.ProjectedHypeAfterDriftRewardNormalized
+                );
+
+            if (projectedSuccess > currentValue)
+            {
+                float rewardEndDegrees =
+                    Mathf.Lerp(
+                        bottomDegrees,
+                        topDegrees,
+                        projectedSuccess
+                    );
+
+                DrawRoundedArcSection(
+                    cam,
+                    centerWorld,
+                    rotation,
+                    layoutProfile.HypeRadiusPixels +
+                    layoutProfile.HypeRewardPreviewRadiusOffsetPixels,
+                    layoutProfile.HypeRewardPreviewThicknessPixels,
+                    currentDegrees,
+                    rewardEndDegrees,
+                    layoutProfile.HypeRewardPreviewColor
+                );
+            }
+        }
+
+        // 3. CURRENT HYPE OVER THE REWARD PREVIEW.
+        if (currentValue > 0f)
+        {
+            DrawRoundedArcSection(
+                cam,
+                centerWorld,
+                rotation,
+                layoutProfile.HypeRadiusPixels,
+                layoutProfile.HypeFillThicknessPixels,
+                bottomDegrees,
+                currentDegrees,
+                layoutProfile.HypeFillColor
+            );
+        }
+
+        // 4. FAILURE PENALTY LAST.
+        //
+        // It overlays the portion of CURRENT Hype that would actually be
+        // lost if the drift fails.
+        if (showPenalty &&
+            state.DriftPenaltyPreviewActive)
+        {
+            float projectedFailure =
+                Mathf.Clamp01(
+                    state.ProjectedHypeAfterDriftPenaltyNormalized
+                );
+
+            if (projectedFailure < currentValue)
+            {
+                float penaltyStartDegrees =
+                    Mathf.Lerp(
+                        bottomDegrees,
+                        topDegrees,
+                        projectedFailure
+                    );
+
+                DrawRoundedArcSection(
+                    cam,
+                    centerWorld,
+                    rotation,
+                    layoutProfile.HypeRadiusPixels +
+                    layoutProfile.HypePenaltyPreviewRadiusOffsetPixels,
+                    layoutProfile.HypePenaltyPreviewThicknessPixels,
+                    penaltyStartDegrees,
+                    currentDegrees,
+                    layoutProfile.HypePenaltyPreviewColor
+                );
+            }
+        }
     }
 
     #endregion

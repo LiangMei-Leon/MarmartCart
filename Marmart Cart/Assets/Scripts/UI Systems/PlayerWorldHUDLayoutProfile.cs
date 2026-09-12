@@ -201,6 +201,32 @@ public class PlayerWorldHUDLayoutProfile : ScriptableObject
     [SerializeField] private Color hypeTrackColor = new Color(0.20f, 0.24f, 0.30f, 0.60f);
     [SerializeField] private Color hypeFillColor = new Color(0.20f, 1f, 0.60f, 1f);
 
+    [Header("Hype Drift SUCCESS Preview")]
+    [Tooltip("Thickness of the potential success reward segment.")]
+    [Min(1f)]
+    [SerializeField] private float hypeRewardPreviewThicknessPixels = 10f;
+
+    [Tooltip(
+        "Optional radius offset relative to the main Hype centerline. " +
+        "0 keeps it directly on the same bar."
+    )]
+    [SerializeField] private float hypeRewardPreviewRadiusOffsetPixels = 0f;
+
+    [SerializeField] private Color hypeRewardPreviewColor = new Color(0.42f, 1f, 0.78f, 1f);
+
+    [Header("Hype Drift FAILURE Preview")]
+    [Tooltip("Thickness of the potential failure penalty segment.")]
+    [Min(1f)]
+    [SerializeField] private float hypePenaltyPreviewThicknessPixels = 10f;
+
+    [Tooltip(
+        "Optional radius offset relative to the main Hype centerline. " +
+        "0 keeps it directly on the same bar."
+    )]
+    [SerializeField] private float hypePenaltyPreviewRadiusOffsetPixels = 0f;
+
+    [SerializeField] private Color hypePenaltyPreviewColor = new Color(1f, 0.34f, 0.08f, 1f);
+
     #endregion
 
     #region Public API
@@ -258,6 +284,14 @@ public class PlayerWorldHUDLayoutProfile : ScriptableObject
     public float HypeCenterAngleDegrees => hypeCenterAngleDegrees;
     public Color HypeTrackColor => hypeTrackColor;
     public Color HypeFillColor => hypeFillColor;
+
+    public float HypeRewardPreviewThicknessPixels => hypeRewardPreviewThicknessPixels * masterScale;
+    public float HypeRewardPreviewRadiusOffsetPixels => hypeRewardPreviewRadiusOffsetPixels * masterScale;
+    public Color HypeRewardPreviewColor => hypeRewardPreviewColor;
+
+    public float HypePenaltyPreviewThicknessPixels => hypePenaltyPreviewThicknessPixels * masterScale;
+    public float HypePenaltyPreviewRadiusOffsetPixels => hypePenaltyPreviewRadiusOffsetPixels * masterScale;
+    public Color HypePenaltyPreviewColor => hypePenaltyPreviewColor;
 
     #endregion
 
@@ -354,6 +388,10 @@ public class PlayerWorldHUDLayoutProfile : ScriptableObject
             1f,
             hypeTrackThicknessPixels
         );
+
+        hypeRewardPreviewThicknessPixels = Mathf.Max(1f, hypeRewardPreviewThicknessPixels);
+        hypePenaltyPreviewThicknessPixels = Mathf.Max(1f, hypePenaltyPreviewThicknessPixels);
+
         hypeSpanDegrees = Mathf.Clamp(hypeSpanDegrees, 10f, 300f);
     }
 

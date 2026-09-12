@@ -1244,6 +1244,7 @@ GameObject:
   - component: {fileID: 8264941289741221997}
   - component: {fileID: 2195352570750162668}
   - component: {fileID: 9068241723809322355}
+  - component: {fileID: 6722514735618396874}
   m_Layer: 7
   m_Name: Cart Movement Controllers
   m_TagString: Untagged
@@ -1436,6 +1437,8 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   payoutWhenCancelledBySpeedup: 1
+  enableFailedDriftHypePenalty: 1
+  failedDriftPenaltyFraction: 0.5
   debugReward: 0
 --- !u!114 &2195352570750162668
 MonoBehaviour:
@@ -1549,6 +1552,23 @@ MonoBehaviour:
   showWheelDriftMultiplier: 0
   showWheelFinalGrip: 0
   showWheelForce: 0
+--- !u!114 &6722514735618396874
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2040688800904011672}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f9107425216d0346b1db86560ca0c35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cartController: {fileID: 5901886544005484465}
+  driftHypeReward: {fileID: 8264941289741221997}
+  stateSystem: {fileID: 0}
+  playerIndexOverride: 0
+  resolvedPlayerIndex: 0
 --- !u!1 &2124143889757510336
 GameObject:
   m_ObjectHideFlags: 0
