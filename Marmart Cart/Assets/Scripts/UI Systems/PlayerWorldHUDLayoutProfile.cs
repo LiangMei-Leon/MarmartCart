@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// Step 5D.2 visual profile.
+/// Step 5G.1.2 visual profile - simplified low-speed warning cart/weight icon.
 ///
 /// LOAD now supports:
 /// - minimum 10-slot visual baseline;
@@ -201,6 +201,20 @@ public class PlayerWorldHUDLayoutProfile : ScriptableObject
     [SerializeField] private Color hypeTrackColor = new Color(0.20f, 0.24f, 0.30f, 0.60f);
     [SerializeField] private Color hypeFillColor = new Color(0.20f, 1f, 0.60f, 1f);
 
+    [Header("Hype Fill Animation")]
+    [Tooltip(
+        "Animate positive Hype changes so the active fill travels toward the new value instead of teleporting. " +
+        "Hype decreases remain immediate so Speedup spending and losses stay responsive."
+    )]
+    [SerializeField] private bool animateHypeGainFill = true;
+
+    [Tooltip(
+        "How quickly the displayed Hype fill moves upward, in normalized bar units per second. " +
+        "Example: 0.75 means a +25% Hype gain takes about 0.33 seconds."
+    )]
+    [Min(0.01f)]
+    [SerializeField] private float hypeGainFillSpeedNormalizedPerSecond = 0.75f;
+
     [Header("Hype Drift SUCCESS Preview")]
     [Tooltip("Thickness of the potential success reward segment.")]
     [Min(1f)]
@@ -226,6 +240,209 @@ public class PlayerWorldHUDLayoutProfile : ScriptableObject
     [SerializeField] private float hypePenaltyPreviewRadiusOffsetPixels = 0f;
 
     [SerializeField] private Color hypePenaltyPreviewColor = new Color(1f, 0.34f, 0.08f, 1f);
+    [Header("Hype Burn Warning - Icon")]
+    [Tooltip(
+        "Group position relative to the central HUDWorldAnchor screen position. " +
+        "Positive X = right, positive Y = up."
+    )]
+    [SerializeField] private Vector2 hypeBurnWarningOffsetPixels = new Vector2(18f, -60f);
+
+    [Tooltip("Uniform scale for the COMPLETE Hype burn warning icon combination. Does not move its group position.")]
+    [Min(0.05f)]
+    [SerializeField] private float hypeBurnWarningMasterScale = 1f;
+
+    [Header("Hype Burn Warning - Background Circle")]
+    [SerializeField] private Vector2 hypeBurnWarningBackgroundOffsetPixels = Vector2.zero;
+
+    [Min(1f)]
+    [SerializeField] private float hypeBurnWarningBackgroundRadiusPixels = 22f;
+
+    [SerializeField] private Color hypeBurnWarningBackgroundColor = new Color(0.05f, 0.06f, 0.08f, 0.72f);
+
+    [Tooltip(
+        "Fallback unified icon color used only if the burn warning Gradient is unavailable. " +
+        "Kept so existing serialized color tuning is preserved."
+    )]
+    [SerializeField] private Color hypeBurnWarningColor = new Color(1f, 0.55f, 0.12f, 0.95f);
+
+    [Header("Hype Burn Warning - Severity Color")]
+    [Tooltip(
+        "Maps Current Hype Burn Multiplier to ONE unified color for ring, arrow, and bolt. " +
+        "Suggested progression: yellow/orange -> orange -> red -> deep red."
+    )]
+    [SerializeField] private Gradient hypeBurnWarningColorGradient = CreateDefaultHypeBurnWarningGradient();
+
+    [Tooltip("Multiplier mapped to the LEFT/start of the warning Gradient.")]
+    [Min(1f)]
+    [SerializeField] private float hypeBurnWarningColorMinMultiplier = 1.5f;
+
+    [Tooltip("Multiplier mapped to the RIGHT/end of the warning Gradient.")]
+    [Min(1f)]
+    [SerializeField] private float hypeBurnWarningColorMaxMultiplier = 2.5f;
+
+    [Header("Hype Burn Warning - Ring")]
+    [Min(1f)]
+    [SerializeField] private float hypeBurnWarningRingRadiusPixels = 14f;
+
+    [Min(0.5f)]
+    [SerializeField] private float hypeBurnWarningRingThicknessPixels = 3f;
+
+    [Range(1f, 180f)]
+    [SerializeField] private float hypeBurnWarningGapDegrees = 90f;
+
+    [Tooltip(
+        "Center angle of the missing ring gap in screen-space degrees. " +
+        "0 = right, 90 = up, 180 = left, 270 = down."
+    )]
+    [SerializeField] private float hypeBurnWarningGapCenterDegrees = -45f;
+
+    [Header("Hype Burn Warning - Arrow")]
+    [SerializeField] private Vector2 hypeBurnWarningArrowOffsetPixels = new Vector2(12f, -12f);
+
+    [Min(1f)]
+    [SerializeField] private float hypeBurnWarningArrowShaftLengthPixels = 11f;
+
+    [Min(0.5f)]
+    [SerializeField] private float hypeBurnWarningArrowShaftThicknessPixels = 3f;
+
+    [Min(1f)]
+    [SerializeField] private float hypeBurnWarningArrowHeadWidthPixels = 10f;
+
+    [Min(1f)]
+    [SerializeField] private float hypeBurnWarningArrowHeadHeightPixels = 8f;
+
+    [Header("Hype Burn Warning - Bolt (Two Triangles)")]
+    [SerializeField] private Vector2 hypeBurnWarningBoltOffsetPixels = new Vector2(0f, 0f);
+
+    [Header("Hype Burn Warning - Bolt Triangle A")]
+    [SerializeField] private Vector2 hypeBurnWarningBoltTriangleAOffsetPixels = new Vector2(-1f, 5f);
+
+    [Min(1f)]
+    [SerializeField] private float hypeBurnWarningBoltTriangleAWidthPixels = 11f;
+
+    [Min(1f)]
+    [SerializeField] private float hypeBurnWarningBoltTriangleAHeightPixels = 16f;
+
+    [Tooltip("Horizontal pull on the third point. Larger values make the triangle more obtuse / slanted.")]
+    [SerializeField] private float hypeBurnWarningBoltTriangleASkewPixels = 6f;
+
+    [SerializeField] private float hypeBurnWarningBoltTriangleARotationDegrees = -22f;
+
+    [Header("Hype Burn Warning - Bolt Triangle B")]
+    [SerializeField] private Vector2 hypeBurnWarningBoltTriangleBOffsetPixels = new Vector2(1f, -6f);
+
+    [Min(1f)]
+    [SerializeField] private float hypeBurnWarningBoltTriangleBWidthPixels = 11f;
+
+    [Min(1f)]
+    [SerializeField] private float hypeBurnWarningBoltTriangleBHeightPixels = 16f;
+
+    [Tooltip("Horizontal pull on the third point. Larger values make the triangle more obtuse / slanted.")]
+    [SerializeField] private float hypeBurnWarningBoltTriangleBSkewPixels = 6f;
+
+    [SerializeField] private float hypeBurnWarningBoltTriangleBRotationDegrees = 158f;
+
+    #endregion
+
+    #region Low Speed Warning - Icon
+
+    [Header("Low Speed Warning - Icon")]
+    [Tooltip(
+        "Group position relative to the central HUDWorldAnchor screen position. " +
+        "Positive X = right, positive Y = up."
+    )]
+    [SerializeField] private Vector2 lowSpeedWarningOffsetPixels = new Vector2(-18f, -60f);
+
+    [Tooltip("Uniform scale for the COMPLETE low-speed warning icon combination. Does not move its group position.")]
+    [Min(0.05f)]
+    [SerializeField] private float lowSpeedWarningMasterScale = 1f;
+
+    [Header("Low Speed Warning - Background Circle")]
+    [SerializeField] private Vector2 lowSpeedWarningBackgroundOffsetPixels = Vector2.zero;
+
+    [Min(1f)]
+    [SerializeField] private float lowSpeedWarningBackgroundRadiusPixels = 24f;
+
+    [SerializeField] private Color lowSpeedWarningBackgroundColor = new Color(0.05f, 0.06f, 0.08f, 0.72f);
+
+    [Tooltip(
+        "Fallback unified icon color used only if the low-speed warning Gradient is unavailable."
+    )]
+    [SerializeField] private Color lowSpeedWarningColor = new Color(1f, 0.55f, 0.12f, 0.95f);
+
+    [Header("Low Speed Warning - Severity Color")]
+    [Tooltip(
+        "Maps normalized speed penalty to one unified icon color. " +
+        "Suggested progression: yellow/orange -> orange -> red -> deep red."
+    )]
+    [SerializeField] private Gradient lowSpeedWarningColorGradient = CreateDefaultLowSpeedWarningGradient();
+
+    [Tooltip("Normalized penalty mapped to the LEFT/start of the warning Gradient.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float lowSpeedWarningColorMinPenalty = 0.05f;
+
+    [Tooltip("Normalized penalty mapped to the RIGHT/end of the warning Gradient.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float lowSpeedWarningColorMaxPenalty = 0.50f;
+
+    [Header("Low Speed Warning - Group Offsets")]
+    [SerializeField] private Vector2 lowSpeedWarningCartOffsetPixels = new Vector2(0f, 0f);
+    [SerializeField] private Vector2 lowSpeedWarningWeightOffsetPixels = new Vector2(0f, 10f);
+    [SerializeField] private Vector2 lowSpeedWarningArrowOffsetPixels = new Vector2(16f, -4f);
+
+    [Header("Low Speed Warning - Cart")]
+    [Min(0.5f)]
+    [SerializeField] private float lowSpeedWarningCartStrokeThicknessPixels = 3f;
+
+    [Header("Low Speed Warning - Cart Basket Corners")]
+    [SerializeField] private Vector2 lowSpeedWarningCartBasketTopLeftOffsetPixels = new Vector2(-12f, 11f);
+    [SerializeField] private Vector2 lowSpeedWarningCartBasketTopRightOffsetPixels = new Vector2(12f, 11f);
+    [SerializeField] private Vector2 lowSpeedWarningCartBasketBottomRightOffsetPixels = new Vector2(9f, -1f);
+    [SerializeField] private Vector2 lowSpeedWarningCartBasketBottomLeftOffsetPixels = new Vector2(-9f, -1f);
+
+    [Header("Low Speed Warning - Cart Handle Segments")]
+    [SerializeField] private Vector2 lowSpeedWarningCartHandleJointOffsetPixels = new Vector2(-15f, 11f);
+    [SerializeField] private Vector2 lowSpeedWarningCartHandleEndOffsetPixels = new Vector2(-18f, 15f);
+
+    [Header("Low Speed Warning - Cart Wheels")]
+    [SerializeField] private Vector2 lowSpeedWarningCartLeftWheelOffsetPixels = new Vector2(-7f, -12f);
+    [SerializeField] private Vector2 lowSpeedWarningCartRightWheelOffsetPixels = new Vector2(11f, -12f);
+    [SerializeField] private float lowSpeedWarningCartWheelRadiusPixels = 4f;
+
+    [Header("Low Speed Warning - Cart Base Two Segments")]
+    [SerializeField] private Vector2 lowSpeedWarningCartBaseLeftEndOffsetPixels = new Vector2(-9f, -1f);
+    [SerializeField] private Vector2 lowSpeedWarningCartBaseMidOffsetPixels = new Vector2(-13f, -7f);
+    [SerializeField] private Vector2 lowSpeedWarningCartBaseRightEndOffsetPixels = new Vector2(16f, -7f);
+
+    [Header("Low Speed Warning - Weight")]
+    [Min(1f)]
+    [SerializeField] private float lowSpeedWarningWeightTopWidthPixels = 10f;
+
+    [Min(1f)]
+    [SerializeField] private float lowSpeedWarningWeightBottomWidthPixels = 14f;
+
+    [Min(1f)]
+    [SerializeField] private float lowSpeedWarningWeightBodyHeightPixels = 10f;
+
+    [SerializeField] private Vector2 lowSpeedWarningWeightRingOffsetPixels = new Vector2(0f, 8f);
+    [Min(1f)]
+    [SerializeField] private float lowSpeedWarningWeightRingRadiusPixels = 3f;
+
+    [Min(0.5f)]
+    [SerializeField] private float lowSpeedWarningWeightRingThicknessPixels = 2.5f;
+
+    [Header("Low Speed Warning - Arrow")]
+    [Min(1f)]
+    [SerializeField] private float lowSpeedWarningArrowShaftLengthPixels = 10f;
+
+    [Min(0.5f)]
+    [SerializeField] private float lowSpeedWarningArrowShaftThicknessPixels = 3f;
+
+    [Min(1f)]
+    [SerializeField] private float lowSpeedWarningArrowHeadWidthPixels = 9f;
+
+    [Min(1f)]
+    [SerializeField] private float lowSpeedWarningArrowHeadHeightPixels = 7f;
 
     #endregion
 
@@ -284,6 +501,8 @@ public class PlayerWorldHUDLayoutProfile : ScriptableObject
     public float HypeCenterAngleDegrees => hypeCenterAngleDegrees;
     public Color HypeTrackColor => hypeTrackColor;
     public Color HypeFillColor => hypeFillColor;
+    public bool AnimateHypeGainFill => animateHypeGainFill;
+    public float HypeGainFillSpeedNormalizedPerSecond => hypeGainFillSpeedNormalizedPerSecond;
 
     public float HypeRewardPreviewThicknessPixels => hypeRewardPreviewThicknessPixels * masterScale;
     public float HypeRewardPreviewRadiusOffsetPixels => hypeRewardPreviewRadiusOffsetPixels * masterScale;
@@ -292,6 +511,70 @@ public class PlayerWorldHUDLayoutProfile : ScriptableObject
     public float HypePenaltyPreviewThicknessPixels => hypePenaltyPreviewThicknessPixels * masterScale;
     public float HypePenaltyPreviewRadiusOffsetPixels => hypePenaltyPreviewRadiusOffsetPixels * masterScale;
     public Color HypePenaltyPreviewColor => hypePenaltyPreviewColor;
+
+    public Vector2 HypeBurnWarningOffsetPixels => hypeBurnWarningOffsetPixels * masterScale;
+    public float HypeBurnWarningMasterScale => hypeBurnWarningMasterScale;
+    public Vector2 HypeBurnWarningBackgroundOffsetPixels => hypeBurnWarningBackgroundOffsetPixels * masterScale * hypeBurnWarningMasterScale;
+    public float HypeBurnWarningBackgroundRadiusPixels => hypeBurnWarningBackgroundRadiusPixels * masterScale * hypeBurnWarningMasterScale;
+    public Color HypeBurnWarningBackgroundColor => hypeBurnWarningBackgroundColor;
+    public Color HypeBurnWarningColor => hypeBurnWarningColor;
+    public float HypeBurnWarningColorMinMultiplier => hypeBurnWarningColorMinMultiplier;
+    public float HypeBurnWarningColorMaxMultiplier => hypeBurnWarningColorMaxMultiplier;
+    public float HypeBurnWarningRingRadiusPixels => hypeBurnWarningRingRadiusPixels * masterScale * hypeBurnWarningMasterScale;
+    public float HypeBurnWarningRingThicknessPixels => hypeBurnWarningRingThicknessPixels * masterScale * hypeBurnWarningMasterScale;
+    public float HypeBurnWarningGapDegrees => hypeBurnWarningGapDegrees;
+    public float HypeBurnWarningGapCenterDegrees => hypeBurnWarningGapCenterDegrees;
+    public Vector2 HypeBurnWarningArrowOffsetPixels => hypeBurnWarningArrowOffsetPixels * masterScale * hypeBurnWarningMasterScale;
+    public float HypeBurnWarningArrowShaftLengthPixels => hypeBurnWarningArrowShaftLengthPixels * masterScale * hypeBurnWarningMasterScale;
+    public float HypeBurnWarningArrowShaftThicknessPixels => hypeBurnWarningArrowShaftThicknessPixels * masterScale * hypeBurnWarningMasterScale;
+    public float HypeBurnWarningArrowHeadWidthPixels => hypeBurnWarningArrowHeadWidthPixels * masterScale * hypeBurnWarningMasterScale;
+    public float HypeBurnWarningArrowHeadHeightPixels => hypeBurnWarningArrowHeadHeightPixels * masterScale * hypeBurnWarningMasterScale;
+    public Vector2 HypeBurnWarningBoltOffsetPixels => hypeBurnWarningBoltOffsetPixels * masterScale * hypeBurnWarningMasterScale;
+    public Vector2 HypeBurnWarningBoltTriangleAOffsetPixels => hypeBurnWarningBoltTriangleAOffsetPixels * masterScale * hypeBurnWarningMasterScale;
+    public float HypeBurnWarningBoltTriangleAWidthPixels => hypeBurnWarningBoltTriangleAWidthPixels * masterScale * hypeBurnWarningMasterScale;
+    public float HypeBurnWarningBoltTriangleAHeightPixels => hypeBurnWarningBoltTriangleAHeightPixels * masterScale * hypeBurnWarningMasterScale;
+    public float HypeBurnWarningBoltTriangleASkewPixels => hypeBurnWarningBoltTriangleASkewPixels * masterScale * hypeBurnWarningMasterScale;
+    public float HypeBurnWarningBoltTriangleARotationDegrees => hypeBurnWarningBoltTriangleARotationDegrees;
+    public Vector2 HypeBurnWarningBoltTriangleBOffsetPixels => hypeBurnWarningBoltTriangleBOffsetPixels * masterScale * hypeBurnWarningMasterScale;
+    public float HypeBurnWarningBoltTriangleBWidthPixels => hypeBurnWarningBoltTriangleBWidthPixels * masterScale * hypeBurnWarningMasterScale;
+    public float HypeBurnWarningBoltTriangleBHeightPixels => hypeBurnWarningBoltTriangleBHeightPixels * masterScale * hypeBurnWarningMasterScale;
+    public float HypeBurnWarningBoltTriangleBSkewPixels => hypeBurnWarningBoltTriangleBSkewPixels * masterScale * hypeBurnWarningMasterScale;
+    public float HypeBurnWarningBoltTriangleBRotationDegrees => hypeBurnWarningBoltTriangleBRotationDegrees;
+
+    public Vector2 LowSpeedWarningOffsetPixels => lowSpeedWarningOffsetPixels * masterScale;
+    public float LowSpeedWarningMasterScale => lowSpeedWarningMasterScale;
+    public Vector2 LowSpeedWarningBackgroundOffsetPixels => lowSpeedWarningBackgroundOffsetPixels * masterScale * lowSpeedWarningMasterScale;
+    public float LowSpeedWarningBackgroundRadiusPixels => lowSpeedWarningBackgroundRadiusPixels * masterScale * lowSpeedWarningMasterScale;
+    public Color LowSpeedWarningBackgroundColor => lowSpeedWarningBackgroundColor;
+    public Color LowSpeedWarningColor => lowSpeedWarningColor;
+    public float LowSpeedWarningColorMinPenalty => lowSpeedWarningColorMinPenalty;
+    public float LowSpeedWarningColorMaxPenalty => lowSpeedWarningColorMaxPenalty;
+    public Vector2 LowSpeedWarningCartOffsetPixels => lowSpeedWarningCartOffsetPixels * masterScale * lowSpeedWarningMasterScale;
+    public Vector2 LowSpeedWarningWeightOffsetPixels => lowSpeedWarningWeightOffsetPixels * masterScale * lowSpeedWarningMasterScale;
+    public Vector2 LowSpeedWarningArrowOffsetPixels => lowSpeedWarningArrowOffsetPixels * masterScale * lowSpeedWarningMasterScale;
+    public float LowSpeedWarningCartStrokeThicknessPixels => lowSpeedWarningCartStrokeThicknessPixels * masterScale * lowSpeedWarningMasterScale;
+    public Vector2 LowSpeedWarningCartBasketTopLeftOffsetPixels => lowSpeedWarningCartBasketTopLeftOffsetPixels * masterScale * lowSpeedWarningMasterScale;
+    public Vector2 LowSpeedWarningCartBasketTopRightOffsetPixels => lowSpeedWarningCartBasketTopRightOffsetPixels * masterScale * lowSpeedWarningMasterScale;
+    public Vector2 LowSpeedWarningCartBasketBottomRightOffsetPixels => lowSpeedWarningCartBasketBottomRightOffsetPixels * masterScale * lowSpeedWarningMasterScale;
+    public Vector2 LowSpeedWarningCartBasketBottomLeftOffsetPixels => lowSpeedWarningCartBasketBottomLeftOffsetPixels * masterScale * lowSpeedWarningMasterScale;
+    public Vector2 LowSpeedWarningCartHandleJointOffsetPixels => lowSpeedWarningCartHandleJointOffsetPixels * masterScale * lowSpeedWarningMasterScale;
+    public Vector2 LowSpeedWarningCartHandleEndOffsetPixels => lowSpeedWarningCartHandleEndOffsetPixels * masterScale * lowSpeedWarningMasterScale;
+    public Vector2 LowSpeedWarningCartLeftWheelOffsetPixels => lowSpeedWarningCartLeftWheelOffsetPixels * masterScale * lowSpeedWarningMasterScale;
+    public Vector2 LowSpeedWarningCartRightWheelOffsetPixels => lowSpeedWarningCartRightWheelOffsetPixels * masterScale * lowSpeedWarningMasterScale;
+    public float LowSpeedWarningCartWheelRadiusPixels => lowSpeedWarningCartWheelRadiusPixels * masterScale * lowSpeedWarningMasterScale;
+    public Vector2 LowSpeedWarningCartBaseLeftEndOffsetPixels => lowSpeedWarningCartBaseLeftEndOffsetPixels * masterScale * lowSpeedWarningMasterScale;
+    public Vector2 LowSpeedWarningCartBaseMidOffsetPixels => lowSpeedWarningCartBaseMidOffsetPixels * masterScale * lowSpeedWarningMasterScale;
+    public Vector2 LowSpeedWarningCartBaseRightEndOffsetPixels => lowSpeedWarningCartBaseRightEndOffsetPixels * masterScale * lowSpeedWarningMasterScale;
+    public float LowSpeedWarningWeightTopWidthPixels => lowSpeedWarningWeightTopWidthPixels * masterScale * lowSpeedWarningMasterScale;
+    public float LowSpeedWarningWeightBottomWidthPixels => lowSpeedWarningWeightBottomWidthPixels * masterScale * lowSpeedWarningMasterScale;
+    public float LowSpeedWarningWeightBodyHeightPixels => lowSpeedWarningWeightBodyHeightPixels * masterScale * lowSpeedWarningMasterScale;
+    public Vector2 LowSpeedWarningWeightRingOffsetPixels => lowSpeedWarningWeightRingOffsetPixels * masterScale * lowSpeedWarningMasterScale;
+    public float LowSpeedWarningWeightRingRadiusPixels => lowSpeedWarningWeightRingRadiusPixels * masterScale * lowSpeedWarningMasterScale;
+    public float LowSpeedWarningWeightRingThicknessPixels => lowSpeedWarningWeightRingThicknessPixels * masterScale * lowSpeedWarningMasterScale;
+    public float LowSpeedWarningArrowShaftLengthPixels => lowSpeedWarningArrowShaftLengthPixels * masterScale * lowSpeedWarningMasterScale;
+    public float LowSpeedWarningArrowShaftThicknessPixels => lowSpeedWarningArrowShaftThicknessPixels * masterScale * lowSpeedWarningMasterScale;
+    public float LowSpeedWarningArrowHeadWidthPixels => lowSpeedWarningArrowHeadWidthPixels * masterScale * lowSpeedWarningMasterScale;
+    public float LowSpeedWarningArrowHeadHeightPixels => lowSpeedWarningArrowHeadHeightPixels * masterScale * lowSpeedWarningMasterScale;
 
     #endregion
 
@@ -344,6 +627,35 @@ public class PlayerWorldHUDLayoutProfile : ScriptableObject
         return loadOverloadSeverityGradient.Evaluate(t);
     }
 
+
+    public Color GetHypeBurnWarningColor(float burnMultiplier)
+    {
+        if (hypeBurnWarningColorGradient == null)
+        {
+            return hypeBurnWarningColor;
+        }
+
+        float minMultiplier = hypeBurnWarningColorMinMultiplier;
+        float maxMultiplier = Mathf.Max(minMultiplier + 0.0001f, hypeBurnWarningColorMaxMultiplier);
+        float t = Mathf.InverseLerp(minMultiplier, maxMultiplier, burnMultiplier);
+
+        return hypeBurnWarningColorGradient.Evaluate(t);
+    }
+
+    public Color GetLowSpeedWarningColor(float penaltyNormalized)
+    {
+        if (lowSpeedWarningColorGradient == null)
+        {
+            return lowSpeedWarningColor;
+        }
+
+        float minPenalty = lowSpeedWarningColorMinPenalty;
+        float maxPenalty = Mathf.Max(minPenalty + 0.0001f, lowSpeedWarningColorMaxPenalty);
+        float t = Mathf.InverseLerp(minPenalty, maxPenalty, Mathf.Clamp01(penaltyNormalized));
+
+        return lowSpeedWarningColorGradient.Evaluate(t);
+    }
+
     #endregion
 
     #region Validation
@@ -388,9 +700,41 @@ public class PlayerWorldHUDLayoutProfile : ScriptableObject
             1f,
             hypeTrackThicknessPixels
         );
+        hypeGainFillSpeedNormalizedPerSecond = Mathf.Max(0.01f, hypeGainFillSpeedNormalizedPerSecond);
 
         hypeRewardPreviewThicknessPixels = Mathf.Max(1f, hypeRewardPreviewThicknessPixels);
         hypePenaltyPreviewThicknessPixels = Mathf.Max(1f, hypePenaltyPreviewThicknessPixels);
+        hypeBurnWarningMasterScale = Mathf.Max(0.05f, hypeBurnWarningMasterScale);
+        hypeBurnWarningBackgroundRadiusPixels = Mathf.Max(1f, hypeBurnWarningBackgroundRadiusPixels);
+        hypeBurnWarningRingRadiusPixels = Mathf.Max(1f, hypeBurnWarningRingRadiusPixels);
+        hypeBurnWarningRingThicknessPixels = Mathf.Max(0.5f, hypeBurnWarningRingThicknessPixels);
+        hypeBurnWarningArrowShaftLengthPixels = Mathf.Max(1f, hypeBurnWarningArrowShaftLengthPixels);
+        hypeBurnWarningArrowShaftThicknessPixels = Mathf.Max(0.5f, hypeBurnWarningArrowShaftThicknessPixels);
+        hypeBurnWarningArrowHeadWidthPixels = Mathf.Max(1f, hypeBurnWarningArrowHeadWidthPixels);
+        hypeBurnWarningArrowHeadHeightPixels = Mathf.Max(1f, hypeBurnWarningArrowHeadHeightPixels);
+        hypeBurnWarningBoltTriangleAWidthPixels = Mathf.Max(1f, hypeBurnWarningBoltTriangleAWidthPixels);
+        hypeBurnWarningBoltTriangleAHeightPixels = Mathf.Max(1f, hypeBurnWarningBoltTriangleAHeightPixels);
+        hypeBurnWarningBoltTriangleBWidthPixels = Mathf.Max(1f, hypeBurnWarningBoltTriangleBWidthPixels);
+        hypeBurnWarningBoltTriangleBHeightPixels = Mathf.Max(1f, hypeBurnWarningBoltTriangleBHeightPixels);
+        hypeBurnWarningGapDegrees = Mathf.Clamp(hypeBurnWarningGapDegrees, 1f, 180f);
+        hypeBurnWarningColorMinMultiplier = Mathf.Max(1f, hypeBurnWarningColorMinMultiplier);
+        hypeBurnWarningColorMaxMultiplier = Mathf.Max(hypeBurnWarningColorMinMultiplier + 0.01f, hypeBurnWarningColorMaxMultiplier);
+
+        lowSpeedWarningMasterScale = Mathf.Max(0.05f, lowSpeedWarningMasterScale);
+        lowSpeedWarningBackgroundRadiusPixels = Mathf.Max(1f, lowSpeedWarningBackgroundRadiusPixels);
+        lowSpeedWarningColorMinPenalty = Mathf.Clamp(lowSpeedWarningColorMinPenalty, 0f, 0.99f);
+        lowSpeedWarningColorMaxPenalty = Mathf.Clamp(lowSpeedWarningColorMaxPenalty, lowSpeedWarningColorMinPenalty + 0.01f, 1f);
+        lowSpeedWarningCartStrokeThicknessPixels = Mathf.Max(0.5f, lowSpeedWarningCartStrokeThicknessPixels);
+        lowSpeedWarningCartWheelRadiusPixels = Mathf.Max(1f, lowSpeedWarningCartWheelRadiusPixels);
+        lowSpeedWarningWeightTopWidthPixels = Mathf.Max(1f, lowSpeedWarningWeightTopWidthPixels);
+        lowSpeedWarningWeightBottomWidthPixels = Mathf.Max(1f, lowSpeedWarningWeightBottomWidthPixels);
+        lowSpeedWarningWeightBodyHeightPixels = Mathf.Max(1f, lowSpeedWarningWeightBodyHeightPixels);
+        lowSpeedWarningWeightRingRadiusPixels = Mathf.Max(1f, lowSpeedWarningWeightRingRadiusPixels);
+        lowSpeedWarningWeightRingThicknessPixels = Mathf.Max(0.5f, lowSpeedWarningWeightRingThicknessPixels);
+        lowSpeedWarningArrowShaftLengthPixels = Mathf.Max(1f, lowSpeedWarningArrowShaftLengthPixels);
+        lowSpeedWarningArrowShaftThicknessPixels = Mathf.Max(0.5f, lowSpeedWarningArrowShaftThicknessPixels);
+        lowSpeedWarningArrowHeadWidthPixels = Mathf.Max(1f, lowSpeedWarningArrowHeadWidthPixels);
+        lowSpeedWarningArrowHeadHeightPixels = Mathf.Max(1f, lowSpeedWarningArrowHeadHeightPixels);
 
         hypeSpanDegrees = Mathf.Clamp(hypeSpanDegrees, 10f, 300f);
     }
@@ -410,6 +754,50 @@ public class PlayerWorldHUDLayoutProfile : ScriptableObject
                 new GradientColorKey(new Color(1f, 0.36f, 0.02f), 0.33f),
                 new GradientColorKey(new Color(1f, 0.10f, 0.02f), 0.67f),
                 new GradientColorKey(new Color(0.55f, 0.01f, 0.01f), 1f)
+            },
+            new[]
+            {
+                new GradientAlphaKey(1f, 0f),
+                new GradientAlphaKey(1f, 1f)
+            }
+        );
+
+        return gradient;
+    }
+
+    private static Gradient CreateDefaultHypeBurnWarningGradient()
+    {
+        Gradient gradient = new Gradient();
+
+        gradient.SetKeys(
+            new[]
+            {
+                new GradientColorKey(new Color(1f, 0.72f, 0.08f), 0f),
+                new GradientColorKey(new Color(1f, 0.42f, 0.03f), 0.35f),
+                new GradientColorKey(new Color(1f, 0.12f, 0.02f), 0.72f),
+                new GradientColorKey(new Color(0.58f, 0.015f, 0.015f), 1f)
+            },
+            new[]
+            {
+                new GradientAlphaKey(1f, 0f),
+                new GradientAlphaKey(1f, 1f)
+            }
+        );
+
+        return gradient;
+    }
+
+    private static Gradient CreateDefaultLowSpeedWarningGradient()
+    {
+        Gradient gradient = new Gradient();
+
+        gradient.SetKeys(
+            new[]
+            {
+                new GradientColorKey(new Color(1f, 0.72f, 0.08f), 0f),
+                new GradientColorKey(new Color(1f, 0.46f, 0.03f), 0.35f),
+                new GradientColorKey(new Color(1f, 0.14f, 0.02f), 0.72f),
+                new GradientColorKey(new Color(0.58f, 0.015f, 0.015f), 1f)
             },
             new[]
             {

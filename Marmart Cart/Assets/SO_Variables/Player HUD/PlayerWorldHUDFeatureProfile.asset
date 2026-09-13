@@ -17,6 +17,7 @@ MonoBehaviour:
   showHypeBurnFeedback: 1
   showSpeedingUpFeedback: 1
   showDriftRewardPreview: 1
+  showDriftPenaltyPreview: 1
   showLoad: 1
   showLoadExactValues: 0
   showRemainingSafeCapacity: 1

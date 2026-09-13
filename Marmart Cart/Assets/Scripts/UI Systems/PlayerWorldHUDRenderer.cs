@@ -2,7 +2,7 @@ using Shapes;
 using UnityEngine;
 
 /// <summary>
-/// Step 5E.1 renderer - Drift Hype risk/reward preview.
+/// Step 5G.1.2 renderer - simplified low-speed warning cart/weight icon.
 ///
 ///
 /// LOAD normal mode:
@@ -14,13 +14,16 @@ using UnityEngine;
 /// - current tick always shows the true Current Load.
 ///
 /// LOAD overload mode:
-/// - overload never creates extra slots;
-/// - top loaded slots turn overload color;
-/// - current tick follows the lowest overload capsule;
-/// - once overload fills the whole visible bar, the pointer loops
-///   from top -> bottom again while all slots stay overload-colored.
+/// - overload never creates extra visible slots;
+/// - overload first consumes ANY unused Pre-Slots in the current visual window;
+/// - this works for the 10-slot baseline AND rolling windows such as 21..40;
+/// - after Pre-Slots are exhausted, additional overload replaces loaded safe
+///   capsules from the top downward;
+/// - once the whole visible window is red, the pointer loops top -> bottom.
 ///
-/// HYPE remains the stable track + fill.
+/// HYPE:
+/// - positive Hype gains animate the active fill toward the new value;
+/// - Hype decreases remain immediate for responsive spending/loss feedback.
 /// </summary>
 [DisallowMultipleComponent]
 public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
@@ -33,7 +36,7 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
     [SerializeField] private PlayerWorldHUDLayoutProfile layoutProfile;
 
     [Tooltip(
-        "Optional semantic feature toggles. If left unassigned, drift reward and penalty previews default to visible."
+        "Optional semantic feature toggles. If left unassigned, supported HUD channels default to visible."
     )]
     [SerializeField] private PlayerWorldHUDFeatureProfile featureProfile;
 
@@ -44,6 +47,13 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
     [Header("Visibility")]
     [SerializeField] private bool drawingEnabled = true;
     [SerializeField] private bool skipWhenBehindCamera = true;
+
+    #endregion
+
+    #region Visual Runtime
+
+    private readonly float[] displayedHypeNormalized = new float[4];
+    private readonly bool[] hypeFillInitialized = new bool[4];
 
     #endregion
 
@@ -152,7 +162,8 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
                 hypeCenterWorld,
                 screenPlaneRotation,
                 hypeNormalized,
-                hudState
+                hudState,
+                playerIndex
             );
 
             DrawLoadMeter(
@@ -162,6 +173,20 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
                 safeCapacityCount,
                 currentLoadCount,
                 overloadCount
+            );
+
+            // Warning placeholders are intentionally drawn after the two meters
+            // so they are easy to inspect during this design pass.
+            DrawHypeBurnWarningIcon(
+                cam,
+                renderAnchorWorld,
+                hudState
+            );
+
+            DrawLowSpeedWarningIcon(
+                cam,
+                renderAnchorWorld,
+                hudState
             );
         }
     }
@@ -191,9 +216,12 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
 
         bool overloaded = overloadCount > 0;
 
+        // IMPORTANT:
+        // The visual window is ALWAYS chosen from Safe Capacity exactly as it
+        // would be immediately before overload begins. Entering overload must
+        // never change the page/window by itself.
         GetLoadWindow(
             safeCapacityCount,
-            overloaded,
             out int windowBase,
             out int visibleSlotCount,
             out int safeSlotsInWindow
@@ -221,31 +249,45 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
         int safeLoadedTotal =
             Mathf.Min(currentLoadCount, safeCapacityCount);
 
-        int normalLoadedInWindow = 0;
-        int redVisibleCount = 0;
+        int safeLoadedInWindow = Mathf.Clamp(
+            safeLoadedTotal - windowBase,
+            0,
+            safeSlotsInWindow
+        );
 
-        if (!overloaded)
-        {
-            normalLoadedInWindow = Mathf.Clamp(
-                safeLoadedTotal - windowBase,
-                0,
-                safeSlotsInWindow
-            );
-        }
-        else
-        {
-            // In overload mode the currently visible bar is a warning view of
-            // the latest loaded safe slots, so it remains visually full/readable.
-            normalLoadedInWindow = visibleSlotCount;
+        int preSlotsInWindow = Mathf.Max(
+            0,
+            visibleSlotCount - safeSlotsInWindow
+        );
 
-            redVisibleCount = Mathf.Clamp(
-                overloadCount,
-                0,
-                visibleSlotCount
-            );
+        // UNIVERSAL overload rule:
+        //
+        // 1) Red overload capsules first append into whatever Pre-Slots still
+        //    exist in the CURRENT visual window.
+        //
+        //    Examples:
+        //      Safe=4  in baseline 1..10  -> overload starts at slot 5.
+        //      Safe=33 in window 21..40   -> overload starts at slot 34.
+        //
+        // 2) Once those Pre-Slots are exhausted, further overload starts
+        //    replacing already-loaded safe capsules from the top downward.
+        //
+        // 3) Once every visible capsule is red, only the pointer loops.
+        int appendedOverloadCount = overloaded
+            ? Mathf.Min(overloadCount, preSlotsInWindow)
+            : 0;
 
-            normalLoadedInWindow -= redVisibleCount;
-        }
+        int replacementOverloadCount = overloaded
+            ? Mathf.Min(
+                Mathf.Max(0, overloadCount - preSlotsInWindow),
+                safeLoadedInWindow
+            )
+            : 0;
+
+        int remainingFilledSafeCount = Mathf.Max(
+            0,
+            safeLoadedInWindow - replacementOverloadCount
+        );
 
         for (int i = 0; i < visibleSlotCount; i++)
         {
@@ -258,24 +300,13 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
 
             Color capsuleColor;
 
-            if (overloaded)
-            {
-                if (i < normalLoadedInWindow)
-                {
-                    capsuleColor = layoutProfile.LoadFilledColor;
-                }
-                else
-                {
-                    capsuleColor = overloadColor;
-                }
-            }
-            else
+            if (!overloaded)
             {
                 if (i >= safeSlotsInWindow)
                 {
                     capsuleColor = layoutProfile.LoadPreSlotColor;
                 }
-                else if (i < normalLoadedInWindow)
+                else if (i < safeLoadedInWindow)
                 {
                     capsuleColor = layoutProfile.LoadFilledColor;
                 }
@@ -283,6 +314,32 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
                 {
                     capsuleColor = layoutProfile.LoadEmptyColor;
                 }
+            }
+            else if (i < safeSlotsInWindow)
+            {
+                // Safe-capacity region.
+                if (i < remainingFilledSafeCount)
+                {
+                    capsuleColor = layoutProfile.LoadFilledColor;
+                }
+                else if (i < safeLoadedInWindow)
+                {
+                    capsuleColor = overloadColor;
+                }
+                else
+                {
+                    capsuleColor = layoutProfile.LoadEmptyColor;
+                }
+            }
+            else
+            {
+                // Pre-Slot region. Overload occupies these from bottom->top,
+                // exactly like the next load capsules would have appeared.
+                int preSlotIndex = i - safeSlotsInWindow;
+
+                capsuleColor = preSlotIndex < appendedOverloadCount
+                    ? overloadColor
+                    : layoutProfile.LoadPreSlotColor;
             }
 
             DrawRadialCapsule(
@@ -316,6 +373,9 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
             centerScreen,
             windowBase,
             visibleSlotCount,
+            safeSlotsInWindow,
+            safeLoadedInWindow,
+            preSlotsInWindow,
             bottomDegrees,
             topDegrees,
             currentLoadCount,
@@ -325,7 +385,8 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
     }
 
     /// <summary>
-    /// Normal mode:
+    /// The load window is based ONLY on Safe Capacity.
+    /// Overload never changes pages by itself.
     ///
     /// Safe 0..10:
     ///     base 0, visible 10
@@ -334,44 +395,25 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
     ///     base 0, visible = Safe
     ///
     /// Safe 21:
-    ///     base 20, visible 20, safe-in-window 1
+    ///     base 20, visible 20, safe-in-window 1, Pre-Slots 22..40
+    ///
+    /// Safe 33:
+    ///     base 20, visible 20, safe-in-window 13, Pre-Slots 34..40
     ///
     /// Safe 40:
     ///     base 20, visible 20, safe-in-window 20
     ///
     /// Safe 41:
-    ///     base 40, visible 20, safe-in-window 1
-    ///
-    /// Overload mode:
-    ///     show the latest up-to-20 safe slots as a full warning bar instead
-    ///     of showing mostly Pre-Slots on a newly-started capacity page.
+    ///     base 40, visible 20, safe-in-window 1, Pre-Slots 42..60
     /// </summary>
     private void GetLoadWindow(
         int safeCapacityCount,
-        bool overloaded,
         out int windowBase,
         out int visibleSlotCount,
         out int safeSlotsInWindow)
     {
         int minimum = layoutProfile.MinimumVisualSlotCount;
         int windowSize = layoutProfile.LoadWindowSize;
-
-        if (overloaded)
-        {
-            visibleSlotCount = Mathf.Clamp(
-                Mathf.Max(safeCapacityCount, minimum),
-                minimum,
-                windowSize
-            );
-
-            windowBase = Mathf.Max(
-                0,
-                safeCapacityCount - visibleSlotCount
-            );
-
-            safeSlotsInWindow = visibleSlotCount;
-            return;
-        }
 
         if (safeCapacityCount <= windowSize)
         {
@@ -525,6 +567,9 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
         Vector3 centerScreen,
         int windowBase,
         int visibleSlotCount,
+        int safeSlotsInWindow,
+        int safeLoadedInWindow,
+        int preSlotsInWindow,
         float bottomDegrees,
         float topDegrees,
         int currentLoadCount,
@@ -537,17 +582,49 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
 
         if (overloadCount > 0)
         {
-            // Overload pointer moves TOP -> BOTTOM.
-            //
-            // visible=10:
-            // overload 1  -> index 9 (top)
-            // overload 10 -> index 0 (bottom)
-            // overload 11 -> index 9 (top again)
-            int loopPosition =
-                (overloadCount - 1) % visibleSlotCount;
+            if (overloadCount <= preSlotsInWindow && preSlotsInWindow > 0)
+            {
+                // Overload is still filling available Pre-Slots.
+                // Follow the newest appended overload capsule.
+                pointerIndex =
+                    safeSlotsInWindow +
+                    overloadCount -
+                    1;
+            }
+            else
+            {
+                int replacementStep =
+                    overloadCount - preSlotsInWindow;
 
-            pointerIndex =
-                visibleSlotCount - 1 - loopPosition;
+                if (replacementStep > 0 &&
+                    replacementStep <= safeLoadedInWindow)
+                {
+                    // Pre-Slots are full. Continue by walking backward through
+                    // the loaded safe capsules from top -> bottom.
+                    pointerIndex =
+                        safeLoadedInWindow -
+                        replacementStep;
+                }
+                else
+                {
+                    // The whole meaningful visible load region is already red.
+                    // Preserve the existing repeating warning behavior.
+                    int coveredVisibleCount =
+                        preSlotsInWindow +
+                        safeLoadedInWindow;
+
+                    int beyondCovered = Mathf.Max(
+                        1,
+                        overloadCount - coveredVisibleCount
+                    );
+
+                    int loopPosition =
+                        (beyondCovered - 1) % visibleSlotCount;
+
+                    pointerIndex =
+                        visibleSlotCount - 1 - loopPosition;
+                }
+            }
         }
         else if (currentLoadCount <= 0)
         {
@@ -564,6 +641,12 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
                 visibleSlotCount - 1
             );
         }
+
+        pointerIndex = Mathf.Clamp(
+            pointerIndex,
+            0,
+            visibleSlotCount - 1
+        );
 
         float angleDegrees =
             GetSlotAngleDegrees(
@@ -694,8 +777,13 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
         Vector3 centerWorld,
         Quaternion rotation,
         float normalizedValue,
-        PlayerWorldHUDState state)
+        PlayerWorldHUDState state,
+        int playerIndex)
     {
+        normalizedValue = GetDisplayedHypeNormalized(
+            playerIndex,
+            normalizedValue
+        );
         // 1. Background track.
         DrawFullRoundedArc(
             cam,
@@ -826,6 +914,546 @@ public class PlayerWorldHUDRenderer : ImmediateModeShapeDrawer
                 );
             }
         }
+    }
+
+    private float GetDisplayedHypeNormalized(
+        int playerIndex,
+        float targetNormalized)
+    {
+        targetNormalized = Mathf.Clamp01(targetNormalized);
+
+        if (playerIndex < 0 ||
+            playerIndex >= displayedHypeNormalized.Length)
+        {
+            return targetNormalized;
+        }
+
+        if (!layoutProfile.AnimateHypeGainFill)
+        {
+            displayedHypeNormalized[playerIndex] = targetNormalized;
+            hypeFillInitialized[playerIndex] = true;
+            return targetNormalized;
+        }
+
+        if (!hypeFillInitialized[playerIndex])
+        {
+            displayedHypeNormalized[playerIndex] = targetNormalized;
+            hypeFillInitialized[playerIndex] = true;
+            return targetNormalized;
+        }
+
+        float displayed = displayedHypeNormalized[playerIndex];
+
+        // Loss/spending is intentionally immediate. This keeps Hype burn,
+        // failed actions, and other reductions responsive and truthful.
+        if (targetNormalized <= displayed)
+        {
+            displayed = targetNormalized;
+        }
+        else
+        {
+            displayed = Mathf.MoveTowards(
+                displayed,
+                targetNormalized,
+                layoutProfile.HypeGainFillSpeedNormalizedPerSecond * Time.deltaTime
+            );
+        }
+
+        displayedHypeNormalized[playerIndex] = displayed;
+        return displayed;
+    }
+
+    #endregion
+
+    #region Hype Burn Warning Icon
+
+    private void DrawHypeBurnWarningIcon(
+        Camera cam,
+        Vector3 renderAnchorWorld,
+        PlayerWorldHUDState state)
+    {
+        if (!ShouldDrawHypeBurnWarning(state))
+        {
+            return;
+        }
+
+        Vector3 anchorScreen =
+            cam.WorldToScreenPoint(
+                renderAnchorWorld
+            );
+
+        Vector2 iconCenter =
+            new Vector2(
+                anchorScreen.x,
+                anchorScreen.y
+            ) +
+            layoutProfile.HypeBurnWarningOffsetPixels;
+
+        // One severity-mapped color drives the ENTIRE icon so ring, arrow,
+        // and bolt always read as one visual warning unit.
+        Color warningColor =
+            layoutProfile.GetHypeBurnWarningColor(
+                state.HypeBurnMultiplier
+            );
+
+        DrawWarningBackgroundCircle(
+            cam,
+            anchorScreen.z,
+            iconCenter + layoutProfile.HypeBurnWarningBackgroundOffsetPixels,
+            layoutProfile.HypeBurnWarningBackgroundRadiusPixels,
+            layoutProfile.HypeBurnWarningBackgroundColor
+        );
+
+        DrawHypeBurnWarningRing(
+            cam,
+            anchorScreen.z,
+            iconCenter,
+            warningColor
+        );
+
+        DrawHypeBurnWarningArrow(
+            cam,
+            anchorScreen.z,
+            iconCenter,
+            warningColor
+        );
+
+        DrawHypeBurnWarningBolt(
+            cam,
+            anchorScreen.z,
+            iconCenter,
+            warningColor
+        );
+    }
+
+    private bool ShouldDrawHypeBurnWarning(
+        PlayerWorldHUDState state)
+    {
+        if (state == null)
+        {
+            return false;
+        }
+
+        if (featureProfile != null &&
+            !featureProfile.ShowHypeBurnFeedback)
+        {
+            return false;
+        }
+
+        return state.HypeBurnAboveBaseline > 0.0001f;
+    }
+
+    private void DrawHypeBurnWarningRing(
+        Camera cam,
+        float screenDepth,
+        Vector2 iconCenter,
+        Color color)
+    {
+        float gapCenterDegrees =
+            layoutProfile.HypeBurnWarningGapCenterDegrees;
+
+        float gapHalfDegrees =
+            layoutProfile.HypeBurnWarningGapDegrees * 0.5f;
+
+        float arcStartDegrees =
+            gapCenterDegrees + gapHalfDegrees;
+
+        float arcEndDegrees =
+            gapCenterDegrees + 360f - gapHalfDegrees;
+
+        Vector3 centerWorld =
+            ScreenPointToWorld(
+                cam,
+                iconCenter,
+                screenDepth
+            );
+
+        Draw.Arc(
+            centerWorld,
+            cam.transform.rotation,
+            layoutProfile.HypeBurnWarningRingRadiusPixels,
+            layoutProfile.HypeBurnWarningRingThicknessPixels,
+            arcStartDegrees * Mathf.Deg2Rad,
+            arcEndDegrees * Mathf.Deg2Rad,
+            ArcEndCap.Round,
+            color
+        );
+    }
+
+    private void DrawHypeBurnWarningArrow(
+        Camera cam,
+        float screenDepth,
+        Vector2 iconCenter,
+        Color color)
+    {
+        Vector2 arrowCenter =
+            iconCenter +
+            layoutProfile.HypeBurnWarningArrowOffsetPixels;
+
+        float shaftLength =
+            layoutProfile.HypeBurnWarningArrowShaftLengthPixels;
+
+        float shaftHalf =
+            shaftLength * 0.5f;
+
+        Vector2 shaftTop =
+            arrowCenter +
+            new Vector2(0f, shaftHalf);
+
+        Vector2 shaftBottom =
+            arrowCenter +
+            new Vector2(0f, -shaftHalf);
+
+        Draw.Line(
+            ScreenPointToWorld(cam, shaftTop, screenDepth),
+            ScreenPointToWorld(cam, shaftBottom, screenDepth),
+            layoutProfile.HypeBurnWarningArrowShaftThicknessPixels,
+            color
+        );
+
+        float headWidthHalf =
+            layoutProfile.HypeBurnWarningArrowHeadWidthPixels * 0.5f;
+
+        float headHeight =
+            layoutProfile.HypeBurnWarningArrowHeadHeightPixels;
+
+        Vector2 headBaseCenter = shaftBottom;
+
+        Vector2 a =
+            headBaseCenter +
+            new Vector2(-headWidthHalf, 0f);
+
+        Vector2 b =
+            headBaseCenter +
+            new Vector2(headWidthHalf, 0f);
+
+        Vector2 c =
+            headBaseCenter +
+            new Vector2(0f, -headHeight);
+
+        Draw.Triangle(
+            ScreenPointToWorld(cam, a, screenDepth),
+            ScreenPointToWorld(cam, b, screenDepth),
+            ScreenPointToWorld(cam, c, screenDepth),
+            color
+        );
+    }
+
+    private void DrawHypeBurnWarningBolt(
+        Camera cam,
+        float screenDepth,
+        Vector2 iconCenter,
+        Color color)
+    {
+        Vector2 boltCenter =
+            iconCenter +
+            layoutProfile.HypeBurnWarningBoltOffsetPixels;
+
+        DrawObtuseBoltTriangle(
+            cam,
+            screenDepth,
+            boltCenter + layoutProfile.HypeBurnWarningBoltTriangleAOffsetPixels,
+            layoutProfile.HypeBurnWarningBoltTriangleAWidthPixels,
+            layoutProfile.HypeBurnWarningBoltTriangleAHeightPixels,
+            layoutProfile.HypeBurnWarningBoltTriangleASkewPixels,
+            layoutProfile.HypeBurnWarningBoltTriangleARotationDegrees,
+            color
+        );
+
+        DrawObtuseBoltTriangle(
+            cam,
+            screenDepth,
+            boltCenter + layoutProfile.HypeBurnWarningBoltTriangleBOffsetPixels,
+            layoutProfile.HypeBurnWarningBoltTriangleBWidthPixels,
+            layoutProfile.HypeBurnWarningBoltTriangleBHeightPixels,
+            layoutProfile.HypeBurnWarningBoltTriangleBSkewPixels,
+            layoutProfile.HypeBurnWarningBoltTriangleBRotationDegrees,
+            color
+        );
+    }
+
+    private void DrawObtuseBoltTriangle(
+        Camera cam,
+        float screenDepth,
+        Vector2 center,
+        float width,
+        float height,
+        float skewPixels,
+        float rotationDegrees,
+        Color color)
+    {
+        float halfWidth = width * 0.5f;
+        float halfHeight = height * 0.5f;
+
+        Vector2 localA = new Vector2(-halfWidth, halfHeight);
+        Vector2 localB = new Vector2(halfWidth, halfHeight);
+        Vector2 localC = new Vector2(-halfWidth + skewPixels, -halfHeight);
+
+        Quaternion rotation = Quaternion.Euler(0f, 0f, rotationDegrees);
+
+        Vector2 a = center + (Vector2)(rotation * localA);
+        Vector2 b = center + (Vector2)(rotation * localB);
+        Vector2 c = center + (Vector2)(rotation * localC);
+
+        Draw.Triangle(
+            ScreenPointToWorld(cam, a, screenDepth),
+            ScreenPointToWorld(cam, b, screenDepth),
+            ScreenPointToWorld(cam, c, screenDepth),
+            color
+        );
+    }
+
+    private Vector3 ScreenPointToWorld(
+        Camera cam,
+        Vector2 screenPoint,
+        float screenDepth)
+    {
+        return cam.ScreenToWorldPoint(
+            new Vector3(
+                screenPoint.x,
+                screenPoint.y,
+                screenDepth
+            )
+        );
+    }
+
+    #endregion
+
+    #region Low Speed Warning Icon
+
+    private void DrawLowSpeedWarningIcon(
+        Camera cam,
+        Vector3 renderAnchorWorld,
+        PlayerWorldHUDState state)
+    {
+        if (!ShouldDrawLowSpeedWarning(state))
+        {
+            return;
+        }
+
+        Vector3 anchorScreen = cam.WorldToScreenPoint(renderAnchorWorld);
+
+        Vector2 iconCenter = new Vector2(anchorScreen.x, anchorScreen.y) + layoutProfile.LowSpeedWarningOffsetPixels;
+
+        Color warningColor = layoutProfile.GetLowSpeedWarningColor(state.MaxSpeedPenaltyNormalized);
+
+        DrawWarningBackgroundCircle(
+            cam,
+            anchorScreen.z,
+            iconCenter + layoutProfile.LowSpeedWarningBackgroundOffsetPixels,
+            layoutProfile.LowSpeedWarningBackgroundRadiusPixels,
+            layoutProfile.LowSpeedWarningBackgroundColor
+        );
+
+        DrawLowSpeedWarningCart(
+            cam,
+            anchorScreen.z,
+            iconCenter + layoutProfile.LowSpeedWarningCartOffsetPixels,
+            warningColor
+        );
+
+        DrawLowSpeedWarningWeight(
+            cam,
+            anchorScreen.z,
+            iconCenter + layoutProfile.LowSpeedWarningWeightOffsetPixels,
+            warningColor
+        );
+
+        DrawLowSpeedWarningArrow(
+            cam,
+            anchorScreen.z,
+            iconCenter + layoutProfile.LowSpeedWarningArrowOffsetPixels,
+            warningColor
+        );
+    }
+
+    private bool ShouldDrawLowSpeedWarning(PlayerWorldHUDState state)
+    {
+        if (state == null)
+        {
+            return false;
+        }
+
+        if (featureProfile != null &&
+            (!featureProfile.ShowOverloadSpeedWarning || !featureProfile.ShowSpeedConsequence))
+        {
+            return false;
+        }
+
+        return state.HasMaxSpeedPenalty;
+    }
+
+    private void DrawLowSpeedWarningCart(
+        Camera cam,
+        float screenDepth,
+        Vector2 iconCenter,
+        Color color)
+    {
+        float thickness = layoutProfile.LowSpeedWarningCartStrokeThicknessPixels;
+
+        Vector2 basketTopLeft = iconCenter + layoutProfile.LowSpeedWarningCartBasketTopLeftOffsetPixels;
+        Vector2 basketTopRight = iconCenter + layoutProfile.LowSpeedWarningCartBasketTopRightOffsetPixels;
+        Vector2 basketBottomRight = iconCenter + layoutProfile.LowSpeedWarningCartBasketBottomRightOffsetPixels;
+        Vector2 basketBottomLeft = iconCenter + layoutProfile.LowSpeedWarningCartBasketBottomLeftOffsetPixels;
+
+        // 1) Basket trapezoid.
+        DrawScreenLine(cam, screenDepth, basketTopLeft, basketTopRight, thickness, color);
+        DrawScreenLine(cam, screenDepth, basketTopRight, basketBottomRight, thickness, color);
+        DrawScreenLine(cam, screenDepth, basketBottomRight, basketBottomLeft, thickness, color);
+        DrawScreenLine(cam, screenDepth, basketBottomLeft, basketTopLeft, thickness, color);
+
+        // 2) + 3) Two-segment handle.
+        Vector2 handleJoint = iconCenter + layoutProfile.LowSpeedWarningCartHandleJointOffsetPixels;
+        Vector2 handleEnd = iconCenter + layoutProfile.LowSpeedWarningCartHandleEndOffsetPixels;
+        DrawScreenLine(cam, screenDepth, basketTopLeft, handleJoint, thickness, color);
+        DrawScreenLine(cam, screenDepth, handleJoint, handleEnd, thickness, color);
+
+        // 4) Two wheels only.
+        Vector2 leftWheelCenter = iconCenter + layoutProfile.LowSpeedWarningCartLeftWheelOffsetPixels;
+        Vector2 rightWheelCenter = iconCenter + layoutProfile.LowSpeedWarningCartRightWheelOffsetPixels;
+        DrawScreenCircleStroke(cam, screenDepth, leftWheelCenter, layoutProfile.LowSpeedWarningCartWheelRadiusPixels, thickness, color);
+        DrawScreenCircleStroke(cam, screenDepth, rightWheelCenter, layoutProfile.LowSpeedWarningCartWheelRadiusPixels, thickness, color);
+
+        // 5) Two base segments sharing one middle point.
+        Vector2 baseLeftEnd = iconCenter + layoutProfile.LowSpeedWarningCartBaseLeftEndOffsetPixels;
+        Vector2 baseMid = iconCenter + layoutProfile.LowSpeedWarningCartBaseMidOffsetPixels;
+        Vector2 baseRightEnd = iconCenter + layoutProfile.LowSpeedWarningCartBaseRightEndOffsetPixels;
+        DrawScreenLine(cam, screenDepth, baseLeftEnd, baseMid, thickness, color);
+        DrawScreenLine(cam, screenDepth, baseMid, baseRightEnd, thickness, color);
+    }
+
+    private void DrawLowSpeedWarningWeight(
+        Camera cam,
+        float screenDepth,
+        Vector2 center,
+        Color color)
+    {
+        float widthTop = layoutProfile.LowSpeedWarningWeightTopWidthPixels;
+        float widthBottom = layoutProfile.LowSpeedWarningWeightBottomWidthPixels;
+        float height = layoutProfile.LowSpeedWarningWeightBodyHeightPixels;
+        float halfHeight = height * 0.5f;
+
+        Vector2 topLeft = center + new Vector2(-widthTop * 0.5f, halfHeight);
+        Vector2 topRight = center + new Vector2(widthTop * 0.5f, halfHeight);
+        Vector2 bottomRight = center + new Vector2(widthBottom * 0.5f, -halfHeight);
+        Vector2 bottomLeft = center + new Vector2(-widthBottom * 0.5f, -halfHeight);
+
+        // Solid trapezoid body.
+        DrawScreenTriangle(cam, screenDepth, topLeft, topRight, bottomRight, color);
+        DrawScreenTriangle(cam, screenDepth, topLeft, bottomRight, bottomLeft, color);
+
+        // Ring handle.
+        Vector2 ringCenter = center + layoutProfile.LowSpeedWarningWeightRingOffsetPixels;
+        DrawScreenCircleStroke(
+            cam,
+            screenDepth,
+            ringCenter,
+            layoutProfile.LowSpeedWarningWeightRingRadiusPixels,
+            layoutProfile.LowSpeedWarningWeightRingThicknessPixels,
+            color
+        );
+    }
+
+    private void DrawLowSpeedWarningArrow(
+        Camera cam,
+        float screenDepth,
+        Vector2 center,
+        Color color)
+    {
+        float shaftLength = layoutProfile.LowSpeedWarningArrowShaftLengthPixels;
+        float shaftHalf = shaftLength * 0.5f;
+
+        Vector2 top = center + new Vector2(0f, shaftHalf);
+        Vector2 bottom = center + new Vector2(0f, -shaftHalf);
+
+        DrawScreenLine(
+            cam,
+            screenDepth,
+            top,
+            bottom,
+            layoutProfile.LowSpeedWarningArrowShaftThicknessPixels,
+            color
+        );
+
+        float headWidthHalf = layoutProfile.LowSpeedWarningArrowHeadWidthPixels * 0.5f;
+        float headHeight = layoutProfile.LowSpeedWarningArrowHeadHeightPixels;
+
+        Vector2 a = bottom + new Vector2(-headWidthHalf, 0f);
+        Vector2 b = bottom + new Vector2(headWidthHalf, 0f);
+        Vector2 c = bottom + new Vector2(0f, -headHeight);
+
+        DrawScreenTriangle(cam, screenDepth, a, b, c, color);
+    }
+
+    private void DrawScreenLine(
+        Camera cam,
+        float screenDepth,
+        Vector2 a,
+        Vector2 b,
+        float thicknessPixels,
+        Color color)
+    {
+        Draw.Line(
+            ScreenPointToWorld(cam, a, screenDepth),
+            ScreenPointToWorld(cam, b, screenDepth),
+            thicknessPixels,
+            color
+        );
+    }
+
+    private void DrawScreenTriangle(
+        Camera cam,
+        float screenDepth,
+        Vector2 a,
+        Vector2 b,
+        Vector2 c,
+        Color color)
+    {
+        Draw.Triangle(
+            ScreenPointToWorld(cam, a, screenDepth),
+            ScreenPointToWorld(cam, b, screenDepth),
+            ScreenPointToWorld(cam, c, screenDepth),
+            color
+        );
+    }
+
+    private void DrawScreenCircleStroke(
+        Camera cam,
+        float screenDepth,
+        Vector2 center,
+        float radiusPixels,
+        float thicknessPixels,
+        Color color)
+    {
+        Draw.Arc(
+            ScreenPointToWorld(cam, center, screenDepth),
+            cam.transform.rotation,
+            radiusPixels,
+            thicknessPixels,
+            0f,
+            Mathf.PI * 2f,
+            ArcEndCap.Round,
+            color
+        );
+    }
+
+    #endregion
+
+    #region Warning Background Helper
+
+    private void DrawWarningBackgroundCircle(
+        Camera cam,
+        float screenDepth,
+        Vector2 center,
+        float radiusPixels,
+        Color color)
+    {
+        Draw.Disc(
+            ScreenPointToWorld(cam, center, screenDepth),
+            cam.transform.rotation,
+            radiusPixels,
+            color
+        );
     }
 
     #endregion

@@ -1289,7 +1289,8 @@ MonoBehaviour:
   maxHype: 100
   startingHype: 100
   baseHypeBurnPerSecond: 10
-  safeOwnedFollowerCount: 4
+  safeOwnedFollowerCount: 10
+  firstPenalizedHypeBurnMultiplier: 1.5
   hypeBurnMultiplierIncreasePerOwnedCart: 0.1
   maxHypeBurnMultiplier: 2.5
   snakeCartManager: {fileID: 0}
@@ -1437,7 +1438,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   payoutWhenCancelledBySpeedup: 1
-  enableFailedDriftHypePenalty: 1
+  enableFailedDriftHypePenalty: 0
   failedDriftPenaltyFraction: 0.5
   debugReward: 0
 --- !u!114 &2195352570750162668
@@ -1511,7 +1512,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2040688800904011672}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 103b958c83bced2468bf0b9fde16067e, type: 3}
   m_Name: 
@@ -1559,13 +1560,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2040688800904011672}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5f9107425216d0346b1db86560ca0c35, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   cartController: {fileID: 5901886544005484465}
   driftHypeReward: {fileID: 8264941289741221997}
+  hudSystem: {fileID: 0}
   stateSystem: {fileID: 0}
   playerIndexOverride: 0
   resolvedPlayerIndex: 0

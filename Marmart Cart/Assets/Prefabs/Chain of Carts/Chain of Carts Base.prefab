@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 7301706362411791999}
   - component: {fileID: 8147838864649264086}
   - component: {fileID: 8337426284634087441}
+  - component: {fileID: 3114217767808218698}
   m_Layer: 0
   m_Name: Chain of Carts Base
   m_TagString: Untagged
@@ -303,3 +304,20 @@ MonoBehaviour:
   lastNormalizationWasCapacityIncrease: 0
   lastCheckoutCompactionNeeded: 0
   lastCheckoutCompactionMovedEntries: 0
+--- !u!114 &3114217767808218698
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6172510833367344487}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e88ea36612a085445b801cddadac1604, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cargoCapacityController: {fileID: 8337426284634087441}
+  hudSystem: {fileID: 0}
+  stateSystem: {fileID: 0}
+  playerIndexOverride: 0
+  resolvedPlayerIndex: 0

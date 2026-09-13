@@ -83,7 +83,17 @@ public class CartControlScript : MonoBehaviour
     [Min(0)]
     [SerializeField] private int safeOwnedFollowerCount = 2;
 
-    [Tooltip("Each owned follower cart ABOVE the safe amount adds this amount to the Hype burn multiplier. Example: 0.15 = +15% per extra cart.")]
+    [Tooltip(
+        "Burn multiplier used by the FIRST owned follower above the safe amount. " +
+        "Example: 1.5 means the first penalized cart immediately burns Hype at 150% of base rate."
+    )]
+    [Min(1f)]
+    [SerializeField] private float firstPenalizedHypeBurnMultiplier = 1.5f;
+
+    [Tooltip(
+        "Additional multiplier added by EACH penalized owned follower AFTER the first one. " +
+        "Example: First Penalty = 1.5 and Increase = 0.15 gives 1.50x, 1.65x, 1.80x..."
+    )]
     [Min(0f)]
     [SerializeField] private float hypeBurnMultiplierIncreasePerOwnedCart = 0.15f;
 
@@ -109,7 +119,23 @@ public class CartControlScript : MonoBehaviour
     public int HypeBurnOwnedFollowerCount => hypeBurnOwnedFollowerCount;
     public int SafeOwnedFollowerCount => safeOwnedFollowerCount;
     public int PenalizedOwnedFollowerCount => Mathf.Max(0, hypeBurnOwnedFollowerCount - safeOwnedFollowerCount);
-    public float CurrentHypeBurnMultiplier => Mathf.Min(maxHypeBurnMultiplier, 1f + PenalizedOwnedFollowerCount * hypeBurnMultiplierIncreasePerOwnedCart);
+    public float FirstPenalizedHypeBurnMultiplier => firstPenalizedHypeBurnMultiplier;
+
+    public float CurrentHypeBurnMultiplier
+    {
+        get
+        {
+            int penalizedCount = PenalizedOwnedFollowerCount;
+            if (penalizedCount <= 0) return 1f;
+
+            float multiplier =
+                firstPenalizedHypeBurnMultiplier +
+                (penalizedCount - 1) * hypeBurnMultiplierIncreasePerOwnedCart;
+
+            return Mathf.Min(maxHypeBurnMultiplier, multiplier);
+        }
+    }
+
     public float CurrentHypeBurnPerSecond => baseHypeBurnPerSecond * CurrentHypeBurnMultiplier;
 
     public event System.Action<float, float> OnHypeChanged;
@@ -379,8 +405,12 @@ public class CartControlScript : MonoBehaviour
         startingHype = Mathf.Clamp(startingHype, 0f, maxHype);
         baseHypeBurnPerSecond = Mathf.Max(0f, baseHypeBurnPerSecond);
         safeOwnedFollowerCount = Mathf.Max(0, safeOwnedFollowerCount);
+        firstPenalizedHypeBurnMultiplier = Mathf.Max(1f, firstPenalizedHypeBurnMultiplier);
         hypeBurnMultiplierIncreasePerOwnedCart = Mathf.Max(0f, hypeBurnMultiplierIncreasePerOwnedCart);
         maxHypeBurnMultiplier = Mathf.Max(1f, maxHypeBurnMultiplier);
+
+        // Keep the cap logically at or above the first penalized value.
+        maxHypeBurnMultiplier = Mathf.Max(maxHypeBurnMultiplier, firstPenalizedHypeBurnMultiplier);
 
         if (!Application.isPlaying) currentHype = Mathf.Clamp(startingHype, 0f, maxHype);
     }
